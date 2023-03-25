@@ -5,6 +5,8 @@
 
 #include <Windows.h>
 
+#include "d3dclass.h"
+
 const bool FULL_SCREEN = false;
 const bool VSUNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
@@ -25,7 +27,8 @@ private:
 	bool Render();
 
 private:
-
+	// _m means member
+	D3DClass* m_D3D;
 };
 
 #endif
