@@ -1,5 +1,5 @@
-﻿  GraphicsClass.cpp
-  SystemClass.cpp
-  main.cpp
+﻿  D3DClass.cpp
+  GraphicsClass.cpp
+I:\DXStudy\RasterTek\Engine\GraphicsClass.cpp(26,22): warning C4316: 'D3DClass': object allocated on the heap may not be aligned 16
   Generating Code...
   Engine.vcxproj -> I:\DXStudy\RasterTek\Engine\Debug\Engine.exe

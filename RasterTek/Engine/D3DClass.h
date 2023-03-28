@@ -10,8 +10,8 @@
 // Linking
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "d3dx11.lib")
-#pragma comment(lib, "d3dx10.lib")
+// #pragma comment(lib, "d3dx11.lib")
+// #pragma comment(lib, "d3dx10.lib")
 
 // include
 
@@ -21,6 +21,10 @@
 // 아래는 사라진듯
 // #include <d3dx10math.h>
 #include <DirectXMath.h>
+
+#include <iostream>
+#include <stdlib.h>
+
 using namespace DirectX;
 
 class D3DClass
@@ -43,12 +47,13 @@ public:
 	void GetWorldMatrix(XMMATRIX&);
 	void GetOrthoMatrix(XMMATRIX&);
 
-	void GetVideoCartInfo(char*, int&);
+	void GetVideoCardInfo(char*, int&);
 
 private:
 	bool m_vsync_enabled;
 	int m_videoCardMemory;
-	char m_videoCardMemoryDescription[128];
+	char m_videoCardDescription[128];
+
 	IDXGISwapChain* m_swapChain;
 	ID3D11Device* m_device;
 	ID3D11DeviceContext* m_deviceContext;
@@ -58,7 +63,7 @@ private:
 	ID3D11DepthStencilView* m_depthStencilView;
 	ID3D11RasterizerState* m_rasterState;
 	XMMATRIX m_projectionMatrix;
-	XMMATRIX m_worlMatrix;
+	XMMATRIX m_worldMatrix;
 	XMMATRIX m_orthoMatrix;
 
 };
