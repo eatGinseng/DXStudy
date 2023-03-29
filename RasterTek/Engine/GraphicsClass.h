@@ -6,7 +6,9 @@
 #include <Windows.h>
 
 #include "d3dclass.h"
-
+#include "CameraClass.h"
+#include "ModelClass.h"
+#include "ColorShader.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
@@ -30,6 +32,10 @@ private:
 private:
 	// _m means member
 	D3DClass* m_D3D;
+	CameraClass* m_Camera;
+	ModelClass* m_Model;
+	ColorShaderClass* m_ColorShader;
+
 };
 
 #endif

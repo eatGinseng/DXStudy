@@ -1,5 +1,8 @@
-﻿  D3DClass.cpp
-  GraphicsClass.cpp
-I:\DXStudy\RasterTek\Engine\GraphicsClass.cpp(26,22): warning C4316: 'D3DClass': object allocated on the heap may not be aligned 16
-  Generating Code...
-  Engine.vcxproj -> I:\DXStudy\RasterTek\Engine\Debug\Engine.exe
+﻿  ColorShader.cpp
+I:\DXStudy\RasterTek\Engine\ColorShader.cpp(259,20): warning C4018: '<': signed/unsigned mismatch
+I:\DXStudy\RasterTek\Engine\ColorShader.cpp(248,28): warning C4101: 'i': unreferenced local variable
+ColorShader.obj : error LNK2019: unresolved external symbol _D3DCompileFromFile@36 referenced in function "private: bool __thiscall ColorShaderClass::InitializeShader(struct ID3D11Device *,struct HWND__ *,wchar_t *,wchar_t *)" (?InitializeShader@ColorShaderClass@@AAE_NPAUID3D11Device@@PAUHWND__@@PA_W2@Z)
+GraphicsClass.obj : error LNK2019: unresolved external symbol "public: __thiscall CameraClass::CameraClass(void)" (??0CameraClass@@QAE@XZ) referenced in function "public: bool __thiscall GraphicsClass::Initialize(int,int,struct HWND__ *)" (?Initialize@GraphicsClass@@QAE_NHHPAUHWND__@@@Z)
+GraphicsClass.obj : error LNK2019: unresolved external symbol "public: __thiscall CameraClass::~CameraClass(void)" (??1CameraClass@@QAE@XZ) referenced in function "public: void * __thiscall CameraClass::`scalar deleting destructor'(unsigned int)" (??_GCameraClass@@QAEPAXI@Z)
+GraphicsClass.obj : error LNK2019: unresolved external symbol "public: void __thiscall CameraClass::SetPosition(float,float,float)" (?SetPosition@CameraClass@@QAEXMMM@Z) referenced in function "public: bool __thiscall GraphicsClass::Initialize(int,int,struct HWND__ *)" (?Initialize@GraphicsClass@@QAE_NHHPAUHWND__@@@Z)
+I:\DXStudy\RasterTek\Engine\Debug\Engine.exe : fatal error LNK1120: 4 unresolved externals
