@@ -8,7 +8,7 @@
 #include "d3dclass.h"
 #include "CameraClass.h"
 #include "ModelClass.h"
-#include "ColorShader.h"
+#include "ColorShaderClass.h"
 
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;

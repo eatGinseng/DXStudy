@@ -50,12 +50,21 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 
 	// model 오브젝트 만들기
+
+
+	m_Model = new ModelClass;
+	if (!m_Model)
+	{
+		return false;
+	}
+
 	result = m_Model->Initialize(m_D3D->GetDevice());
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
 		return false;
 	}
+
 
 	// color shader 오브젝트 생성
 	m_ColorShader = new ColorShaderClass;

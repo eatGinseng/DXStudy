@@ -1,4 +1,4 @@
-#include "ColorShader.h"
+#include "ColorShaderClass.h"
 
 ColorShaderClass::ColorShaderClass()
 {
@@ -22,7 +22,7 @@ bool ColorShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 	bool result;
 
 	// 버텍스 셰이더와 픽셀 셰이더 초기화
-	result = InitializeShader(device, hwnd, L"../Engine/color.vs", L"../Engine/color.ps");
+	result = InitializeShader(device, hwnd, L"../Engine/colorShader.hlsl");
 	if (!result)
 	{
 		return false;
@@ -59,7 +59,7 @@ bool ColorShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount
 	return true;
 }
 
-bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilename, LPCWSTR psFilename)
+bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR shaderFilename)
 {
 	HRESULT result;
 	ID3D10Blob* errorMessage;
@@ -75,51 +75,51 @@ bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR
 	pixelShaderBuffer = 0;
 
 	// vertex shader 컴파일
-	result = D3DCompileFromFile(vsFilename, NULL, NULL, "ColorVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &vertexShaderBuffer, &errorMessage);
+	result = D3DCompileFromFile(shaderFilename, NULL, NULL, "ColorVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &vertexShaderBlob, &errorMessage);
 	if (FAILED(result))
 	{
 		// 셰이더 컴파일이 실패할 경우, errorMessage에 뭔가 써 넣는다.
 		if (errorMessage)
 		{
-			OutputShaderErrorMessage(errorMessage, hwnd, vsFilename);
+			OutputShaderErrorMessage(errorMessage, hwnd, shaderFilename);
 		}
 		// error message가 없을 경우, 셰이더를 찾지 못하는 것임
 		else
 		{
-			MessageBox(hwnd, vsFilename, L"Missing shader file", MB_OK);
+			MessageBox(hwnd, shaderFilename, L"Missing shader file", MB_OK);
 		}
 
 		return false;
 	}
 
 	// 픽셀 셰이더 코드 컴파일
-	result = D3DCompileFromFile(psFilename, NULL, NULL, "ColorPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, 
-		&pixelShaderBuffer, &errorMessage);
+	result = D3DCompileFromFile(shaderFilename, NULL, NULL, "ColorPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
+		&pixelShaderBlob, &errorMessage);
 	if (FAILED(result))
 	{
 		// 셰이더 컴파일이 실패할 경우, errorMessage에 뭔가 써 넣는다.
 		if (errorMessage)
 		{
-			OutputShaderErrorMessage(errorMessage, hwnd, psFilename);
+			OutputShaderErrorMessage(errorMessage, hwnd, shaderFilename);
 		}
 		// error message가 없을 경우, 셰이더를 찾지 못하는 것임
 		else
 		{
-			MessageBox(hwnd, psFilename, L"Missing shader file", MB_OK);
+			MessageBox(hwnd, shaderFilename, L"Missing shader file", MB_OK);
 		}
 
 		return false;
 	}
 
 	// 버퍼로부터 버텍스 셰이더 만들기
-	result = device->CreateVertexShader(vertexShaderBuffer->GetBufferPointer(), vertexShaderBuffer->GetBufferSize(), NULL, &m_vertexShader);
+	result = device->CreateVertexShader(vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize(), NULL, &m_vertexShader);
 	if (FAILED(result))
 	{
 		return false;
 	}
 
 	// 버퍼로부터 픽셀 셰이더 만들기
-	result = device->CreatePixelShader(pixelShaderBuffer->GetBufferPointer(), pixelShaderBuffer->GetBufferSize(), NULL, &m_pixelShader);
+	result = device->CreatePixelShader(pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize(), NULL, &m_pixelShader);
 	if (FAILED(result))
 	{
 		return false;
@@ -153,19 +153,19 @@ bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR
 	numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
 
 	// vertex input 레이아웃을 만든다.
-	result = device->CreateInputLayout(polygonLayout, numElements, vertexShaderBuffer->GetBufferPointer(),
-		vertexShaderBuffer->GetBufferSize(), &m_layout);
+	result = device->CreateInputLayout(polygonLayout, numElements, vertexShaderBlob->GetBufferPointer(),
+		vertexShaderBlob->GetBufferSize(), &m_layout);
 	if (FAILED(result))
 	{
 		return false;
 	}
 
 	// vertex Shader buffer, index Shader buffer는 더 이상 필요없으므로 해제해 준다.
-	vertexShaderBuffer->Release();
-	vertexShaderBuffer = 0;
+	vertexShaderBlob->Release();
+	vertexShaderBlob = 0;
 
-	pixelShaderBuffer->Release();
-	vertexShaderBuffer = 0;
+	pixelShaderBlob->Release();
+	pixelShaderBlob = 0;
 
 	// 이제 마지막으로 셰이더에서 사용할 constant buffer를 셋팅해 준다. 여기에서는 1개의 cbuffer만 존재한다.
 	// 버퍼 usage는 dynamic이어야 한다. 왜냐하면 매 프레임마다 업데이트 될 것이기 때문이다.
