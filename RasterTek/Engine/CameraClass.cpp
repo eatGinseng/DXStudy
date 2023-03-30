@@ -1,5 +1,26 @@
 #include "CameraClass.h"
 
+CameraClass::CameraClass()
+{
+	m_positionX = 0.0f;
+	m_positionY = 0.0f;
+	m_positionZ = 0.0f;
+
+	m_rotationX = 0.0f;
+	m_rotationY = 0.0f;
+	m_rotationZ = 0.0f;
+}
+
+
+CameraClass::CameraClass(const CameraClass& other)
+{
+}
+
+
+CameraClass::~CameraClass()
+{
+}
+
 // Remder() 함수는 위치와 회전 값을 받아 view 행렬을 빌드하고 업데이트한다.
 // 먼저 장면의 원점에서 카메라를 x, y, z 값에 따라 회전시킨다.
 // 회전이 끝나면 position으로 이동시킨다. position, up, lookat 값이 제대로 셋팅되면
@@ -54,5 +75,33 @@ void CameraClass::Render()
 void CameraClass::GetViewMatrix(XMMATRIX& viewMatrix)
 {
 	viewMatrix = m_viewMatrix;
+	return;
+}
+
+XMFLOAT3 CameraClass::GetPosition()
+{
+	return XMFLOAT3(m_positionX, m_positionY, m_positionZ);
+}
+
+
+XMFLOAT3 CameraClass::GetRotation()
+{
+	return XMFLOAT3(m_rotationX, m_rotationY, m_rotationZ);
+}
+
+void CameraClass::SetPosition(float x, float y, float z)
+{
+	m_positionX = x;
+	m_positionY = y;
+	m_positionZ = z;
+	return;
+}
+
+
+void CameraClass::SetRotation(float x, float y, float z)
+{
+	m_rotationX = x;
+	m_rotationY = y;
+	m_rotationZ = z;
 	return;
 }

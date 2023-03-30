@@ -9,11 +9,9 @@ ColorShaderClass::ColorShaderClass()
 
 }
 
-
 ColorShaderClass::ColorShaderClass(const ColorShaderClass& other)
 {
 }
-
 
 ColorShaderClass::~ColorShaderClass()
 {
@@ -24,14 +22,7 @@ bool ColorShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 	bool result;
 
 	// 버텍스 셰이더와 픽셀 셰이더 초기화
-
-	WCHAR vs[19] = {};
-	WCHAR ps[19] = {};
-
-	wcsncpy_s(vs, L"../Engine/color.vs", 19);
-	wcsncpy_s(ps, L"../Engine/color.ps", 19);
-
-	result = InitializeShader(device, hwnd, vs, ps);
+	result = InitializeShader(device, hwnd, L"../Engine/color.vs", L"../Engine/color.ps");
 	if (!result)
 	{
 		return false;
@@ -68,7 +59,7 @@ bool ColorShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount
 	return true;
 }
 
-bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* vsFilename, WCHAR* psFilename)
+bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR vsFilename, LPCWSTR psFilename)
 {
 	HRESULT result;
 	ID3D10Blob* errorMessage;
@@ -198,7 +189,6 @@ bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, WCHAR* 
 		return false;
 	}
 
-
 	return true;
 }
 
@@ -241,7 +231,7 @@ void ColorShaderClass::ShutdownShader()
 }
 
 // OutputErrorMessage() 함수는 버텍스 셰이더나 픽셀 셰이더를 컴파일할 때 나오는 에러 메시지들을 적는다.
-void ColorShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, WCHAR* shaderFilename)
+void ColorShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, LPCWSTR shaderFilename)
 {
 
 	char* compileErrors;
@@ -256,7 +246,7 @@ void ColorShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND h
 
 	// file을 열어 error message를 적는다.
 	fout.open("shader-error.txt");
-	for (int i = 0; i < bufferSize; i++)
+	for (i = 0; i < bufferSize; i++)
 	{
 		fout << compileErrors[i];
 	}
