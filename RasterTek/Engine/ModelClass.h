@@ -5,6 +5,7 @@
 
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include "TextureClass.h"
 
 using namespace DirectX;
 
@@ -17,7 +18,7 @@ private:
 	{
 		// shader의 VertexInputType의 구조와 매치되어야 함
 		XMFLOAT3 position;
-		XMFLOAT4 color;
+		XMFLOAT2 texture;
 	};
 public:
 	ModelClass();
@@ -30,10 +31,16 @@ public:
 
 	int GetIndexCount();
 
+	ID3D11ShaderResourceView* GetTexture();
+
 private:
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
+
+	// 모델을 렌더링할 때 사용한 텍스처를 로드, 해제하는 함수
+	bool LoadTexture(ID3D11Device*, LPWSTR);
+	void ReleasTexture();
 
 private:
 
@@ -43,6 +50,8 @@ private:
 
 	// 각 버퍼의 사이즈를 추적하기 위한 integer
 	int m_vertexCount, m_indexCount;
+
+	TextureClass* m_texture;
 };
 
 #endif
