@@ -1,41 +1,49 @@
-#pragma once
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "DirectXTK.lib")
-
+////////////////////////////////////////////////////////////////////////////////
+// Filename: textureclass.h
+////////////////////////////////////////////////////////////////////////////////
 #ifndef _TEXTURECLASS_H_
 #define _TEXTURECLASS_H_
 
-#include "stdafx.h"
+
+//////////////
+// INCLUDES //
+//////////////
 #include <d3d11.h>
-#include <D3DX11tex.h>
+#include <d3dx11tex.h>
+#include <stdio.h>
 
-// #include <D3DX11async.h>
-// #include <d3dcompiler.h>
-
+////////////////////////////////////////////////////////////////////////////////
+// Class name: TextureClass
+////////////////////////////////////////////////////////////////////////////////
 class TextureClass
 {
 
-	
-	
+	struct TargaHeader
+	{
+		unsigned char data1[12];
+		unsigned short width;
+		unsigned short height;
+		unsigned char bpp;
+		unsigned char data2;
+	};
+
 public:
 	TextureClass();
 	TextureClass(const TextureClass&);
 	~TextureClass();
 
-	bool Initialize(ID3D11Device*, WCHAR*);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*, HWND);
 	void Shutdown();
 
-	// texture로의 포인터를 반환한다. 이것을 셰이더에서 사용할 수 있다.
 	ID3D11ShaderResourceView* GetTexture();
 
 private:
+	bool LoadTarga(char*, int&, int&);
 
-	ID3D11Resource* m_textureResource;
-	ID3D11Texture2D* m_texture2D;
-	ID3D11ShaderResourceView* m_textureSRV;
-
+private:
+	unsigned char* m_targaData;
+	ID3D11Texture2D* m_texture;
+	ID3D11ShaderResourceView* m_textureView;
 };
 
 #endif

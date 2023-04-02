@@ -7,8 +7,8 @@ cbuffer MatrixBuffer
 
 struct VertexInputType
 {
-    float4 position :   POSITION;
-    float2 tex      :   TEXCOORD0;
+    float4 position : POSITION;
+    float2 tex      : TEXCOORD0;
 };
 
 struct PixelInputType
@@ -37,7 +37,7 @@ PixelInputType TextureVertexShader(VertexInputType input)
     output.tex = input.tex;
     
     return output;
-}
+};
 
 Texture2D shaderTexture;
 SamplerState SampleType;
@@ -50,6 +50,6 @@ float4 TexturePixelShader(PixelInputType input) : SV_TARGET
     textureColor = shaderTexture.Sample(SampleType, input.tex);
     
    // return float4(textureColor, 1.0f);
-    return float4(1.0f, 1.0f, 0.0f, 1.0f);
+    return float4(1.0f, 0.0f, 0.0f, 1.0f);
 
 }

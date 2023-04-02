@@ -1,11 +1,14 @@
-#include "GraphicsClass.h"
+////////////////////////////////////////////////////////////////////////////////
+// Filename: graphicsclass.cpp
+////////////////////////////////////////////////////////////////////////////////
+#include "graphicsclass.h"
 
 
 GraphicsClass::GraphicsClass()
 {
 	m_D3D = 0;
 	m_Camera = 0;
-	m_Model - 0;
+	m_Model = 0;
 	m_TextureShader = 0;
 }
 
@@ -22,64 +25,68 @@ GraphicsClass::~GraphicsClass()
 
 bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
+	char textureFilename[128];
 	bool result;
 
-	// Direct3D object를 생성
 
+	// Create the Direct3D object.
 	m_D3D = new D3DClass;
-	if (!m_D3D)
+	if(!m_D3D)
 	{
 		return false;
 	}
 
-	// Direct3D Object를 초기화
+	// Initialize the Direct3D object.
 	result = m_D3D->Initialize(screenWidth, screenHeight, VSYNC_ENABLED, hwnd, FULL_SCREEN, SCREEN_DEPTH, SCREEN_NEAR);
-	if (!result)
+	if(!result)
 	{
-		MessageBox(hwnd, L"Could not initialize Direct3D", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize Direct3D.", L"Error", MB_OK);
 		return false;
 	}
 
-	// Camera 오브젝트 만들기
+	// Create the camera object.
 	m_Camera = new CameraClass;
-	if (!m_Camera)
+	if(!m_Camera)
 	{
 		return false;
 	}
 
-	// 카메라의 초기 위치 설정
-	m_Camera->SetPosition(0.0f, 0.0f, 0.0f);
-
-	// model 오브젝트 만들기
-
-
+	// Set the initial position of the camera.
+	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+	
+	// Create the model object.
 	m_Model = new ModelClass;
-	if (!m_Model)
+	if(!m_Model)
 	{
 		return false;
 	}
 
-	result = m_Model->Initialize(m_D3D->GetDevice(), (WCHAR*)L"../Engine/data/seafloor.dds");
-	if (!result)
+	// Initialize the model object.
+	// Set the name of the texture file that we will be loading.
+	strcpy_s(textureFilename, "seafloor.tga");
+
+	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename, hwnd);
+	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
 		return false;
 	}
 
-	// texture shader 오브젝트 생성
+	// Create the texture shader object.
 	m_TextureShader = new TextureShaderClass;
-	if (!m_TextureShader)
+	if(!m_TextureShader)
 	{
 		return false;
 	}
 
-	// shader object 초기화
+	// Initialize the texture shader object.
 	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
-	if (!result)
+	if(!result)
 	{
-		MessageBox(hwnd, L"Could not initialize shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
 		return false;
 	}
+
 	return true;
 }
 
@@ -87,7 +94,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 void GraphicsClass::Shutdown()
 {
 	// Release the texture shader object.
-	if (m_TextureShader)
+	if(m_TextureShader)
 	{
 		m_TextureShader->Shutdown();
 		delete m_TextureShader;
@@ -95,7 +102,7 @@ void GraphicsClass::Shutdown()
 	}
 
 	// Release the model object.
-	if (m_Model)
+	if(m_Model)
 	{
 		m_Model->Shutdown();
 		delete m_Model;
@@ -103,13 +110,14 @@ void GraphicsClass::Shutdown()
 	}
 
 	// Release the camera object.
-	if (m_Camera)
+	if(m_Camera)
 	{
 		delete m_Camera;
 		m_Camera = 0;
 	}
 
-	if (m_D3D)
+	// Release the D3D object.
+	if(m_D3D)
 	{
 		m_D3D->Shutdown();
 		delete m_D3D;
@@ -124,9 +132,10 @@ bool GraphicsClass::Frame()
 {
 	bool result;
 
-	// graphics scene를 렌더한다.
+
+	// Render the graphics scene.
 	result = Render();
-	if (!result)
+	if(!result)
 	{
 		return false;
 	}
@@ -137,31 +146,33 @@ bool GraphicsClass::Frame()
 
 bool GraphicsClass::Render()
 {
-	XMMATRIX viewMatrix, projectionMatrix, worldMatrix;
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 	bool result;
 
-	// scene을 시작하기 위해 buffer를 clear 한다.
+
+	// Clear the buffers to begin the scene.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
-	// 카메라 위치에 기반해 view matrix 를 만든다.
+	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
-	// camera와 d3d 오브젝트에서 world, view, projection 행렬을 얻는다.
+	// Get the world, view, and projection matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 
-	// model의 vertex buffer와 index buffer를 그래픽스 파이프라인에 집어넣어 그릴 준비를 한다.
+	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_Model->Render(m_D3D->GetDeviceContext());
 
-	// texture shader를 사용해 모델을 그린다.
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture());
-	if (!result)
+	// Render the model using the texture shader.
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 
+									 m_Model->GetTexture());
+	if(!result)
 	{
 		return false;
 	}
 
-	// render 한 scene를 present 한다.
+	// Present the rendered scene to the screen.
 	m_D3D->EndScene();
 
 	return true;

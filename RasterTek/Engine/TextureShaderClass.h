@@ -1,22 +1,27 @@
-#pragma comment(lib, "d3dcompiler.lib")
-
+////////////////////////////////////////////////////////////////////////////////
+// Filename: textureshaderclass.h
+////////////////////////////////////////////////////////////////////////////////
 #ifndef _TEXTURESHADERCLASS_H_
 #define _TEXTURESHADERCLASS_H_
 
+
+//////////////
+// INCLUDES //
+//////////////
 #include <d3d11.h>
-#include <DirectXMath.h>
-#include <D3DX11async.h>
-#include <D3DX11Tex.h>
-#include <d3dcompiler.h>
+#include <d3dx10math.h>
+#include <d3dx11async.h>
 #include <fstream>
 
-using namespace std;
+#include <DirectXMath.h>
 using namespace DirectX;
+using namespace std;
 
-
+////////////////////////////////////////////////////////////////////////////////
+// Class name: TextureShaderClass
+////////////////////////////////////////////////////////////////////////////////
 class TextureShaderClass
 {
-
 private:
 	struct MatrixBufferType
 	{
@@ -24,7 +29,7 @@ private:
 		XMMATRIX view;
 		XMMATRIX projection;
 	};
-	
+
 public:
 	TextureShaderClass();
 	TextureShaderClass(const TextureShaderClass&);
@@ -35,7 +40,7 @@ public:
 	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*);
 
 private:
-	bool InitializeShader(ID3D11Device*, HWND, LPCWSTR);
+	bool InitializeShader(ID3D11Device*, HWND, LPCWSTR, LPCWSTR);
 	void ShutdownShader();
 	void OutputShaderErrorMessage(ID3D10Blob*, HWND, LPCWSTR);
 
@@ -43,16 +48,11 @@ private:
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
-	ID3DBlob* vertexShaderBlob;
-	ID3DBlob* pixelShaderBlob;
 	ID3D11VertexShader* m_vertexShader;
 	ID3D11PixelShader* m_pixelShader;
 	ID3D11InputLayout* m_layout;
 	ID3D11Buffer* m_matrixBuffer;
-
-	// texture shader에 사용될 Sampler State 포인터
 	ID3D11SamplerState* m_sampleState;
-
 };
 
 #endif
