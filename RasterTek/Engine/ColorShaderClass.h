@@ -5,8 +5,7 @@
 #define _COLORSHADERCLASS_H_
 
 #include <d3d11.h>
-// deprecated
-// #include <d3dx11async.h>
+#include <d3dx11async.h>
 #include <DirectXMath.h>
 #include <fstream>
 #include <d3dcompiler.h>

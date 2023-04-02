@@ -1,5 +1,6 @@
 #include "ColorShaderClass.h"
 
+
 ColorShaderClass::ColorShaderClass()
 {
 	m_vertexShader = 0;
@@ -75,7 +76,7 @@ bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR
 	pixelShaderBuffer = 0;
 
 	// vertex shader 컴파일
-	result = D3DCompileFromFile(shaderFilename, NULL, NULL, "ColorVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &vertexShaderBlob, &errorMessage);
+	result = D3DX11CompileFromFile(shaderFilename, NULL, NULL, "ColorVertexShader", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL, &vertexShaderBlob, &errorMessage, NULL);
 	if (FAILED(result))
 	{
 		// 셰이더 컴파일이 실패할 경우, errorMessage에 뭔가 써 넣는다.
@@ -93,8 +94,8 @@ bool ColorShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR
 	}
 
 	// 픽셀 셰이더 코드 컴파일
-	result = D3DCompileFromFile(shaderFilename, NULL, NULL, "ColorPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0,
-		&pixelShaderBlob, &errorMessage);
+	result = D3DX11CompileFromFile(shaderFilename, NULL, NULL, "ColorPixelShader", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, NULL, 
+		&pixelShaderBlob, &errorMessage, NULL);
 	if (FAILED(result))
 	{
 		// 셰이더 컴파일이 실패할 경우, errorMessage에 뭔가 써 넣는다.

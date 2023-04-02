@@ -6,7 +6,7 @@ GraphicsClass::GraphicsClass()
 	m_D3D = 0;
 	m_Camera = 0;
 	m_Model - 0;
-	m_ColorShader = 0;
+	m_TextureShader = 0;
 }
 
 
@@ -25,6 +25,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	bool result;
 
 	// Direct3D object를 생성
+
 	m_D3D = new D3DClass;
 	if (!m_D3D)
 	{
@@ -47,7 +48,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// 카메라의 초기 위치 설정
-	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 0.0f, 0.0f);
 
 	// model 오브젝트 만들기
 
@@ -58,25 +59,25 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	result = m_Model->Initialize(m_D3D->GetDevice());
+	result = m_Model->Initialize(m_D3D->GetDevice(), (WCHAR*)L"../Engine/data/seafloor.dds");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
 		return false;
 	}
 
-
-	// color shader 오브젝트 생성
-	m_ColorShader = new ColorShaderClass;
-	if (!m_ColorShader)
+	// texture shader 오브젝트 생성
+	m_TextureShader = new TextureShaderClass;
+	if (!m_TextureShader)
 	{
 		return false;
 	}
 
-	result = m_ColorShader->Initialize(m_D3D->GetDevice(), hwnd);
+	// shader object 초기화
+	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the color shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize shader object.", L"Error", MB_OK);
 		return false;
 	}
 	return true;
@@ -85,12 +86,12 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void GraphicsClass::Shutdown()
 {
-	// Release the color shader object.
-	if (m_ColorShader)
+	// Release the texture shader object.
+	if (m_TextureShader)
 	{
-		m_ColorShader->Shutdown();
-		delete m_ColorShader;
-		m_ColorShader = 0;
+		m_TextureShader->Shutdown();
+		delete m_TextureShader;
+		m_TextureShader = 0;
 	}
 
 	// Release the model object.
@@ -153,8 +154,8 @@ bool GraphicsClass::Render()
 	// model의 vertex buffer와 index buffer를 그래픽스 파이프라인에 집어넣어 그릴 준비를 한다.
 	m_Model->Render(m_D3D->GetDeviceContext());
 
-	// Color shader를 사용해 모델을 그린다.
-	result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
+	// texture shader를 사용해 모델을 그린다.
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture());
 	if (!result)
 	{
 		return false;

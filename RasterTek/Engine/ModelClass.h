@@ -5,6 +5,7 @@
 
 #include <d3d11.h>
 #include <DirectXMath.h>
+#include "stdafx.h"
 #include "TextureClass.h"
 
 using namespace DirectX;
@@ -25,7 +26,7 @@ public:
 	ModelClass(const ModelClass&);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device*);
+	bool Initialize(ID3D11Device*, WCHAR*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
@@ -39,8 +40,8 @@ private:
 	void RenderBuffers(ID3D11DeviceContext*);
 
 	// 모델을 렌더링할 때 사용한 텍스처를 로드, 해제하는 함수
-	bool LoadTexture(ID3D11Device*, LPWSTR);
-	void ReleasTexture();
+	bool LoadTexture(ID3D11Device*, WCHAR*);
+	void ReleaseTexture();
 
 private:
 

@@ -17,8 +17,7 @@ struct PixelInputType
     float2 tex      : TEXCOORD0;
 };
 
-Texture2D shaderTexture;
-SamplerState SampleType;
+
 
 PixelInputType TextureVertexShader(VertexInputType input)
 {
@@ -40,14 +39,17 @@ PixelInputType TextureVertexShader(VertexInputType input)
     return output;
 }
 
+Texture2D shaderTexture;
+SamplerState SampleType;
 
-
-float4 TexturePixelShader(PixelInputType input) : SV_POSITION
+float4 TexturePixelShader(PixelInputType input) : SV_TARGET
 {
     float4 textureColor;
     
     // 텍스처 좌표 위치의 픽셀 컬러를 텍스처로부터 얻어낸다. 이때, sampler가 사용된다.
     textureColor = shaderTexture.Sample(SampleType, input.tex);
     
-    return textureColor;
+   // return float4(textureColor, 1.0f);
+    return float4(1.0f, 1.0f, 0.0f, 1.0f);
+
 }

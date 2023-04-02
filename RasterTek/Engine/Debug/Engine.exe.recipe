@@ -5,7 +5,11 @@
       <FullPath>I:\DXStudy\RasterTek\Engine\Debug\Engine.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
-  <ContentFiles />
+  <ContentFiles>
+    <ContentFile>
+      <FullPath>I:\DXStudy\RasterTek\Engine\Debug\TextureShader.cso</FullPath>
+    </ContentFile>
+  </ContentFiles>
   <SatelliteDlls />
   <NonRecipeFileRefs />
 </Project>

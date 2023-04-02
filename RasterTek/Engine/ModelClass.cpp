@@ -18,20 +18,22 @@ ModelClass::~ModelClass()
 
 }
 
-bool ModelClass::Initialize(ID3D11Device* device, LPWSTR textureFilename)
+bool ModelClass::Initialize(ID3D11Device* device, WCHAR* textureFilename)
 {
 	bool result;
 
 	// 트라이앵글을 그리기 위한 지오메트리의 vertex buffer과 index buffer 초기화
-	result = InitializeBuffers(device);
-	if (!result)
+	bool buffersResult;
+	buffersResult = InitializeBuffers(device);
+	if (!buffersResult)
 	{
 		return false;
 	}
 
 	// model을 위한 텍스처를 로드한다.
-	result = LoadTexture(device, textureFilename);
-	if (!result)
+	bool TextureResult;
+	TextureResult = LoadTexture(device, textureFilename);
+	if (!TextureResult)
 	{
 		return false;
 	}
@@ -85,8 +87,8 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	// 먼저 두 개의 임시 배열을 만든다. 이것을 final buffers로 채울 것이다.
 
 	// vertex 갯수대로 채움
-	m_vertexCount = 4;
-	m_indexCount = 6;
+	m_vertexCount = 3;
+	m_indexCount = 3;
 
 	// vertex array 생성
 	vertices = new VertexType[m_vertexCount];
@@ -105,34 +107,35 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	// 이제 배열에 버텍스와 인덱스 배열을 3개의 포인트로 채운다. 순서는 시계방향이어야 앞면으로 제대로 표시된다.
 	// color도 vertex description의 일부이므로, green으로 넣어주었다.
 
-	/* 삼각형의 경우
+	// 삼각형의 경우
 	vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f); // 좌측 하단
-	vertices[0].color = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	vertices[0].texture = XMFLOAT2(0.0f, 1.0f);
 	
 	vertices[1].position = XMFLOAT3(0.0f, 1.0f, 0.0f); // 중앙 위
-	vertices[1].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	vertices[1].texture = XMFLOAT2(0.5f, 0.0f);
 	
 	vertices[2].position = XMFLOAT3(1.0f, -1.0f, 0.0f); // 오른쪽 하단
-	vertices[2].color = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	vertices[2].texture = XMFLOAT2(1.0f, 1.0f);
 
 	// data에서 index 배열을 받는다.
 	indices[0] = 0; // 좌측 하단
 	indices[1] = 1; // 중앙 상단
 	indices[2] = 2; // 우측 하단
-	*/
+	
 
 	// 사각형으로 바꾸기
+	/*
 	vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f); // 좌측 하단
-	vertices[0].color = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	vertices[0].texture = XMFLOAT2(0.0f, 1.0f);
 
 	vertices[1].position = XMFLOAT3(-0.5f, 1.0f, 0.0f); // 좌측 상단
-	vertices[1].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	vertices[1].texture = XMFLOAT2(0.0f, 0.0f);
 
 	vertices[2].position = XMFLOAT3(1.0f, -1.0f, 0.0f); // 오른쪽 하단
-	vertices[2].color = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	vertices[2].texture = XMFLOAT2(1.0f, 1.0f);
 
 	vertices[3].position = XMFLOAT3(0.5f, 1.0f, 0.0f); // 오른쪽 상단
-	vertices[3].color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	vertices[3].texture = XMFLOAT2(1.0f, 0.0f);
 
 	// data에서 index 배열을 받는다.
 	indices[0] = 0; // 좌측 하단
@@ -142,6 +145,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	indices[3] = 2; // 좌측 하단
 	indices[4] = 1; // 좌측 상단
 	indices[5] = 3; // 우측 상단
+	*/
 
 	// 이제 배열을 만들었으니, 이걸로 버텍스 버퍼와 인덱스 버퍼를 만들 수 있다.
 	// 두 버퍼는 같은 방식으로 만들어진다 - buffer의 description을 채운다.
@@ -164,6 +168,10 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 
 	// 버텍스 버퍼 생성
 	result = device->CreateBuffer(&vertexBufferDesc, &vertexData, &m_vertexBuffer);
+	if (FAILED(result))
+	{
+		return false;
+	}
 
 	// 같은 방법으로 인덱스 버퍼도 생성해줌
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -235,4 +243,43 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	// 프리미티브가 이 버텍스 버퍼를 기준으로 렌더링되어야 하며, 트라이앵글로 렌더링 하도록 지시
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+}
+
+bool ModelClass::LoadTexture(ID3D11Device* device, WCHAR* filename)
+{
+	bool result;
+
+	// texture 오브젝트 만들기
+
+	bool TextureObjectCreateResult;
+	m_texture = new TextureClass;
+	if (!m_texture)
+	{
+		TextureObjectCreateResult = false;
+		return false;
+	}
+
+	bool TextureObjectInitializeResult;
+	// texture 오브젝트 초기화
+	TextureObjectInitializeResult = m_texture->Initialize(device, filename);
+	if(!TextureObjectInitializeResult)
+	{
+		return false;
+	}
+
+	return true;
+
+}
+
+void ModelClass::ReleaseTexture()
+{
+	// texture 오브젝트 해제
+	if (m_texture)
+	{
+		m_texture->Shutdown();
+		delete m_texture;
+		m_texture = 0;
+	}
+
+	return;
 }
