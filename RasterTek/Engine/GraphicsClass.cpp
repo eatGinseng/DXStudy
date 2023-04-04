@@ -112,7 +112,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize the light object.
-	m_Light->SetDiffuseColor(0.0f, 1.0f, 1.0f, 1.0f);
+	m_Light->SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f);
 	m_Light->SetDirection(0.0f, -0.5f, 0.5f);
 
 	return true;
