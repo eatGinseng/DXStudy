@@ -28,6 +28,7 @@ GraphicsClass::~GraphicsClass()
 bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
 	char textureFilename[128];
+	char modelFilename[128];
 	bool result;
 
 
@@ -66,8 +67,9 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// Initialize the model object.
 	// Set the name of the texture file that we will be loading.
 	strcpy_s(textureFilename, "seafloor.tga");
+	strcpy_s(modelFilename, "cube.txt");
 
-	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename, hwnd);
+	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename, hwnd, modelFilename);
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
