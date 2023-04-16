@@ -19,17 +19,33 @@ struct PixelInputType
     float2 tex : TEXCOORD0;
 };
 
+// font color를 결정할 때 사용
+cbuffer PixelBuffer
+{
+    float PixelColor;
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Pixel Shader
 ////////////////////////////////////////////////////////////////////////////////
-float4 TexturePixelShader(PixelInputType input) : SV_TARGET
+float4 FontPixelShader(PixelInputType input) : SV_TARGET
 {
-	float4 textureColor;
-
+	float4 color;
 
     // Sample the pixel color from the texture using the sampler at this texture coordinate location.
-    textureColor = shaderTexture.Sample(SampleType, input.tex);
+    color = shaderTexture.Sample(SampleType, input.tex);
 
-    return textureColor;
+    // if the color is black, treat this pixel as transparent
+    if(color.r == 0.0f)
+    {
+        color.a = 0.0f;
+    }
+    else
+    {
+        color.a = 1.0f;
+        color = color * PixelColor;
+    }
+
+    return color;
 }
