@@ -8,7 +8,7 @@ FontShaderClass::FontShaderClass()
 	m_layout = 0;
 
 	m_constantBuffer = 0;
-	m_samplerState = 0;
+	m_sampleState = 0;
 	
 	m_pixelBuffer = 0;
 }
@@ -202,7 +202,7 @@ bool FontShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR 
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	// Create the texture sampler state.
-	result = device->CreateSamplerState(&samplerDesc, &m_samplerState);
+	result = device->CreateSamplerState(&samplerDesc, &m_sampleState);
 	if (FAILED(result))
 	{
 		return false;
@@ -321,7 +321,7 @@ bool FontShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XM
 	PixelBufferType* dataPtr2;
 
 	// constnat buffer Àá±×±â
-	result = deviceContext->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, *mappedResource);
+	result = deviceContext->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
 	{
 		return false;
@@ -390,7 +390,7 @@ void FontShaderClass::RenderShader(ID3D11DeviceContext* deviceContext, int index
 	deviceContext->PSSetShader(m_pixelShader, NULL, 0);
 
 	// Set the sampler state in the pixel shader.
-	deviceContext->PSSetSamplers(0, 1, &m_samplerState);
+	deviceContext->PSSetSamplers(0, 1, &m_sampleState);
 
 	// Render the triangles.
 	deviceContext->DrawIndexed(indexCount, 0, 0);

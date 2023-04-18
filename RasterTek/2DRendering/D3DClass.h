@@ -27,12 +27,14 @@
 
 using namespace DirectX;
 
+
 class D3DClass
 {
 public:
 	D3DClass();
 	D3DClass(const D3DClass&);
 	~D3DClass();
+	
 
 	bool Initialize(int, int, bool, HWND, bool, float, float);
 	void Shutdown();
@@ -52,6 +54,9 @@ public:
 	void TurnZBufferOn();
 	void TurnZBufferOff();
 
+	void TurnOnAlphaBlending();
+	void TurnOffAlphaBlending();
+
 private:
 	bool m_vsync_enabled;
 	int m_videoCardMemory;
@@ -70,6 +75,10 @@ private:
 	XMMATRIX m_orthoMatrix;
 
 	ID3D11DepthStencilState* m_depthDisabledStencilState;
+
+	// alpha blending을 위한 state 두 가지
+	ID3D11BlendState* m_alphaEnableBlendingState;
+	ID3D11BlendState* m_alphaDisableBlendingState;
 
 };
 

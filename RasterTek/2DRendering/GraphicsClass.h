@@ -10,8 +10,7 @@
 ///////////////////////
 #include "d3dclass.h"
 #include "cameraclass.h"
-#include "textureshaderclass.h"
-#include "bitmapclass.h"
+#include "TextClass.h"
 
 
 /////////////
@@ -43,8 +42,8 @@ private:
 private:
 	D3DClass* m_D3D;
 	CameraClass* m_Camera;
-	TextureShaderClass* m_TextureShader;
-	BitmapClass* m_Bitmap;
+
+	TextClass* m_Text;
 };
 
 #endif

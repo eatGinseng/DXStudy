@@ -20,7 +20,7 @@ FontClass::~FontClass()
 }
 
 // Font Data하고 Font Texture 로드
-bool FontClass::Initialize(ID3D11Device* device, char* fontFilename, char* textureFilename)
+bool FontClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, LPCWSTR fontFilename, LPCWSTR textureFilename, HWND hwnd)
 {
 	bool result;
 
@@ -32,7 +32,7 @@ bool FontClass::Initialize(ID3D11Device* device, char* fontFilename, char* textu
 	}
 
 	// 문자가 있는 텍스처
-	result = LoadTexture(device, textureFilename);
+	result = LoadTexture(device, deviceContext, textureFilename, hwnd);
 	if(!result)
 	{
 		return false;
@@ -51,7 +51,7 @@ void FontClass::Shutdown()
 	ReleaseFontData();
 }
 
-bool FontClass::LoadFontData(char* Filename)
+bool FontClass::LoadFontData(LPCWSTR Filename)
 {
 	ifstream fin;
 	int i;
@@ -106,7 +106,7 @@ void FontClass::ReleaseFontData()
 }
 
 // font dds file 을 shade resource로 읽어들인다. 
-bool FontClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* Filename)
+bool FontClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, LPCWSTR Filename, HWND hwnd)
 {
 	bool result;
 
@@ -116,7 +116,19 @@ bool FontClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceCon
 		return false;
 	}
 
-	result = m_Texture->Initialize(device, deviceContext, Filename);
+	// convert LPCWSTR filename to char*
+	int len = wcslen(Filename);
+
+	char* buffer = new char[len];
+
+	WideCharToMultiByte(CP_ACP, 0, Filename, -1, buffer, len, NULL, NULL);
+
+	std::string strFilename(buffer);
+	std::cout << strFilename << std::endl;
+
+	delete[] buffer;
+
+	result = m_Texture->Initialize(device, deviceContext, strFilename, hwnd);
 	if (!result)
 	{
 		return false;
@@ -146,7 +158,7 @@ ID3D11ShaderResourceView* FontClass::GetTexture()
 // 각 문장은 저마다의 vertex buffer를 가지며, 이것으로 쉽게 렌더링 될 수있다. 
 // 인풋 vertices 은 textureClass로 반환될 vertex array 로의 포인터이다.
 // 인풋 sentence 는 vertex array를 만들 문장 자체이다. drawX, drawY는 문장을 그린 스크린상의 위치이다.
-void FontClass::BuildVertexArray(void* vertices, char* sentence, float drawX, float drawY)
+void FontClass::BuildVertexArray(void* vertices, const char sentence[128], float drawX, float drawY)
 {
 	VertexType* vertexPtr;
 	int numLetters, index, i, letter;

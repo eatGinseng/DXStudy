@@ -8,6 +8,9 @@
 #include <D3D11.h>
 #include <DirectXMath.h>
 #include <fstream>
+#include <iostream>
+#include <string>
+
 using namespace DirectX;
 using namespace std;
 
@@ -40,18 +43,18 @@ public:
 	FontClass(const FontClass&);
 	~FontClass();
 
-	bool Initialize(ID3D11Device*, char*, char*);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, LPCWSTR, LPCWSTR, HWND);
 	void Shutdown();
 
 	ID3D11ShaderResourceView* GetTexture();
 	
 	// TextClass에서 호출할 것임, 인풋으로는 문장을 받고, 아웃풋으로는 문장을 표시할 트라이앵글의 vertex array를 돌려줌
-	void BuildVertexArray(void*, char*, float, float);
+	void BuildVertexArray(void*, const char[128], float, float);
 
 private:
-	bool LoadFontData(char*);
+	bool LoadFontData(LPCWSTR);
 	void ReleaseFontData();
-	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*);
+	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, LPCWSTR, HWND);
 	void ReleaseTexture();
 
 private:

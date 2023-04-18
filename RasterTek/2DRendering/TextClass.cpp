@@ -38,7 +38,7 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 	}
 
 	// font object 초기화
-	result = m_Font->Initialize(device, L"../Engine/data/fontdata.txt", L"../Engine/data/font.dds");
+	result = m_Font->Initialize(device, deviceContext, L"../Engine/data/fontdata.txt", L"../Engine/data/font.dds", hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the font object.", L"Error", MB_OK);
@@ -237,7 +237,7 @@ bool TextClass::InitializeSentence(SentenceType** sentence, int maxLength, ID3D1
 
 // UpdateSentence 함수는 vertex buffer의 내용을 인풋으로 들어온 sentence로 바꿔준다.
 // vertex buffer의 내용을 업데이트 하기 위해 Map, Unmap, 그리고 memcpy 함수를 사용한다.
-bool TextClass::UpdateSentence(SentenceType* sentence, char* text, int positionX, int positionY, float red, float green, float blue, ID3D11DeviceContext* deviceContext)
+bool TextClass::UpdateSentence(SentenceType* sentence, const char text[128], int positionX, int positionY, float red, float green, float blue, ID3D11DeviceContext* deviceContext)
 {
 	int numLetters;
 	VertexType* vertices;
@@ -277,6 +277,96 @@ bool TextClass::UpdateSentence(SentenceType* sentence, char* text, int positionX
 	// FontClass와 sentence 정보로 vertex array 생성
 	m_Font->BuildVertexArray((void*)vertices, text, drawX, drawY);
 
-	// 
+	// vertex array 정보를 sentence vertex buffer에 복사한다.
+	// vertex buffer를 잠궈서 내용을 쓸 수 있게 한다.
+	result = deviceContext->Map(sentence->vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	// vertex buffer의 data 로의 포인터를 얻는다.
+	verticesPtr = (VertexType*)mappedResource.pData;
+
+	// vertex buffer 에 데이터를 복사히 넣는다.
+	memcpy(verticesPtr, (void*)vertices, (sizeof(VertexType) * sentence->vertexCount));
+
+	// vertex buffer 잠금 해제
+	deviceContext->Unmap(sentence->vertexBuffer, 0);
+
+	// vertex array 해제
+	delete[] vertices;
+	vertices = 0;
+
+	return true;
 
 }
+
+// sentence 자신과 vertex, index buffer를 해제
+void TextClass::ReleaseSentence(SentenceType** sentence)
+{
+	if (*sentence)
+	{
+		// Release the sentence vertex buffer.
+		if ((*sentence)->vertexBuffer)
+		{
+			(*sentence)->vertexBuffer->Release();
+			(*sentence)->vertexBuffer = 0;
+		}
+
+		// Release the sentence index buffer.
+		if ((*sentence)->indexBuffer)
+		{
+			(*sentence)->indexBuffer->Release();
+			(*sentence)->indexBuffer = 0;
+		}
+
+		// Release the sentence.
+		delete* sentence;
+		*sentence = 0;
+
+	}
+
+
+	return;
+}
+
+// RenderSentence 함수는 vertex와 index buffer를 input assembler에 넣고,
+// FontShaderClass object에서 주어진 Sentence를 렌더하도록 한다.
+// 현재의 view matrix가 아닌, m_baseMatrix를 쓰는 것에 주의하자. 이렇게 하면 현재의 view 가 매 프레임마다 변하더라도,
+// 스크린상의 같은 위치에 텍스트를 그릴 수 있다. 
+// 또한, 2d 공간에 그려져야 하기 때문에  projection matrix가 아닌 ortho Matrix를 사용한다.
+
+bool TextClass::RenderSentence(ID3D11DeviceContext* deviceContext, SentenceType* sentence, XMMATRIX worldMatrix, XMMATRIX orthoMatrix)
+{
+	unsigned int stride, offset;
+	XMVECTOR pixelColor;
+	bool result;
+
+	// vertec buffer의 stride와 offset를 지정한다.
+	stride = sizeof(VertexType);
+	offset = 0;
+
+	// vertex buffer를 input assembler에서 활성 상태로 두어, 렌더할 수 있도록 한다.
+	deviceContext->IASetVertexBuffers(0, 1, &sentence->vertexBuffer, &stride, &offset);
+
+	// Set the index buffer to active in the input assembler so it can be rendered.
+	deviceContext->IASetIndexBuffer(sentence->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+	// Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
+	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// input sencence color로 pixel color vector를 만든다.
+	pixelColor = XMVectorSet(sentence->red, sentence->blue, sentence->green, 1.0f);
+
+	// font shader로 렌더한다.
+	result = m_FontShader->Render(deviceContext, sentence->indexCount, worldMatrix, m_baseViewMatrix, orthoMatrix, m_Font->GetTexture(), pixelColor);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+
+}
+
