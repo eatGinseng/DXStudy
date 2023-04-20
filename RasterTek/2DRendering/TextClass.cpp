@@ -38,10 +38,28 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 	}
 
 	// font object 초기화
-	result = m_Font->Initialize(device, deviceContext, L"../Engine/data/fontdata.txt", L"../Engine/data/font.dds", hwnd);
+	char textureFilename[128];
+	strcpy_s(textureFilename, "font.tga");
+	// device, deviceContext, FontData TextFile path, Font Texture DDS File path
+	result = m_Font->Initialize(device, deviceContext, L"fontdata.txt", textureFilename, hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the font object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the font shader object.
+	m_FontShader = new FontShaderClass;
+	if (!m_FontShader)
+	{
+		return false;
+	}
+
+	// Initialize the font shader object.
+	result = m_FontShader->Initialize(device, hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the font shader object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -52,8 +70,12 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 		return false;
 	}
 
+
+	char sentence1[128];
+	strcpy_s(sentence1, "Hello");
+
 	// 문장의 Vertex Buffer를 새로운 스트링 정보로 채운다.
-	result = UpdateSentence(m_sentence1, "Hello", 100, 100, 1.0f, 1.0f, 1.0f, deviceContext);
+	result = UpdateSentence(m_sentence1, sentence1, 100, 100, 1.0f, 1.0f, 1.0f, deviceContext);
 	if (!result)
 	{
 		return false;
@@ -67,8 +89,12 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 		return false;
 	}
 
+	char sentence2[128];
+	strcpy_s(sentence2, "Goodbye");
+
+
 	// Now update the sentence vertex buffer with the new string information.
-	result = UpdateSentence(m_sentence2, "Goodbye", 100, 200, 1.0f, 1.0f, 0.0f, deviceContext);
+	result = UpdateSentence(m_sentence2, sentence2, 100, 200, 1.0f, 1.0f, 0.0f, deviceContext);
 	if (!result)
 	{
 		return false;
@@ -237,7 +263,7 @@ bool TextClass::InitializeSentence(SentenceType** sentence, int maxLength, ID3D1
 
 // UpdateSentence 함수는 vertex buffer의 내용을 인풋으로 들어온 sentence로 바꿔준다.
 // vertex buffer의 내용을 업데이트 하기 위해 Map, Unmap, 그리고 memcpy 함수를 사용한다.
-bool TextClass::UpdateSentence(SentenceType* sentence, const char text[128], int positionX, int positionY, float red, float green, float blue, ID3D11DeviceContext* deviceContext)
+bool TextClass::UpdateSentence(SentenceType* sentence, char* text, int positionX, int positionY, float red, float green, float blue, ID3D11DeviceContext* deviceContext)
 {
 	int numLetters;
 	VertexType* vertices;

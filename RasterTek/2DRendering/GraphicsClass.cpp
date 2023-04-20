@@ -98,18 +98,9 @@ void GraphicsClass::Shutdown()
 bool GraphicsClass::Frame()
 {
 	bool result;
-	static float rotation = 0.0f;
-
-
-	// Update the rotation variable each frame.
-	rotation += (float)XM_PI * 0.005f;
-	if(rotation > 360.0f)
-	{
-		rotation -= 360.0f;
-	}
 	
 	// Render the graphics scene.
-	result = Render(rotation);
+	result = Render();
 	if(!result)
 	{
 		return false;
@@ -119,7 +110,7 @@ bool GraphicsClass::Frame()
 }
 
 
-bool GraphicsClass::Render(float rotation)
+bool GraphicsClass::Render()
 {
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	bool result;

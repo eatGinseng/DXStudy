@@ -43,18 +43,18 @@ public:
 	FontClass(const FontClass&);
 	~FontClass();
 
-	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, LPCWSTR, LPCWSTR, HWND);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, LPCWSTR, char*, HWND);
 	void Shutdown();
 
 	ID3D11ShaderResourceView* GetTexture();
 	
 	// TextClass에서 호출할 것임, 인풋으로는 문장을 받고, 아웃풋으로는 문장을 표시할 트라이앵글의 vertex array를 돌려줌
-	void BuildVertexArray(void*, const char[128], float, float);
+	void BuildVertexArray(void*, char*, float, float);
 
 private:
 	bool LoadFontData(LPCWSTR);
 	void ReleaseFontData();
-	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, LPCWSTR, HWND);
+	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*, HWND);
 	void ReleaseTexture();
 
 private:

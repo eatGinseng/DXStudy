@@ -10,7 +10,10 @@
 //////////////
 #include <d3d11.h>
 #include <d3dx11tex.h>
+#include <d3dcompiler.h>
+
 #include <stdio.h>
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: TextureClass

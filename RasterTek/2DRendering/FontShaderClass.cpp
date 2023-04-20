@@ -320,7 +320,7 @@ bool FontShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XM
 	unsigned int bufferNumber;
 	PixelBufferType* dataPtr2;
 
-	// constnat buffer Àá±×±â
+	// Lock the constant buffer so it can be written to.
 	result = deviceContext->Map(m_constantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
 	{
