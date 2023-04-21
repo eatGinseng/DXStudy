@@ -65,12 +65,14 @@ bool FontClass::LoadFontData(LPCWSTR Filename)
 		return false;
 	}
 
+	// Read in the font size and spacing between chars.
 	fin.open(Filename);
 	if (fin.fail())
 	{
 		return false;
 	}
 
+	// Read in the 95 used ascii characters for text.
 	for (i = 0; i < 95; i++)
 	{
 		fin.get(temp);
@@ -89,6 +91,7 @@ bool FontClass::LoadFontData(LPCWSTR Filename)
 		fin >> m_font[i].size;
 	}
 
+	// Close the file.
 	fin.close();
 
 	return true;
@@ -153,13 +156,14 @@ void FontClass::BuildVertexArray(void* vertices, char* sentence, float drawX, fl
 	VertexType* vertexPtr;
 	int numLetters, index, i, letter;
 
-	// vertices 인풋을 vertexType structure로 강제로 넣는다.
+
+	// Coerce the input vertices into a VertexType structure.
 	vertexPtr = (VertexType*)vertices;
 
-	// sentents 내의 글자 수를 얻는다.
+	// Get the number of letters in the sentence.
 	numLetters = (int)strlen(sentence);
 
-	// vertex array의 index를 초기화
+	// Initialize the index to the vertex array.
 	index = 0;
 
 	// 아래 Loop는 Sentence의 각 문자를 받아 2개의 트라이앵글을 만들어 준다.
@@ -171,7 +175,7 @@ void FontClass::BuildVertexArray(void* vertices, char* sentence, float drawX, fl
 	{
 		letter = ((int)sentence[i]) - 32;
 
-		// 만약 letter가 공백이라면, 그냥 3픽셀 옆으로 옮겨라
+		// If the letter is a space then just move over three pixels.
 		if (letter == 0)
 		{
 			drawX = drawX + 3.0f;
@@ -179,28 +183,28 @@ void FontClass::BuildVertexArray(void* vertices, char* sentence, float drawX, fl
 		else
 		{
 			// First triangle in quad.
-			vertexPtr[index].position = XMVectorSet(drawX, drawY, 0.0f, 1.0f);  // Top left.
+			vertexPtr[index].position = XMFLOAT3(drawX, drawY, 0.0f);  // Top left.
 			vertexPtr[index].texture = XMFLOAT2(m_font[letter].left, 0.0f);
 			index++;
 
-			vertexPtr[index].position = XMVectorSet((drawX + m_font[letter].size), (drawY - 16), 0.0f, 1.0f);  // Bottom right.
+			vertexPtr[index].position = XMFLOAT3((drawX + m_font[letter].size), (drawY - 16), 0.0f);  // Bottom right.
 			vertexPtr[index].texture = XMFLOAT2(m_font[letter].right, 1.0f);
 			index++;
 
-			vertexPtr[index].position = XMVectorSet(drawX, (drawY - 16), 0.0f, 1.0f);  // Bottom left.
+			vertexPtr[index].position = XMFLOAT3(drawX, (drawY - 16), 0.0f);  // Bottom left.
 			vertexPtr[index].texture = XMFLOAT2(m_font[letter].left, 1.0f);
 			index++;
 
 			// Second triangle in quad.
-			vertexPtr[index].position = XMVectorSet(drawX, drawY, 0.0f, 1.0f);  // Top left.
+			vertexPtr[index].position = XMFLOAT3(drawX, drawY, 0.0f);  // Top left.
 			vertexPtr[index].texture = XMFLOAT2(m_font[letter].left, 0.0f);
 			index++;
 
-			vertexPtr[index].position = XMVectorSet(drawX + m_font[letter].size, drawY, 0.0f, 1.0f);  // Top right.
+			vertexPtr[index].position = XMFLOAT3(drawX + m_font[letter].size, drawY, 0.0f);  // Top right.
 			vertexPtr[index].texture = XMFLOAT2(m_font[letter].right, 0.0f);
 			index++;
 
-			vertexPtr[index].position = XMVectorSet((drawX + m_font[letter].size), (drawY - 16), 0.0f, 1.0f);  // Bottom right.
+			vertexPtr[index].position = XMFLOAT3((drawX + m_font[letter].size), (drawY - 16), 0.0f);  // Bottom right.
 			vertexPtr[index].texture = XMFLOAT2(m_font[letter].right, 1.0f);
 			index++;
 

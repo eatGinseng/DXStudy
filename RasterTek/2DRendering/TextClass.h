@@ -23,7 +23,7 @@ private:
 	// FontClass의 Vertex Type과 일치해야 한다.
 	struct VertexType
 	{
-		XMVECTOR position;
+		XMFLOAT3 position;
 		XMFLOAT2 texture;
 	};
 

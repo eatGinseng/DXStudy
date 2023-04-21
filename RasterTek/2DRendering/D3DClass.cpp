@@ -366,7 +366,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// set up projection matrix
 
 	fieldOfView = (float) XM_PI/ 4.0f;
-	screenAspect = (float)screenWidth / (float)screenHeight;
+	screenAspect = static_cast<float>(screenWidth) / static_cast<float>(screenHeight);
 
 	// projection matrix 만들기. fov, screen 종횡비, near, depth로 투영행렬 게산 가능
 	m_projectionMatrix = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
@@ -377,7 +377,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// view matrix 생성은 생략. 카메라 클래스를 만들 것이므로
 
 	// 2D 렌더링을 위한 직교투영행렬 (orthogonal projection matrix) 생성
-	m_orthoMatrix = XMMatrixOrthographicLH((float)screenWidth, (float)screenHeight, (float)screenNear, (float)screenDepth);
+	m_orthoMatrix = XMMatrixOrthographicLH(static_cast<float>(screenWidth), static_cast<float>(screenHeight), screenNear, screenDepth);
 
 	// 두 번째 depth stencil view 먼저 clear
 	ZeroMemory(&depthDisabledStencilDesc, sizeof(depthDisabledStencilDesc));

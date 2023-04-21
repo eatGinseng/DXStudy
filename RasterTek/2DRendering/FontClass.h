@@ -34,7 +34,7 @@ private:
 	// position과 texture uv 데이터만 갖고 있을 것임. 
 	struct VertexType
 	{
-		XMVECTOR position;
+		XMFLOAT3 position;
 		XMFLOAT2 texture;
 	};
 

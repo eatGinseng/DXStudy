@@ -231,7 +231,7 @@ bool TextClass::InitializeSentence(SentenceType** sentence, int maxLength, ID3D1
 
 	// index buffer는 일반적인 static buffer로 생성한다.
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * (*sentence)->vertexCount;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * (*sentence)->indexCount;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
