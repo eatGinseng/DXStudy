@@ -8,6 +8,8 @@ TextClass::TextClass()
 
 	m_sentence1 = 0;
 	m_sentence2 = 0;
+	m_sentence3 = 0;
+	m_sentence4 = 0;
 
 }
 
@@ -55,6 +57,84 @@ bool TextClass::SetMousePosition(int mouseX, int mouseY, ID3D11DeviceContext* de
 
 	return true;
 
+}
+
+bool TextClass::SetFps(int fps, ID3D11DeviceContext* deviceContext)
+{
+	char tempString[16];
+	char fpsString[16];
+	float red, green, blue;
+	bool result;
+
+	// fps를 10,000 아래로
+	if (fps > 9999)
+	{
+		fps = 9999;
+	}
+
+	// fps integer를 string format으로 변경
+	_itoa_s(fps, tempString, 10);
+
+	// fps string을 셋업
+	strcpy_s(fpsString, "FPS : ");
+	strcat_s(fpsString, tempString);
+
+	// fps가 60 또는 그 이상인 경우 컬러를 green 으로
+	if (fps >= 60)
+	{
+		red = 0.0f;
+		green = 1.0f;
+		blue = 0.0f;
+	}
+
+	// If fps is below 60 set the fps color to yellow.
+	if (fps < 60)
+	{
+		red = 1.0f;
+		green = 1.0f;
+		blue = 0.0f;
+	}
+
+	// If fps is below 30 set the fps color to red.
+	if (fps < 30)
+	{
+		red = 1.0f;
+		green = 0.0f;
+		blue = 0.0f;
+	}
+
+	// Update the sentence vertex buffer with the new string information.
+	result = UpdateSentence(m_sentence3, fpsString, 20, 60, red, green, blue, deviceContext);
+	if (!result)
+	{
+		return false;
+	}
+
+}
+
+bool TextClass::SetCpu(int cpu, ID3D11DeviceContext* deviceContext)
+{
+	char tempString[16];
+	char cpuString[16];
+	bool result;
+
+
+	// Convert the cpu integer to string format.
+	_itoa_s(cpu, tempString, 10);
+
+	// Setup the cpu string.
+	strcpy_s(cpuString, "Cpu: ");
+	strcat_s(cpuString, tempString);
+	strcat_s(cpuString, "%");
+
+	// Update the sentence vertex buffer with the new string information.
+	result = UpdateSentence(m_sentence4, cpuString, 20, 80, 0.0f, 1.0f, 0.0f, deviceContext);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 
@@ -111,16 +191,6 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 	}
 
 
-	char sentence1[128];
-	strcpy_s(sentence1, "Hello");
-
-	// 문장의 Vertex Buffer를 새로운 스트링 정보로 채운다.
-	result = UpdateSentence(m_sentence1, sentence1, 100, 100, 1.0f, 1.0f, 1.0f, deviceContext);
-	if (!result)
-	{
-		return false;
-	}
-
 	// 두 번째 문장 초기화
 	// Initialize the first sentence.
 	result = InitializeSentence(&m_sentence2, 16, device);
@@ -129,12 +199,15 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 		return false;
 	}
 
-	char sentence2[128];
-	strcpy_s(sentence2, "Goodbye");
+	// 세 번째 문장 초기화
+	result = InitializeSentence(&m_sentence3, 16, device);
+	if (!result)
+	{
+		return false;
+	}
 
-
-	// Now update the sentence vertex buffer with the new string information.
-	result = UpdateSentence(m_sentence2, sentence2, 100, 200, 1.0f, 1.0f, 0.0f, deviceContext);
+	// 네 번째 문장 초기화
+	result = InitializeSentence(&m_sentence4, 16, device);
 	if (!result)
 	{
 		return false;
@@ -151,6 +224,10 @@ void TextClass::Shutdown()
 
 	// Release the second sentence.
 	ReleaseSentence(&m_sentence2);
+
+	ReleaseSentence(&m_sentence3);
+
+	ReleaseSentence(&m_sentence4);
 
 	// Release the font shader object.
 	if (m_FontShader)
@@ -186,6 +263,20 @@ bool TextClass::Render(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix,
 
 	// 두 번째 문장 그리기
 	result = RenderSentence(deviceContext, m_sentence2, worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// 세 번째 문장 그리기
+	result = RenderSentence(deviceContext, m_sentence3, worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// 네 번째 문장 그리기
+	result = RenderSentence(deviceContext, m_sentence4, worldMatrix, orthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -423,7 +514,7 @@ bool TextClass::RenderSentence(ID3D11DeviceContext* deviceContext, SentenceType*
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// input sencence color로 pixel color vector를 만든다.
-	pixelColor = XMVectorSet(sentence->red, sentence->blue, sentence->green, 1.0f);
+	pixelColor = XMVectorSet(sentence->red, sentence->green, sentence->blue, 1.0f);
 
 	// font shader로 렌더한다.
 	result = m_FontShader->Render(deviceContext, sentence->indexCount, worldMatrix, m_baseViewMatrix, orthoMatrix, m_Font->GetTexture(), pixelColor);

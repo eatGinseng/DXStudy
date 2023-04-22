@@ -5,8 +5,12 @@ SystemClass::SystemClass()
 {
 // object pointer들을 null로 초기화, 이렇게 하지 않으면 Shutdown 함수에서 이들을 CleanUp 하려고 시도할것이기 때문.
 // 항상 포인터를 0으로 초기화 해주는 습관을 들이는 것이 좋음
-m_Input = 0;
-m_Graphics = 0;
+	m_Input = 0;
+	m_Graphics = 0;
+
+	m_Fps = 0;
+	m_Cpu = 0;
+	m_Timer = 0;
 }
 
 SystemClass::SystemClass(const SystemClass& other)
@@ -22,6 +26,7 @@ SystemClass::~SystemClass()
 
 bool SystemClass::Initialize()
 {
+
 
 	int screenWidth, screenHeight;
 	bool result;
@@ -62,6 +67,42 @@ bool SystemClass::Initialize()
 		return false;
 	}
 
+	// FpsCLass 생성 및 초기화
+	// Create the fps object.
+	m_Fps = new FpsClass;
+	if (!m_Fps)
+	{
+		return false;
+	}
+
+	// Initialize the fps object.
+	m_Fps->Initialize();
+
+	// CpuClass 생성 및 초기화
+	m_Cpu = new CpuClass;
+	if (!m_Cpu)
+	{
+		return false;
+	}
+
+	// Initialize the cpu object.
+	m_Cpu->Initialize();
+
+	// Create the timer object.
+	m_Timer = new TimerClass;
+	if (!m_Timer)
+	{
+		return false;
+	}
+
+	// Initialize the timer object.
+	result = m_Timer->Initialize();
+	if (!result)
+	{
+		MessageBox(m_hwnd, L"Could not initialize the Timer object.", L"Error", MB_OK);
+		return false;
+	}
+
 	return true;
 
 }
@@ -69,6 +110,28 @@ bool SystemClass::Initialize()
 // Graphics object와 input object에 관련된 모든것을 shutdown하고 해제. 윈도우를 닫고 그에 관련된 핸들을 clean up
 void SystemClass::Shutdown()
 {
+	// Release the timer object.
+	if (m_Timer)
+	{
+		delete m_Timer;
+		m_Timer = 0;
+	}
+
+	// Release the cpu object.
+	if (m_Cpu)
+	{
+		m_Cpu->Shutdown();
+		delete m_Cpu;
+		m_Cpu = 0;
+	}
+
+	// Release the fps object.
+	if (m_Fps)
+	{
+		delete m_Fps;
+		m_Fps = 0;
+	}
+
 	// Graphics object를 Release
 	if (m_Graphics)
 	{
@@ -147,6 +210,11 @@ bool SystemClass::Frame()
 	bool result;
 	int mouseX, mouseY;
 
+	// Update the system stats.
+	m_Timer->Frame();
+	m_Fps->Frame();
+	m_Cpu->Frame();
+
 	// Do the input frame processing.
 	result = m_Input->Frame();
 	if (!result)
@@ -159,7 +227,7 @@ bool SystemClass::Frame()
 	m_Input->GetMouseLocation(mouseX, mouseY);
 
 	// graphics ohject에 대해서 frame 처리 수행
-	result = m_Graphics->Frame(mouseX, mouseY);
+	result = m_Graphics->Frame(m_Fps->GetFps(), m_Cpu->GetCpuPercentage(), m_Timer->GetTime(), mouseX, mouseY);
 	if (!result)
 	{
 		return false;

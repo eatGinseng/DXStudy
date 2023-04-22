@@ -17,7 +17,7 @@
 // GLOBALS //
 /////////////
 const bool FULL_SCREEN = true;
-const bool VSYNC_ENABLED = true;
+const bool VSYNC_ENABLED = false;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
 
@@ -34,7 +34,7 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame(int, int);
+	bool Frame(int, int, float, int, int);
 	bool Render();
 
 private:

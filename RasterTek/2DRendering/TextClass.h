@@ -38,6 +38,9 @@ public:
 
 	bool SetMousePosition(int, int, ID3D11DeviceContext*);
 
+	bool SetFps(int, ID3D11DeviceContext*);
+	bool SetCpu(int, ID3D11DeviceContext*);
+
 private:
 	bool InitializeSentence(SentenceType**, int, ID3D11Device*);
 	bool UpdateSentence(SentenceType*, char*, int, int, float, float, float, ID3D11DeviceContext*);
@@ -51,9 +54,13 @@ private:
 	int m_screenWidth, m_screenHeight;
 	XMMATRIX m_baseViewMatrix;
 
-	// 여기에서는 두 문장만 사용한다.
+	// mouseX, mouseY
 	SentenceType* m_sentence1;
 	SentenceType* m_sentence2;
+
+	// FPS, CPU usage
+	SentenceType* m_sentence3;
+	SentenceType* m_sentence4;
 
 };
 
