@@ -1,5 +1,6 @@
 #include "TextClass.h"
 
+
 TextClass::TextClass()
 {
 	m_Font = 0;
@@ -17,6 +18,45 @@ TextClass::TextClass(const TextClass& other)
 TextClass::~TextClass()
 {
 }
+
+bool TextClass::SetMousePosition(int mouseX, int mouseY, ID3D11DeviceContext* deviceContext)
+{
+	char tempString[16];
+	char mouseString[16];
+	bool result;
+
+	// mouseX integer를 string 포맷으로 변환
+	_itoa_s(mouseX, tempString, 10);
+
+	// mouseX string 셋업
+	strcpy_s(mouseString, "Mouse X: ");
+	strcat_s(mouseString, tempString);
+
+	// 새로운 string 정보로 sentence vertex buffer를 업데이트
+	result = UpdateSentence(m_sentence1, mouseString, 20, 20, 1.0f, 1.0f, 1.0f, deviceContext);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Convert the mouseY integer to string format.
+	_itoa_s(mouseY, tempString, 10);
+
+	// Setup the mouseY string.
+	strcpy_s(mouseString, "Mouse Y: ");
+	strcat_s(mouseString, tempString);
+
+	// Update the sentence vertex buffer with the new string information.
+	result = UpdateSentence(m_sentence2, mouseString, 20, 40, 1.0f, 1.0f, 1.0f, deviceContext);
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+
+}
+
 
 bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, HWND hwnd, int screenWidth, int screenHeight,
 	XMMATRIX baseViewMatrix)

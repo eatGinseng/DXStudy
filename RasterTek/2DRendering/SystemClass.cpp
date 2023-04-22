@@ -40,8 +40,13 @@ bool SystemClass::Initialize()
 		return false;
 	}
 
-	// inptu object를 초기화
-	m_Input->Initialize();
+	// input class 초기화
+	result = m_Input->Initialize(m_hinstance, m_hwnd, screenWidth, screenHeight);
+	if (!result)
+	{
+		MessageBox(m_hwnd, L"Could not initialize the input object.", L"Error", MB_OK);
+		return false;
+	}
 
 	// Graphics object 생성. 어플리케이션에서 그래픽을 렌더링하는 것을 담당한다.
 	m_Graphics = new GraphicsClass;
@@ -75,6 +80,7 @@ void SystemClass::Shutdown()
 	// input Object 를 Release
 	if (m_Input)
 	{
+		m_Input->Shutdown();
 		delete m_Input;
 		m_Input = 0;
 	}
@@ -116,8 +122,15 @@ void SystemClass::Run()
 			result = Frame();
 			if (!result)
 			{
+				MessageBox(m_hwnd, L"Frame Processing Failed", L"Error", MB_OK);
 				done = true;
 			}
+		}
+
+		// Check if the user pressed escape and wants to quit.
+		if (m_Input->IsEscapePressed() == true)
+		{
+			done = true;
 		}
 
 	}
@@ -132,15 +145,28 @@ bool SystemClass::Frame()
 {
 
 	bool result;
+	int mouseX, mouseY;
 
-	// 사용자가 esc를 눌렀고, 어플리케이선 종료를 원하는지?
-	if (m_Input->IsKeyDown(VK_ESCAPE))
+	// Do the input frame processing.
+	result = m_Input->Frame();
+	if (!result)
 	{
 		return false;
 	}
 
+	// input device의 업데이트 상황을 읽어들였다면, GraphicsCLass의 마우스 위치를 업데이트해서 스크린에 렌더할 수 있게 한다.
+	// Get the location of the mouse from the input object,
+	m_Input->GetMouseLocation(mouseX, mouseY);
+
 	// graphics ohject에 대해서 frame 처리 수행
-	result = m_Graphics->Frame();
+	result = m_Graphics->Frame(mouseX, mouseY);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Finally render the graphics to the screen.
+	result = m_Graphics->Render();
 	if (!result)
 	{
 		return false;
@@ -151,33 +177,7 @@ bool SystemClass::Frame()
 
 LRESULT CALLBACK SystemClass::MessageHandler(HWND hwnd, UINT umsg, WPARAM wparam, LPARAM lparam)
 {
-	switch (umsg)
-	{
-	// key 가 눌렸는지 체크
-	case WM_KEYDOWN:
-	{
-		// input object에 눌린 키를 보내서 상태를 저장할 수 있도록 한다.
-		m_Input->KeyDown((unsigned int)wparam);
-		return 0;
-	}
-
-	// key 가 release 되었는지?
-	case WM_KEYUP:
-	{
-		// 상태를 다시 unset할수있게 input object에 보내줌
-		m_Input->KeyUp((unsigned int)wparam);
-		return 0;
-	}
-	
-	// 다른 메시지들은 어플리케이션에선 사용 안함
-	default:
-	{
-
-		return DefWindowProc(hwnd, umsg, wparam, lparam);
-	}
-
-	}
-
+	return DefWindowProc(hwnd, umsg, wparam, lparam);
 }
 
 void SystemClass::InitializeWindows(int& screenWidth, int& screenHeight)
