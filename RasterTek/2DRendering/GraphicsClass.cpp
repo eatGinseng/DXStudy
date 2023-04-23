@@ -10,6 +10,9 @@ GraphicsClass::GraphicsClass()
 	m_Camera = 0;
 
 	m_Text = 0;
+
+	m_Cursor = 0;
+	m_TextureShader = 0;
 }
 
 
@@ -55,6 +58,8 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
 	
+
+
 	// Create text object
 	m_Text = new TextClass;
 	if (!m_Text)
@@ -69,12 +74,66 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_TextureShader = new TextureShaderClass;
+	if (!m_TextureShader)
+	{
+		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// TextureShader 초기화
+	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if(!result)
+	{
+		return false;
+	}
+
+	// cursor bitmap object 초기화
+	m_Cursor = new BitmapClass;
+	if (!m_Cursor)
+	{
+		return false;
+	}
+
+	// char cursorTextureFilename[128];
+	// char* cursorTextureFilename = new char[128];
+	// strcpy_s(cursorTextureFilename, "Cursor.tga");
+
+	result = m_Cursor->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), screenWidth, screenHeight, 50, 50, "Cursor.tga", hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
 	return true;
 }
 
 
 void GraphicsClass::Shutdown()
 {
+	// Release the cursor bitmap
+	if (m_TextureShader)
+	{
+		m_TextureShader->Shutdown();
+		delete m_TextureShader;
+		m_TextureShader = 0;
+	}
+
+	// Release the cursor bitmap
+	if (m_Cursor)
+	{
+		m_Cursor->Shutdown();
+		delete m_Cursor;
+		m_Cursor = 0;
+	}
+
+	// Release the text object.
+	if (m_Text)
+	{
+		m_Text->Shutdown();
+		delete m_Text;
+		m_Text = 0;
+	}
 
 	// Release the camera object.
 	if(m_Camera)
@@ -101,6 +160,12 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 	
 	// Set the location of the mouse.
 	result = m_Text->SetMousePosition(mouseX, mouseY, m_D3D->GetDeviceContext());
+	if (!result)
+	{
+		return false;
+	}
+
+	result = m_Cursor->SetMousePosition(mouseX, mouseY);
 	if (!result)
 	{
 		return false;
@@ -151,6 +216,20 @@ bool GraphicsClass::Render()
 
 	// text string 렌더하기
 	result = m_Text->Render(m_D3D->GetDeviceContext(), worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+
+	result = m_Cursor->Render(m_D3D->GetDeviceContext(), m_Cursor->mouseX, m_Cursor->mouseY);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Render the bitmap with the texture shader.
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Cursor->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_Cursor->GetTexture());
 	if (!result)
 	{
 		return false;

@@ -9,6 +9,7 @@ TextureClass::TextureClass()
 	m_targaData = 0;
 	m_texture = 0;
 	m_textureView = 0;
+	m_cursorTexture = 0;
 }
 
 
@@ -22,21 +23,19 @@ TextureClass::~TextureClass()
 }
 
 
-bool TextureClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename, HWND hwnd)
+bool TextureClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* fontFilename, HWND hwnd)
 {
 	bool result;
 
+	// load font texture
 	int height, width;
 	D3D11_TEXTURE2D_DESC textureDesc;
 	HRESULT hResult;
 	unsigned int rowPitch;
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 
-	// char* targaFilename[128];
-	// strcpy(targaFilename, filename);
-
 	// Load the targa image data into memory.
-	result = LoadTarga(filename, height, width);
+	result = LoadTarga(fontFilename, height, width);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not load Targa File.", L"Error", MB_OK);
@@ -88,18 +87,6 @@ bool TextureClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceC
 	// Release the targa image data now that the image data has been loaded into the texture.
 	delete[] m_targaData;
 	m_targaData = 0;
-
-	// Load the texture in.
-	// result = D3DX11CreateShaderResourceViewFromFileW(device, filename, NULL, NULL, &m_texture, NULL);
-	// if(FAILED(result))
-	// {
-	//	LPCWSTR errMsg;
-	//	errMsg = L"Could not Create Shader Resource View.";
-
-	//	MessageBox(hwnd, errMsg, L"Error", MB_OK);
-
-	//	return false;
-	// }
 
 	return true;
 }

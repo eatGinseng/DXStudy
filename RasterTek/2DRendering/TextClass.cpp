@@ -160,6 +160,9 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 	// font object ÃÊ±âÈ­
 	char textureFilename[128];
 	strcpy_s(textureFilename, "font.tga");
+
+
+
 	// device, deviceContext, FontData TextFile path, Font Texture DDS File path
 	result = m_Font->Initialize(device, deviceContext, L"fontdata.txt", textureFilename, hwnd);
 	if (!result)

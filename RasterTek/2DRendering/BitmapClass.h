@@ -35,12 +35,15 @@ public:
 	BitmapClass(const BitmapClass&);
 	~BitmapClass();
 
-	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, int, int, char*, int, int, HWND);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, int, int, int, int, const char*, HWND);
 	void Shutdown();
 	bool Render(ID3D11DeviceContext*, int, int);
 
+	bool SetMousePosition(int, int);
+
 	int GetIndexCount();
 	ID3D11ShaderResourceView* GetTexture();
+	int mouseX, mouseY;
 
 private:
 	bool InitializeBuffers(ID3D11Device*);
@@ -58,6 +61,7 @@ private:
 	int m_screenWidth, m_screenHeight;
 	int m_bitmapWidth, m_bitmapHeight;
 	int m_previousPosX, m_previousPosY;
+
 };
 
 #endif

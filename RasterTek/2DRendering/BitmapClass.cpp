@@ -9,6 +9,7 @@ BitmapClass::BitmapClass()
 	m_vertexBuffer = 0;
 	m_indexBuffer = 0;
 	m_Texture = 0;
+
 }
 
 
@@ -21,8 +22,16 @@ BitmapClass::~BitmapClass()
 {
 }
 
+bool BitmapClass::SetMousePosition(int mX, int mY)
+{
+	mouseX = mX;
+	mouseY = mY;
 
-bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int screenWidth, int screenHeight, char* textureFilename, int bitmapWidth, int bitmapHeight, HWND hwnd)
+	return true;
+}
+
+
+bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int screenWidth, int screenHeight, int bitmapWidth, int bitmapHeight, const char* textureFilename, HWND hwnd)
 {
 	bool result;
 
@@ -46,8 +55,12 @@ bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCo
 		return false;
 	}
 
+	// font object √ ±‚»≠
+	char Filename[128];
+	strcpy_s(Filename, textureFilename);
+
 	// Load the texture for this bitmap.
-	result = LoadTexture(device, deviceContext, textureFilename, hwnd);
+	result = LoadTexture(device, deviceContext, Filename, hwnd);
 	if(!result)
 	{
 		return false;

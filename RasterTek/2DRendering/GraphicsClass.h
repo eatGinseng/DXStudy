@@ -11,6 +11,8 @@
 #include "d3dclass.h"
 #include "cameraclass.h"
 #include "TextClass.h"
+#include "BitmapClass.h"
+#include "TextureShaderClass.h"
 
 
 /////////////
@@ -40,8 +42,10 @@ public:
 private:
 	D3DClass* m_D3D;
 	CameraClass* m_Camera;
+	TextureShaderClass* m_TextureShader;
 
 	TextClass* m_Text;
+	BitmapClass* m_Cursor;
 };
 
 #endif
