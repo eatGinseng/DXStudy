@@ -227,6 +227,17 @@ bool InputClass::IsEscapePressed()
 	return false;
 }
 
+bool InputClass::IsLeftArrowPressed()
+{
+	if (m_keyboardState[DIK_LEFT] & 0x80)
+	{
+		return true;
+	}
+	return false;
+}
+
+
+
 
 // 이후 GraphicClass에서 이 정보를 사용함.
 void InputClass::GetMouseLocation(int& mouseX, int& mouseY)

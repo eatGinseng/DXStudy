@@ -11,6 +11,8 @@ SystemClass::SystemClass()
 	m_Fps = 0;
 	m_Cpu = 0;
 	m_Timer = 0;
+
+	m_Position = 0;
 }
 
 SystemClass::SystemClass(const SystemClass& other)
@@ -103,6 +105,13 @@ bool SystemClass::Initialize()
 		return false;
 	}
 
+	// Create the position object
+	m_Position = new PositionClass;
+	if (!m_Position)
+	{
+		return false;
+	}
+
 	return true;
 
 }
@@ -110,6 +119,13 @@ bool SystemClass::Initialize()
 // Graphics object와 input object에 관련된 모든것을 shutdown하고 해제. 윈도우를 닫고 그에 관련된 핸들을 clean up
 void SystemClass::Shutdown()
 {
+	// Release the position object.
+	if (m_Position)
+	{
+		delete m_Position;
+		m_Position = 0;
+	}
+
 	// Release the timer object.
 	if (m_Timer)
 	{
@@ -207,8 +223,9 @@ void SystemClass::Run()
 bool SystemClass::Frame()
 {
 
-	bool result;
+	bool keyDown, result;
 	int mouseX, mouseY;
+	float rotationY;
 
 	// Update the system stats.
 	m_Timer->Frame();
@@ -222,12 +239,26 @@ bool SystemClass::Frame()
 		return false;
 	}
 
+	// 업데이트 된 포지션에 대한 frame time을 계산
+	m_Position->SetFrameTime(m_Timer->GetTime());
+
+	// keyboard state로 movement function update
+	keyDown = m_Input->IsLeftArrowPressed();
+	m_Position->TurnLeft(keyDown);
+
+	keyDown = m_Input->IsRightArrowPressed();
+	m_Position->TurnRight(keyDown);
+
+	// 카메라의 새로운 rotation 값이 Graphics::Render로 전달된다.
+	m_Position->GetRotation(rotationY);
+
+
 	// input device의 업데이트 상황을 읽어들였다면, GraphicsCLass의 마우스 위치를 업데이트해서 스크린에 렌더할 수 있게 한다.
 	// Get the location of the mouse from the input object,
 	m_Input->GetMouseLocation(mouseX, mouseY);
 
 	// graphics ohject에 대해서 frame 처리 수행
-	result = m_Graphics->Frame(m_Fps->GetFps(), m_Cpu->GetCpuPercentage(), m_Timer->GetTime(), mouseX, mouseY);
+	result = m_Graphics->Frame(m_Fps->GetFps(), m_Cpu->GetCpuPercentage(), m_Timer->GetTime(), mouseX, mouseY, rotationY);
 	if (!result)
 	{
 		return false;

@@ -11,6 +11,13 @@ GraphicsClass::GraphicsClass()
 
 	m_Text = 0;
 
+	m_LightShader = 0;
+	m_Light = 0;
+
+	m_ModelList = 0;
+
+	m_Frustum = 0;
+
 	m_Cursor = 0;
 	m_TextureShader = 0;
 }
@@ -88,6 +95,67 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	// Create the model object
+	m_Model = new ModelClass;
+	if (!m_Model)
+	{
+		return false;
+	}
+
+	char textureFilename[128];
+	strcpy_s(textureFilename, "seafloor.tga");
+
+	char modelFilename[128];
+	ZeroMemory(modelFilename, sizeof(char) * 128);
+	strcpy_s(modelFilename, "ChamferredBox.txt");
+
+	// Initialize the model object
+	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename, hwnd, modelFilename);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the light shader object.
+	m_LightShader = new LightShaderClass;
+	if (!m_LightShader)
+	{
+		return false;
+	}
+
+	// Create the light object.
+	m_Light = new LightClass;
+	if (!m_Light)
+	{
+		return false;
+	}
+
+	// Initialize the light object.
+	m_Light->SetDirection(0.0f, 0.0f, 1.0f);
+
+	// Create the model list object.
+	m_ModelList = new ModelListClass;
+	if (!m_ModelList)
+	{
+		return false;
+	}
+
+	// Initialize the model list object.
+	result = m_ModelList->Initialize(25);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the model list object.", L"Error", MB_OK);
+		return false;
+	}
+	
+	// Create Frustum class object
+	m_Frustum = new FrustumClass;
+	if (!m_Frustum)
+	{
+		return false;
+	}
+
 	// cursor bitmap object 초기화
 	m_Cursor = new BitmapClass;
 	if (!m_Cursor)
@@ -111,6 +179,45 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void GraphicsClass::Shutdown()
 {
+	// Release the frustum object.
+	if (m_Frustum)
+	{
+		delete m_Frustum;
+		m_Frustum = 0;
+	}
+
+	// Release the model list object.
+	if (m_ModelList)
+	{
+		m_ModelList->Shutdown();
+		delete m_ModelList;
+		m_ModelList = 0;
+	}
+
+	// Release the light object.
+	if (m_Light)
+	{
+		delete m_Light;
+		m_Light = 0;
+	}
+
+	// Release the light shader object.
+	if (m_LightShader)
+	{
+		m_LightShader->Shutdown();
+		delete m_LightShader;
+		m_LightShader = 0;
+	}
+
+
+	// Release the model object.
+	if (m_Model)
+	{
+		m_Model->Shutdown();
+		delete m_Model;
+		m_Model = 0;
+	}
+
 	// Release the cursor bitmap
 	if (m_TextureShader)
 	{
@@ -154,7 +261,7 @@ void GraphicsClass::Shutdown()
 }
 
 
-bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mouseY)
+bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mouseY, float rotationY)
 {
 	bool result;
 	
@@ -186,14 +293,21 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 	// Set the position of the camera.
 	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 
+	// Set the rotation of the camera.
+	m_Camera->SetRotation(0.0f, rotationY, 0.0f);
+
 	return true;
 }
 
 
 bool GraphicsClass::Render()
 {
+	int modelCount, renderCount, index;
+	float positionX, positionY, positionZ, radius;
+	XMVECTOR color;
+
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
-	bool result;
+	bool renderModel, result;
 
 
 	// Clear the buffers to begin the scene.
@@ -207,6 +321,57 @@ bool GraphicsClass::Render()
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 	m_D3D->GetOrthoMatrix(orthoMatrix);
+
+	// construct the frustum
+	m_Frustum->ConstructFrustum(SCREEN_DEPTH, projectionMatrix, viewMatrix);
+
+	// 렌더할 모델 갯수를 얻는다.
+	modelCount = m_ModelList->GetModelCount();
+
+	// 렌더링 될 모델 갯수 초기화
+	renderCount = 0;
+
+	// ModelListClass 객체의 모든 모델을 돈다.
+	for (index = 0; index < modelCount; index++)
+	{
+		// 해당 인덱스의 모델의 위치와 컬러를 얻는다.
+		m_ModelList->GetData(index, positionX, positionY, positionZ, color);
+
+		// radius는 1.0으로 정한다.
+		radius = 1.0f;
+
+		// 여기에서 frustum 으로 sphere가 보이는지 안보이는지 체크한다.
+		// sphere model이 view frustum 안에 있으면 렌더하고, 안보이면 스킵한다.
+		renderModel = m_Frustum->CheckSphere(positionX, positionY, positionZ, radius);
+
+		// 보이면 렌더, 안보이면 스킵하고 다음 모델
+		if (renderModel)
+		{
+			// 렌더링되어야 할 위치로 모델을 옮긴다.
+			worldMatrix = XMMatrixTranslation(positionX, positionY, positionZ);
+
+			// model vertex와 index buffer를 그래픽스 파이프라인에 넣는다. 
+			m_Model->Render(m_D3D->GetDeviceContext());
+
+			// light shader로 모델을 렌더링한다.
+			m_LightShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), color, m_Light->GetAmbientColor(), m_Camera->GetPosition(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
+			
+			// Reset to original matrix
+			m_D3D->GetWorldMatrix(worldMatrix);
+
+			// 모델이 렌더링 됐기 때문에 갯수도 업데이트 해 준다.
+			renderCount++;
+
+		}
+
+	}
+
+	// text에 model 갯수 전달
+	result = m_Text->SetRenderCount(renderCount, m_D3D->GetDeviceContext());
+	if (!result)
+	{
+		return false;
+	}
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_D3D->TurnZBufferOff();

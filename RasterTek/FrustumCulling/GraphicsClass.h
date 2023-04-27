@@ -13,6 +13,11 @@
 #include "TextClass.h"
 #include "BitmapClass.h"
 #include "TextureShaderClass.h"
+#include "ModelClass.h"
+#include "LightShaderClass.h"
+#include "LightClass.h"
+#include "ModelListClass.h"
+#include "FrustumClass.h"
 
 
 /////////////
@@ -36,7 +41,7 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame(int, int, float, int, int);
+	bool Frame(int, int, float, int, int, float);
 	bool Render();
 
 private:
@@ -44,8 +49,17 @@ private:
 	CameraClass* m_Camera;
 	TextureShaderClass* m_TextureShader;
 
+	ModelClass* m_Model;
+	LightShaderClass* m_LightShader;
+	LightClass* m_Light;
+
+	ModelListClass* m_ModelList;
+	FrustumClass* m_Frustum;
+
 	TextClass* m_Text;
 	BitmapClass* m_Cursor;
+
+
 };
 
 #endif
