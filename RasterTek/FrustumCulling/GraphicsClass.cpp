@@ -36,7 +36,7 @@ GraphicsClass::~GraphicsClass()
 bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
 	bool result;
-	XMMATRIX baseViewMatrix;
+
 
 	// Create the Direct3D object.
 	m_D3D = new D3DClass;
@@ -64,8 +64,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
-	
-
 
 	// Create text object
 	m_Text = new TextClass;
@@ -107,7 +105,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	char modelFilename[128];
 	ZeroMemory(modelFilename, sizeof(char) * 128);
-	strcpy_s(modelFilename, "ChamferredBox.txt");
+	strcpy_s(modelFilename, "sphere.txt");
 
 	// Initialize the model object
 	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename, hwnd, modelFilename);
@@ -124,6 +122,13 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	// Light Shader class ÃÊ±âÈ­
+	result = m_LightShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
 	// Create the light object.
 	m_Light = new LightClass;
 	if (!m_Light)
@@ -133,6 +138,10 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	// Initialize the light object.
 	m_Light->SetDirection(0.0f, 0.0f, 1.0f);
+	m_Light->SetAmbientColor(0.1f, 0.1f, 0.1f, 1.0f);
+	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+	m_Light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
+	m_Light->SetSpecularPower(3.0f);
 
 	// Create the model list object.
 	m_ModelList = new ModelListClass;
@@ -167,7 +176,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// char* cursorTextureFilename = new char[128];
 	// strcpy_s(cursorTextureFilename, "Cursor.tga");
 
-	result = m_Cursor->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), screenWidth, screenHeight, 50, 50, "Cursor.tga", hwnd);
+	result = m_Cursor->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), screenWidth, screenHeight, 50, 50, "Cursor.tga", hwnd, baseViewMatrix);
 	if (!result)
 	{
 		return false;
@@ -394,7 +403,7 @@ bool GraphicsClass::Render()
 	}
 
 	// Render the bitmap with the texture shader.
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Cursor->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_Cursor->GetTexture());
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Cursor->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_Cursor->GetTexture());
 	if (!result)
 	{
 		return false;

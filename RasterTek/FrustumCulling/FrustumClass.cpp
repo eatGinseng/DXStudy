@@ -28,7 +28,7 @@ void FrustumClass::ConstructFrustum(float screenDepth, XMMATRIX projectionMatrix
 	zMininum = -projectionTmp._43 / projectionTmp._33;
 	r = screenDepth / (screenDepth - zMininum);
 	projectionTmp._33 = r;
-	projectionTmp._32 = -r * zMininum;
+	projectionTmp._43 = -r * zMininum;
 
 	projectionMatrix = XMLoadFloat4x4(&projectionTmp);
 
@@ -39,47 +39,55 @@ void FrustumClass::ConstructFrustum(float screenDepth, XMMATRIX projectionMatrix
 	XMFLOAT4X4 matrixTmp;
 	XMStoreFloat4x4(&matrixTmp, matrix);
 
-	m_Planes[0] = XMVectorSet(	matrixTmp._14 + matrixTmp._13,
-								matrixTmp._24 + matrixTmp._23,
-								matrixTmp._34 + matrixTmp._33,
-								matrixTmp._44 + matrixTmp._43 );
+	XMFLOAT4 tmp;
+	tmp.x = matrixTmp._14 + matrixTmp._13;
+	tmp.y = matrixTmp._24 + matrixTmp._23;
+	tmp.z = matrixTmp._34 + matrixTmp._33;
+	tmp.w = matrixTmp._44 + matrixTmp._43;
 
+	m_Planes[0] = XMLoadFloat4(&tmp);
 	m_Planes[0] = XMPlaneNormalize(m_Planes[0]);
+
+	// m_Planes[0] = XMPlaneNormalize(m_Planes[0]);
+	// m_Planes[0] = XMVector4Normalize(m_Planes[0]);
 
 	// Far Plane 积己
 	m_Planes[1] = XMVectorSet(	matrixTmp._14 - matrixTmp._13,
 								matrixTmp._24 - matrixTmp._23,
 								matrixTmp._34 - matrixTmp._33,
 								matrixTmp._44 - matrixTmp._43);
-	m_Planes[1] = XMPlaneNormalize(m_Planes[1]);
+
+	// m_Planes[1] = XMPlaneNormalize(m_Planes[1]);
+	// m_Planes[1] = XMVector4Normalize(m_Planes[1]);
 
 	// Left plane 积己
-	m_Planes[2] = XMVectorSet(	matrixTmp._14 + matrixTmp._13,
-								matrixTmp._24 + matrixTmp._23,
-								matrixTmp._34 + matrixTmp._33,
-								matrixTmp._44 + matrixTmp._43);
-	m_Planes[2] = XMPlaneNormalize(m_Planes[2]);
+	m_Planes[2] = XMVectorSet(	matrixTmp._14 + matrixTmp._11,
+								matrixTmp._24 + matrixTmp._21,
+								matrixTmp._34 + matrixTmp._31,
+								matrixTmp._44 + matrixTmp._41);
+	// m_Planes[2] = XMPlaneNormalize(m_Planes[2]);
 
 	// Right Plane 积己
-	m_Planes[3] = XMVectorSet(	matrixTmp._14 - matrixTmp._13,
-								matrixTmp._24 - matrixTmp._23,
-								matrixTmp._34 - matrixTmp._33,
-								matrixTmp._44 - matrixTmp._43);
-	m_Planes[3] = XMPlaneNormalize(m_Planes[3]);
+	m_Planes[3] = XMVectorSet(	matrixTmp._14 - matrixTmp._11,
+								matrixTmp._24 - matrixTmp._21,
+								matrixTmp._34 - matrixTmp._31,
+								matrixTmp._44 - matrixTmp._41);
+	// m_Planes[3] = XMPlaneNormalize(m_Planes[3]);
+	// m_Planes[3] = XMVector4Normalize(m_Planes[3]);
 
 	// top plane 积己
-	m_Planes[4] = XMVectorSet(	matrixTmp._14 - matrixTmp._13,
-								matrixTmp._24 - matrixTmp._23,
-								matrixTmp._34 - matrixTmp._33,
-								matrixTmp._44 - matrixTmp._43);
-	m_Planes[4] = XMPlaneNormalize(m_Planes[4]);
+	m_Planes[4] = XMVectorSet(	matrixTmp._14 - matrixTmp._12,
+								matrixTmp._24 - matrixTmp._22,
+								matrixTmp._34 - matrixTmp._32,
+								matrixTmp._44 - matrixTmp._42);
+	// m_Planes[4] = XMPlaneNormalize(m_Planes[4]);
 
 	// Calculate bottom plane of frustum.
-	m_Planes[5] = XMVectorSet(	matrixTmp._14 + matrixTmp._13,
-								matrixTmp._24 + matrixTmp._23,
-								matrixTmp._34 + matrixTmp._33,
-								matrixTmp._44 + matrixTmp._43);
-	m_Planes[5] = XMPlaneNormalize(m_Planes[5]);
+	m_Planes[5] = XMVectorSet(	matrixTmp._14 + matrixTmp._12,
+								matrixTmp._24 + matrixTmp._22,
+								matrixTmp._34 + matrixTmp._32,
+								matrixTmp._44 + matrixTmp._42);
+	// m_Planes[5] = XMPlaneNormalize(m_Planes[5]);
 
 	return;
 }
@@ -97,7 +105,7 @@ bool FrustumClass::CheckPoint(float x, float y, float z)
 	{ 
 		if (XMVectorGetX( XMVector3Dot (m_Planes[i], XMVectorSet(x, y, z, 1.0f))) < 0.0f)
 		{
-		return false;
+			return false;
 		}
 	}
 
@@ -121,27 +129,27 @@ bool FrustumClass::CheckCube(float xCenter, float yCenter, float zCenter, float 
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - radius), (yCenter + radius), (zCenter - radius), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - radius), (yCenter + radius), (zCenter - radius), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + radius), (yCenter + radius), (zCenter - radius), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + radius), (yCenter + radius), (zCenter - radius), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - radius), (yCenter - radius), (zCenter + radius), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - radius), (yCenter - radius), (zCenter + radius), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + radius), (yCenter - radius), (zCenter + radius), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + radius), (yCenter - radius), (zCenter + radius), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - radius), (yCenter + radius), (zCenter + radius), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - radius), (yCenter + radius), (zCenter + radius), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + radius), (yCenter + radius), (zCenter + radius), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + radius), (yCenter + radius), (zCenter + radius), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
@@ -160,7 +168,7 @@ bool FrustumClass::CheckSphere(float xCenter, float yCenter, float zCenter, floa
 	// sphere狼 radius啊 view frustum 救俊 乐绰瘤 眉农
 	for (i = 0; i < 6; i++)
 	{
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet(xCenter, yCenter, zCenter, 1.0f))) < -radius)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet(xCenter, yCenter, zCenter, 0.0f))) < -radius)
 		{
 			return false;
 			
@@ -177,36 +185,36 @@ bool FrustumClass::CheckRectangle(float xCenter, float yCenter, float zCenter, f
 
 	for (i = 0; i < 6; i++)
 	{
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - xSize), (yCenter - ySize), (zCenter - zSize), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - xSize), (yCenter - ySize), (zCenter - zSize), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
 
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + xSize), (yCenter - ySize), (zCenter - zSize), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + xSize), (yCenter - ySize), (zCenter - zSize), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - xSize), (yCenter + ySize), (zCenter - zSize), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - xSize), (yCenter + ySize), (zCenter - zSize), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - xSize), (yCenter - ySize), (zCenter + zSize), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - xSize), (yCenter - ySize), (zCenter + zSize), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + xSize), (yCenter + ySize), (zCenter - zSize), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + xSize), (yCenter + ySize), (zCenter - zSize), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + xSize), (yCenter - ySize), (zCenter + zSize), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + xSize), (yCenter - ySize), (zCenter + zSize), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - xSize), (yCenter + ySize), (zCenter + zSize), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter - xSize), (yCenter + ySize), (zCenter + zSize), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + xSize), (yCenter + ySize), (zCenter + zSize), 1.0f))) >= 0.0f)
+		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet((xCenter + xSize), (yCenter + ySize), (zCenter + zSize), 0.0f))) >= 0.0f)
 		{
 			continue;
 		}

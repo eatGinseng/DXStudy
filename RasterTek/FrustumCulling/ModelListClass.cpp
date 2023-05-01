@@ -30,7 +30,7 @@ bool ModelListClass::Initialize(int numModels)
 		return false;
 	}
 
-	// 현재 ㅅ기간으로 랜덤 generator에 seed를 준다.
+	// 현재 시간으로 랜덤 generator에 seed를 준다.
 	srand((unsigned int)time(NULL));
 
 	for (i = 0; i < m_modelCount; i++)

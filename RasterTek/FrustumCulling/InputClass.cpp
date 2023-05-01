@@ -236,7 +236,14 @@ bool InputClass::IsLeftArrowPressed()
 	return false;
 }
 
-
+bool InputClass::IsRightArrowPressed()
+{
+	if (m_keyboardState[DIK_RIGHT] & 0x80)
+	{
+		return true;
+	}
+	return false;
+}
 
 
 // 이후 GraphicClass에서 이 정보를 사용함.

@@ -58,7 +58,7 @@ private:
 
 	TextClass* m_Text;
 	BitmapClass* m_Cursor;
-
+	XMMATRIX baseViewMatrix;
 
 };
 

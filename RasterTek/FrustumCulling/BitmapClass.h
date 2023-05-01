@@ -10,6 +10,7 @@
 //////////////
 #include <d3d11.h>
 #include <d3dx10math.h>
+#include <DirectXMath.h>
 
 
 ///////////////////////
@@ -17,6 +18,7 @@
 ///////////////////////
 #include "textureclass.h"
 
+using namespace DirectX;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: BitmapClass
@@ -35,7 +37,7 @@ public:
 	BitmapClass(const BitmapClass&);
 	~BitmapClass();
 
-	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, int, int, int, int, const char*, HWND);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, int, int, int, int, const char*, HWND, XMMATRIX);
 	void Shutdown();
 	bool Render(ID3D11DeviceContext*, int, int);
 
@@ -61,6 +63,7 @@ private:
 	int m_screenWidth, m_screenHeight;
 	int m_bitmapWidth, m_bitmapHeight;
 	int m_previousPosX, m_previousPosY;
+	XMMATRIX m_baseViewMatrix;
 
 };
 

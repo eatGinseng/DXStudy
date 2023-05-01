@@ -10,6 +10,7 @@ TextClass::TextClass()
 	m_sentence2 = 0;
 	m_sentence3 = 0;
 	m_sentence4 = 0;
+	m_sentence5 = 0;
 
 }
 
@@ -19,6 +20,27 @@ TextClass::TextClass(const TextClass& other)
 
 TextClass::~TextClass()
 {
+}
+
+bool TextClass::SetRenderCount(int count, ID3D11DeviceContext* deviceContext)
+{
+	char tempString[16];
+	char countString[16];
+	bool result;
+
+	// count integer를 string 포맷으로 변환
+	_itoa_s(count, tempString, 10);
+
+	strcpy_s(countString, "Mouse X: ");
+	strcat_s(countString, tempString);
+
+	// 새로운 string 정보로 sentence vertex buffer를 업데이트
+	result = UpdateSentence(m_sentence5, countString, 20, 100, 1.0f, 1.0f, 1.0f, deviceContext);
+	if (!result)
+	{
+		return false;
+	}
+
 }
 
 bool TextClass::SetMousePosition(int mouseX, int mouseY, ID3D11DeviceContext* deviceContext)
@@ -161,8 +183,6 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 	char textureFilename[128];
 	strcpy_s(textureFilename, "font.tga");
 
-
-
 	// device, deviceContext, FontData TextFile path, Font Texture DDS File path
 	result = m_Font->Initialize(device, deviceContext, L"fontdata.txt", textureFilename, hwnd);
 	if (!result)
@@ -216,6 +236,9 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 		return false;
 	}
 
+	// 다섯 번째 문장 초기화
+	result = InitializeSentence(&m_sentence5, 16, device);
+
 	return true;
 
 }
@@ -231,6 +254,8 @@ void TextClass::Shutdown()
 	ReleaseSentence(&m_sentence3);
 
 	ReleaseSentence(&m_sentence4);
+
+	ReleaseSentence(&m_sentence5);
 
 	// Release the font shader object.
 	if (m_FontShader)
@@ -280,6 +305,13 @@ bool TextClass::Render(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix,
 
 	// 네 번째 문장 그리기
 	result = RenderSentence(deviceContext, m_sentence4, worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// 다섯 번째 문장 그리기
+	result = RenderSentence(deviceContext, m_sentence5, worldMatrix, orthoMatrix);
 	if (!result)
 	{
 		return false;

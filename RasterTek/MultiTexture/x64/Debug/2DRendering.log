@@ -1,0 +1,30 @@
+﻿  BitmapClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\bitmapclass.h(12,10): fatal error C1083: Cannot open include file: 'd3dx10math.h': No such file or directory
+  CameraClass.cpp
+  CpuClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\CpuClass.cpp(66,37): warning C4244: '=': conversion from 'ULONGLONG' to 'unsigned long', possible loss of data
+  D3DClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\D3DClass.cpp(125,93): error C2664: 'errno_t wcstombs_s(size_t *,char *,size_t,const wchar_t *,size_t)': cannot convert argument 1 from 'unsigned int *' to 'size_t *'
+I:\DXStudy\RasterTek\MultiTexture\D3DClass.cpp(125,21): message : Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or function-style cast
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\ucrt\stdlib.h(996,26): message : see declaration of 'wcstombs_s'
+  FontClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\textureclass.h(12,10): fatal error C1083: Cannot open include file: 'd3dx11tex.h': No such file or directory
+  FontShaderClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\FontShaderClass.h(10,10): fatal error C1083: Cannot open include file: 'd3dx11async.h': No such file or directory
+  FpsClass.cpp
+  GraphicsClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\textureclass.h(12,10): fatal error C1083: Cannot open include file: 'd3dx11tex.h': No such file or directory
+  InputClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\InputClass.cpp(57,9): warning C4552: '-': result of expression not used
+  main.cpp
+I:\DXStudy\RasterTek\MultiTexture\textureclass.h(12,10): fatal error C1083: Cannot open include file: 'd3dx11tex.h': No such file or directory
+  SystemClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\textureclass.h(12,10): fatal error C1083: Cannot open include file: 'd3dx11tex.h': No such file or directory
+  TextClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\textureclass.h(12,10): fatal error C1083: Cannot open include file: 'd3dx11tex.h': No such file or directory
+  TextureClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\textureclass.h(12,10): fatal error C1083: Cannot open include file: 'd3dx11tex.h': No such file or directory
+  TextureShaderClass.cpp
+I:\DXStudy\RasterTek\MultiTexture\textureshaderclass.h(12,10): fatal error C1083: Cannot open include file: 'd3dx10math.h': No such file or directory
+  TimerClass.cpp
+  Generating Code...

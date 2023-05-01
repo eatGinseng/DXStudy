@@ -31,10 +31,11 @@ bool BitmapClass::SetMousePosition(int mX, int mY)
 }
 
 
-bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int screenWidth, int screenHeight, int bitmapWidth, int bitmapHeight, const char* textureFilename, HWND hwnd)
+bool BitmapClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, int screenWidth, int screenHeight, int bitmapWidth, int bitmapHeight, const char* textureFilename, HWND hwnd, XMMATRIX baseViewMatrix)
 {
 	bool result;
 
+	m_baseViewMatrix = baseViewMatrix;
 
 	// Store the screen size.
 	m_screenWidth = screenWidth;
