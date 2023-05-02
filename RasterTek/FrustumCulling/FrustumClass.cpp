@@ -18,76 +18,67 @@ FrustumClass::~FrustumClass()
 // frustum의 plane 6개를 만든다.
 void FrustumClass::ConstructFrustum(float screenDepth, XMMATRIX projectionMatrix, XMMATRIX viewMatrix)
 {
-	float zMininum, r;
+	float zMinimum, r;
+	float x, y, z, w;
 	XMMATRIX matrix;
+	XMFLOAT4X4A matrixFF;
 
-	XMFLOAT4X4 projectionTmp;
-	XMStoreFloat4x4(&projectionTmp, projectionMatrix);
+	XMFLOAT4X4A projectionMatrixFF;
+	XMStoreFloat4x4A(&projectionMatrixFF, projectionMatrix);
 
-	// frustum의 최소 z 거리를 계산한다.
-	zMininum = -projectionTmp._43 / projectionTmp._33;
-	r = screenDepth / (screenDepth - zMininum);
-	projectionTmp._33 = r;
-	projectionTmp._43 = -r * zMininum;
+	// Calculate the minimum Z distance in the frustum.
+	zMinimum = -projectionMatrixFF._43 / projectionMatrixFF._33;
+	r = screenDepth / (screenDepth - zMinimum);
+	projectionMatrixFF._33 = r;
+	projectionMatrixFF._43 = -r * zMinimum;
 
-	projectionMatrix = XMLoadFloat4x4(&projectionTmp);
+	projectionMatrix = XMLoadFloat4x4A(&projectionMatrixFF);
 
-	// view matrix와 업데이트된 projection matrix로 frustum matrix를 만든다.
+	// Create the frustum matrix from the view matrix and updated projection matrix.
 	matrix = XMMatrixMultiply(viewMatrix, projectionMatrix);
+	XMStoreFloat4x4A(&matrixFF, matrix);
 
-	// frustum의 near plane 생성
-	XMFLOAT4X4 matrixTmp;
-	XMStoreFloat4x4(&matrixTmp, matrix);
+	// Calculate near plane of frustum.
+	x = matrixFF._14 + matrixFF._13;
+	y = matrixFF._24 + matrixFF._23;
+	z = matrixFF._34 + matrixFF._33;
+	w = matrixFF._44 + matrixFF._43;
+	m_Planes[0] = XMPlaneNormalize(XMVectorSet(x, y, z, w));
 
-	XMFLOAT4 tmp;
-	tmp.x = matrixTmp._14 + matrixTmp._13;
-	tmp.y = matrixTmp._24 + matrixTmp._23;
-	tmp.z = matrixTmp._34 + matrixTmp._33;
-	tmp.w = matrixTmp._44 + matrixTmp._43;
+	// Calculate far plane of frustum.
+	x = matrixFF._14 - matrixFF._13;
+	y = matrixFF._24 - matrixFF._23;
+	z = matrixFF._34 - matrixFF._33;
+	w = matrixFF._44 - matrixFF._43;
+ 	m_Planes[1] = XMPlaneNormalize(XMVectorSet(x, y, z, w));
 
-	m_Planes[0] = XMLoadFloat4(&tmp);
-	m_Planes[0] = XMPlaneNormalize(m_Planes[0]);
+	// Calculate left plane of frustum.
+	x = matrixFF._14 + matrixFF._11;
+	y = matrixFF._24 + matrixFF._21;
+	z = matrixFF._34 + matrixFF._31;
+	w = matrixFF._44 + matrixFF._41;
+	m_Planes[2] = XMPlaneNormalize(XMVectorSet(x, y, z, w));
 
-	// m_Planes[0] = XMPlaneNormalize(m_Planes[0]);
-	// m_Planes[0] = XMVector4Normalize(m_Planes[0]);
+	// Calculate right plane of frustum.
+	x = matrixFF._14 - matrixFF._11;
+	y = matrixFF._24 - matrixFF._21;
+	z = matrixFF._34 - matrixFF._31;
+	w = matrixFF._44 - matrixFF._41;
+	m_Planes[3] = XMPlaneNormalize(XMVectorSet(x, y, z, w));
 
-	// Far Plane 생성
-	m_Planes[1] = XMVectorSet(	matrixTmp._14 - matrixTmp._13,
-								matrixTmp._24 - matrixTmp._23,
-								matrixTmp._34 - matrixTmp._33,
-								matrixTmp._44 - matrixTmp._43);
-
-	// m_Planes[1] = XMPlaneNormalize(m_Planes[1]);
-	// m_Planes[1] = XMVector4Normalize(m_Planes[1]);
-
-	// Left plane 생성
-	m_Planes[2] = XMVectorSet(	matrixTmp._14 + matrixTmp._11,
-								matrixTmp._24 + matrixTmp._21,
-								matrixTmp._34 + matrixTmp._31,
-								matrixTmp._44 + matrixTmp._41);
-	// m_Planes[2] = XMPlaneNormalize(m_Planes[2]);
-
-	// Right Plane 생성
-	m_Planes[3] = XMVectorSet(	matrixTmp._14 - matrixTmp._11,
-								matrixTmp._24 - matrixTmp._21,
-								matrixTmp._34 - matrixTmp._31,
-								matrixTmp._44 - matrixTmp._41);
-	// m_Planes[3] = XMPlaneNormalize(m_Planes[3]);
-	// m_Planes[3] = XMVector4Normalize(m_Planes[3]);
-
-	// top plane 생성
-	m_Planes[4] = XMVectorSet(	matrixTmp._14 - matrixTmp._12,
-								matrixTmp._24 - matrixTmp._22,
-								matrixTmp._34 - matrixTmp._32,
-								matrixTmp._44 - matrixTmp._42);
-	// m_Planes[4] = XMPlaneNormalize(m_Planes[4]);
+	// Calculate top plane of frustum.
+	x = matrixFF._14 - matrixFF._12;
+	y = matrixFF._24 - matrixFF._22;
+	z = matrixFF._34 - matrixFF._32;
+	w = matrixFF._44 - matrixFF._42;
+	m_Planes[4] = XMPlaneNormalize(XMVectorSet(x, y, z, w));
 
 	// Calculate bottom plane of frustum.
-	m_Planes[5] = XMVectorSet(	matrixTmp._14 + matrixTmp._12,
-								matrixTmp._24 + matrixTmp._22,
-								matrixTmp._34 + matrixTmp._32,
-								matrixTmp._44 + matrixTmp._42);
-	// m_Planes[5] = XMPlaneNormalize(m_Planes[5]);
+	x = matrixFF._14 + matrixFF._12;
+	y = matrixFF._24 + matrixFF._22;
+	z = matrixFF._34 + matrixFF._32;
+	w = matrixFF._44 + matrixFF._42;
+	m_Planes[5] = XMPlaneNormalize(XMVectorSet(x, y, z, w));
 
 	return;
 }
@@ -165,15 +156,15 @@ bool FrustumClass::CheckSphere(float xCenter, float yCenter, float zCenter, floa
 {
 	int i;
 
-	// sphere의 radius가 view frustum 안에 있는지 체크
+	// Check if the radius of the sphere is inside the view frustum.
 	for (i = 0; i < 6; i++)
 	{
-		if (XMVectorGetX(XMVector3Dot(m_Planes[i], XMVectorSet(xCenter, yCenter, zCenter, 0.0f))) < -radius)
+		if (XMVectorGetX(XMPlaneDotCoord(m_Planes[i], XMVectorSet(xCenter, yCenter, zCenter, 1))) < -radius)
 		{
 			return false;
-			
 		}
 	}
+
 
 	return true;
 }
