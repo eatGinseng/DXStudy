@@ -15,6 +15,7 @@
 #include "TextureShaderClass.h"
 #include "ModelClass.h"
 #include "MultiTextureShaderClass.h"
+#include "LightClass.h"
 
 
 /////////////
@@ -50,7 +51,11 @@ private:
 	BitmapClass* m_Cursor;
 	ModelClass* m_Model;
 
+	LightClass* m_Light;
+
+	XMMATRIX baseViewMatrix;
 	MultiTextureShaderClass* m_MultiTextureShader;
+
 };
 
 #endif

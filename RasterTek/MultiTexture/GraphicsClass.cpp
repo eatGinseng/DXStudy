@@ -15,6 +15,8 @@ GraphicsClass::GraphicsClass()
 	m_TextureShader = 0;
 	m_Model = 0;
 
+	m_Light = 0;
+
 	m_MultiTextureShader = 0;
 }
 
@@ -32,7 +34,7 @@ GraphicsClass::~GraphicsClass()
 bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
 	bool result;
-	XMMATRIX baseViewMatrix;
+
 
 	// Create the Direct3D object.
 	m_D3D = new D3DClass;
@@ -61,6 +63,17 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
 	
+
+	// Create the light object
+	m_Light = new LightClass;
+	if (!m_Light)
+	{
+		return false;
+	}
+
+	m_Light->SetDiffuseColor(1.0f, 1.0f, 0.7f, 1.0f);
+	m_Light->SetDirection(0.6f, 0.0f, 0.5f);
+
 	// Create text object
 	m_Text = new TextClass;
 	if (!m_Text)
@@ -112,13 +125,19 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	char textureFilename2[128];
 	strcpy_s(textureFilename2, "pop.tga");
 
+	char textureFilename3[128];
+	strcpy_s(textureFilename3, "alpha.tga");
+
+	char textureFilename4[128];
+	strcpy_s(textureFilename4, "normal.tga");
+
 	char modelFilename[128];
 	ZeroMemory(modelFilename, sizeof(char) * 128);
 	strcpy_s(modelFilename, "ChamferredBox.txt");
 
 	// ModelClass 초기화
 	m_Model = new ModelClass;
-	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename1, textureFilename2, hwnd, modelFilename);
+	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename1, textureFilename2, textureFilename3, textureFilename4, hwnd, modelFilename);
 
 	m_MultiTextureShader = new MultiTextureShaderClass;
 	result = m_MultiTextureShader->Initialize(m_D3D->GetDevice(), hwnd);
@@ -134,6 +153,14 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void GraphicsClass::Shutdown()
 {
+
+	// Release the light
+	if (m_Light)
+	{
+		delete m_Light;
+		m_Light = 0;
+	}
+
 	// Release the multiTextureShaderClass
 	if (m_MultiTextureShader)
 	{
@@ -215,7 +242,8 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 	}
 
 	// Set the position of the camera.
-	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 3.0f, -10.0f);
+	m_Camera->SetRotation(12.0f, 0.0f, 0.0f);
 
 	return true;
 }
@@ -239,12 +267,11 @@ bool GraphicsClass::Render()
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 	m_D3D->GetOrthoMatrix(orthoMatrix);
 
-
+	XMMATRIX rotationMatrix = XMMatrixRotationY(45.0f);
 	m_Model->Render(m_D3D->GetDeviceContext());
 
 	// multiTextureShader로 model object를 그린다.
-	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture());
-
+	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), XMMatrixMultiply(worldMatrix, rotationMatrix), viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor());
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_D3D->TurnZBufferOff();
@@ -267,7 +294,7 @@ bool GraphicsClass::Render()
 	}
 
 	// Render the bitmap with the texture shader.
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Cursor->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_Cursor->GetTexture());
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Cursor->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_Cursor->GetTexture());
 	if (!result)
 	{
 		return false;

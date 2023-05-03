@@ -33,6 +33,8 @@ private:
 		XMFLOAT3 position;
 	    XMFLOAT2 texture;
 		XMFLOAT3 normal;
+		XMFLOAT3 tangent;
+		XMFLOAT3 binormal;
 	};
 
 	struct ModelType
@@ -40,14 +42,30 @@ private:
 		float x, y, z;
 		float tu, tv;
 		float nx, ny, nz;
+		float tx, ty, tz;
+		float bx, by, bz;
 	};
+
+	// 아래 구조체로 binormal과 tangent 계산
+	struct TempVertexType
+	{
+		float x, y, z;
+		float tu, tv;
+		float nx, ny, nz;
+	};
+
+	struct VectorType
+	{
+		float x, y, z;
+	};
+
 
 public:
 	ModelClass();
 	ModelClass(const ModelClass&);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*, char*, HWND, char*);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*, char*, char*, char*, HWND, char*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
@@ -60,11 +78,16 @@ private:
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*, char*, HWND);
+	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*, char*, char*, char*, HWND);
 	void ReleaseTexture();
 
 	bool LoadModel(char*);
 	void ReleaseModel();
+
+	// 아래 함수들로 tangent, binormal을 계산할 것임..
+	void CalculateModelVectors();
+	void CalculateTangentBinormal(TempVertexType, TempVertexType, TempVertexType, VectorType&, VectorType&);
+	void CalculateNormal(VectorType, VectorType, VectorType&);
 
 private:
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;

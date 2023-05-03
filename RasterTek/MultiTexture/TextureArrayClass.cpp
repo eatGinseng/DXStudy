@@ -10,9 +10,13 @@ TextureArrayClass::TextureArrayClass()
 
 	m_texture[0] = 0;
 	m_texture[1] = 0;
+	m_texture[2] = 0;
+	m_texture[3] = 0;
 
 	m_textureView[0] = 0;
 	m_textureView[1] = 0;
+	m_textureView[2] = 0;
+	m_textureView[3] = 0;
 }
 
 
@@ -26,7 +30,7 @@ TextureArrayClass::~TextureArrayClass()
 }
 
 
-bool TextureArrayClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename1, char* filename2, HWND hwnd)
+bool TextureArrayClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename1, char* filename2, char* filename3, char* filename4, HWND hwnd)
 {
 	bool result;
 
@@ -131,6 +135,90 @@ bool TextureArrayClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* de
 	// Generate mipmaps for this texture.
 	deviceContext->GenerateMips(m_textureView[1]);
 
+	// third texture load
+	// 
+	// Load the targa image data into memory.
+	result = LoadTarga(filename3, height, width);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not load Targa File.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Setup the description of the texture.
+	textureDesc.Height = height;
+	textureDesc.Width = width;
+
+	// Create the empty texture.
+	hResult = device->CreateTexture2D(&textureDesc, NULL, &m_texture[2]);
+	if (FAILED(hResult))
+	{
+		return false;
+	}
+
+	// Set the row pitch of the targa image data.
+	rowPitch = (width * 4) * sizeof(unsigned char);
+
+	// Copy the targa image data into the texture.
+	deviceContext->UpdateSubresource(m_texture[2], 0, NULL, m_targaData, rowPitch, 0);
+
+	// Setup the shader resource view description.
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = -1;
+
+	// Create the shader resource view for the texture.
+	hResult = device->CreateShaderResourceView(m_texture[2], &srvDesc, &m_textureView[2]);
+	if (FAILED(hResult))
+	{
+		return false;
+	}
+
+	// Generate mipmaps for this texture.
+	deviceContext->GenerateMips(m_textureView[2]);
+
+	// fourth texture load
+	result = LoadTarga(filename4, height, width);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not load Targa File.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Setup the description of the texture.
+	textureDesc.Height = height;
+	textureDesc.Width = width;
+
+	// Create the empty texture.
+	hResult = device->CreateTexture2D(&textureDesc, NULL, &m_texture[3]);
+	if (FAILED(hResult))
+	{
+		return false;
+	}
+
+	// Set the row pitch of the targa image data.
+	rowPitch = (width * 4) * sizeof(unsigned char);
+
+	// Copy the targa image data into the texture.
+	deviceContext->UpdateSubresource(m_texture[3], 0, NULL, m_targaData, rowPitch, 0);
+
+	// Setup the shader resource view description.
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = -1;
+
+	// Create the shader resource view for the texture.
+	hResult = device->CreateShaderResourceView(m_texture[3], &srvDesc, &m_textureView[3]);
+	if (FAILED(hResult))
+	{
+		return false;
+	}
+
+	// Generate mipmaps for this texture.
+	deviceContext->GenerateMips(m_textureView[3]);
+
 	// Release the targa image data now that the image data has been loaded into the texture.
 	delete[] m_targaData;
 	m_targaData = 0;
@@ -154,6 +242,18 @@ void TextureArrayClass::Shutdown()
 		m_textureView[1] = 0;
 	}
 
+	if (m_textureView[2])
+	{
+		m_textureView[2]->Release();
+		m_textureView[2] = 0;
+	}
+
+	if (m_textureView[3])
+	{
+		m_textureView[3]->Release();
+		m_textureView[3] = 0;
+	}
+
 	// Release the texture.
 	if (m_texture[0])
 	{
@@ -165,6 +265,18 @@ void TextureArrayClass::Shutdown()
 	{
 		m_texture[1]->Release();
 		m_texture[1] = 0;
+	}
+
+	if (m_texture[2])
+	{
+		m_texture[2]->Release();
+		m_texture[2] = 0;
+	}
+
+	if (m_texture[3])
+	{
+		m_texture[3]->Release();
+		m_texture[3] = 0;
 	}
 
 	// Release the targa data.

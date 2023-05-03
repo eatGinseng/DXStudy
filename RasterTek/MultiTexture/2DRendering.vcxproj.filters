@@ -72,6 +72,9 @@
     <ClInclude Include="TextureArrayClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LightClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimerClass.cpp">
@@ -126,6 +129,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextureArrayClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LightClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
