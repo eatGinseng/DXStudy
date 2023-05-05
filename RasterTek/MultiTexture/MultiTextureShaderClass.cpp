@@ -11,6 +11,7 @@ MultiTextureShaderClass::MultiTextureShaderClass()
 	m_layout = 0;
 	m_matrixBuffer = 0;
 	m_lightBuffer = 0;
+	m_cameraBuffer = 0;
 	m_sampleState = 0;
 }
 
@@ -28,7 +29,6 @@ MultiTextureShaderClass::~MultiTextureShaderClass()
 bool MultiTextureShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 {
 	bool result;
-
 
 	// Initialize the vertex and pixel shaders.
 	result = InitializeShader(device, hwnd, L"MultitextureVS.hlsl", L"MultitexturePS.hlsl");
@@ -51,13 +51,13 @@ void MultiTextureShaderClass::Shutdown()
 
 
 bool MultiTextureShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMVECTOR lightDir, XMVECTOR lightColor)
+	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDir, XMVECTOR lightColor, XMFLOAT3 cameraPosition)
 {
 	bool result;
 
 
 	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, textureArray, lightDir, lightColor);
+	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, textureArray, lightDir, lightColor, cameraPosition);
 	if(!result)
 	{
 		return false;
@@ -78,7 +78,7 @@ bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, 
 	ID3D10Blob* pixelShaderBuffer;
 	D3D11_INPUT_ELEMENT_DESC polygonLayout[5];
 	unsigned int numElements;
-	D3D11_BUFFER_DESC matrixBufferDesc, lightBufferDesc;
+	D3D11_BUFFER_DESC matrixBufferDesc, lightBufferDesc, cameraBufferDesc;
     D3D11_SAMPLER_DESC samplerDesc;
 
 
@@ -165,21 +165,21 @@ bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, 
 	polygonLayout[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 	polygonLayout[2].InstanceDataStepRate = 0;
 
-	polygonLayout[2].SemanticName = "TANGENT";
-	polygonLayout[2].SemanticIndex = 0;
-	polygonLayout[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	polygonLayout[2].InputSlot = 0;
-	polygonLayout[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-	polygonLayout[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	polygonLayout[2].InstanceDataStepRate = 0;
+	polygonLayout[3].SemanticName = "TANGENT";
+	polygonLayout[3].SemanticIndex = 0;
+	polygonLayout[3].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	polygonLayout[3].InputSlot = 0;
+	polygonLayout[3].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygonLayout[3].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	polygonLayout[3].InstanceDataStepRate = 0;
 
-	polygonLayout[2].SemanticName = "BINORMAL";
-	polygonLayout[2].SemanticIndex = 0;
-	polygonLayout[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-	polygonLayout[2].InputSlot = 0;
-	polygonLayout[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-	polygonLayout[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	polygonLayout[2].InstanceDataStepRate = 0;
+	polygonLayout[4].SemanticName = "BINORMAL";
+	polygonLayout[4].SemanticIndex = 0;
+	polygonLayout[4].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	polygonLayout[4].InputSlot = 0;
+	polygonLayout[4].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+	polygonLayout[4].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+	polygonLayout[4].InstanceDataStepRate = 0;
 
 	// Get a count of the elements in the layout.
     numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
@@ -229,6 +229,21 @@ bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, 
 		return false;
 	}
 
+	// Setup the description of the camera dynamic constant buffer that is in the vertex shader.
+	cameraBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	cameraBufferDesc.ByteWidth = sizeof(CameraBufferType);
+	cameraBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cameraBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	cameraBufferDesc.MiscFlags = 0;
+	cameraBufferDesc.StructureByteStride = 0;
+
+	// Create the camera constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	result = device->CreateBuffer(&cameraBufferDesc, NULL, &m_cameraBuffer);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 	// Create a texture sampler state description.
     samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
     samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -262,6 +277,13 @@ void MultiTextureShaderClass::ShutdownShader()
 	{
 		m_sampleState->Release();
 		m_sampleState = 0;
+	}
+
+	if (m_cameraBuffer)
+	{
+		m_cameraBuffer->Release();
+		m_cameraBuffer = 0;
+
 	}
 
 	if (m_lightBuffer)
@@ -340,12 +362,13 @@ void  MultiTextureShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage
 
 
 bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMVECTOR lightDirection, XMVECTOR LightColor)
+	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDirection, XMVECTOR LightColor, XMFLOAT3 camerPosition)
 {
 	HRESULT result;
     D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
 	LightBufferType* dataPtr2;
+	CameraBufferType* dataPtr3;
 	unsigned int bufferNumber;
 
 	// Transpose the matrices to prepare them for the shader.
@@ -377,6 +400,28 @@ bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCon
 	// Now set the constant buffer in the vertex shader with the updated values.
     deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_matrixBuffer);
 
+	// Lock the camera constant buffer so it can be written to.
+	result = deviceContext->Map(m_cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	dataPtr3 = (CameraBufferType*)mappedResource.pData;
+	dataPtr3->cameraPosition = camerPosition;
+
+	// Unlock the matrix constant buffer.
+	deviceContext->Unmap(m_cameraBuffer, 0);
+
+	// Set the position of the camera constant buffer in the vertex shader as the second buffer.
+	bufferNumber = 1;
+
+	// Now set the matrix constant buffer in the vertex shader with the updated values.
+	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_cameraBuffer);
+
+	bufferNumber = 0;
+
+
 	// lock the light constant buffer.
 	result = deviceContext->Map(m_lightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(result))
@@ -387,10 +432,11 @@ bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCon
 	// Get pointer to the data
 	dataPtr2 = (LightBufferType*)mappedResource.pData;
 
-	dataPtr2->lightDirection = lightDirection;
-	XMFLOAT3 lightDiffuseColor;
-	XMStoreFloat3(&lightDiffuseColor, LightColor);
+	// XMFLOAT3 lightDiffuseColor;
+	// XMStoreFloat3(&lightDiffuseColor, LightColor);
+	XMVECTOR lightDiffuseColor = XMVectorSet(1.0, 1.0, 1.0, 1.0);
 	dataPtr2->diffuseColor = lightDiffuseColor;
+	dataPtr2->lightDirection = lightDirection;
 
 	deviceContext->Unmap(m_lightBuffer, 0);
 

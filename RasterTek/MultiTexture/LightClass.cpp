@@ -42,7 +42,7 @@ void LightClass::SetSpecularPower(float Power)
 
 void LightClass::SetDirection(float x, float y, float z)
 {
-	m_direction = XMVectorSet(x, y, z, 1.0f);
+	m_direction = XMFLOAT3(x, y, z);
 	return;
 }
 
@@ -57,7 +57,7 @@ XMVECTOR LightClass::GetDiffuseColor()
 }
 
 
-XMVECTOR LightClass::GetDirection()
+XMFLOAT3 LightClass::GetDirection()
 {
 	return m_direction;
 }

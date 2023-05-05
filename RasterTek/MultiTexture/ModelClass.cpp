@@ -35,7 +35,7 @@ bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCon
 	}
 
 	// Calculate the normal, tangent, and binormal vectors for the model.
-	CalculateModelVectors();
+	// CalculateModelVectors();
 
 	// Initialize the vertex and index buffers.
 	result = InitializeBuffers(device);

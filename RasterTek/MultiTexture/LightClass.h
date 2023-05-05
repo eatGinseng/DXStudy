@@ -21,14 +21,14 @@ public:
 
 	XMVECTOR GetAmbientColor();
 	XMVECTOR GetDiffuseColor();
-	XMVECTOR GetDirection();
+	XMFLOAT3 GetDirection();
 	XMVECTOR GetSpecularColor();
 	float GetSpecularPower();
 
 private:
 	XMVECTOR m_ambientColor;
 	XMVECTOR m_diffuseColor;
-	XMVECTOR m_direction;
+	XMFLOAT3 m_direction;
 	XMVECTOR m_specularColor;
 	float m_specularPower;
 };
