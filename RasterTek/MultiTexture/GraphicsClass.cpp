@@ -15,6 +15,9 @@ GraphicsClass::GraphicsClass()
 	m_TextureShader = 0;
 	m_Model = 0;
 
+	m_RenderTexture = 0;
+	m_DebugWindow = 0;
+
 	m_Light = 0;
 
 	m_MultiTextureShader = 0;
@@ -74,6 +77,9 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Light->SetDiffuseColor(1.0f, 1.0f, 0.7f, 1.0f);
 	m_Light->SetDirection(0.6f, 0.0f, 0.5f);
 
+	// Create the render to texture object
+
+
 	// Create text object
 	m_Text = new TextClass;
 	if (!m_Text)
@@ -88,19 +94,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	m_TextureShader = new TextureShaderClass;
-	if (!m_TextureShader)
-	{
-		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
-		return false;
-	}
 
-	// TextureShader 초기화
-	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
-	if(!result)
-	{
-		return false;
-	}
 
 	// cursor bitmap object 초기화
 	m_Cursor = new BitmapClass;
@@ -139,11 +133,52 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Model = new ModelClass;
 	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename1, textureFilename2, textureFilename3, textureFilename4, hwnd, modelFilename);
 
+	m_RenderTexture = new RenderToTextureClass;
+	if (!m_RenderTexture)
+	{
+		return false;
+	}
+
+	// initialize render to texture object
+	result = m_RenderTexture->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight);
+	if (!result)
+	{
+		return false;
+	}
+
+	// create debugWindow object
+	m_DebugWindow = new DebugWindowClass;
+	if (!m_DebugWindow)
+	{
+		return false;
+	}
+
+	// Initialize debugwindow class
+	result = m_DebugWindow->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), screenWidth, screenHeight, 320, 180, hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
 	m_MultiTextureShader = new MultiTextureShaderClass;
 	result = m_MultiTextureShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the multitexture shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	m_TextureShader = new TextureShaderClass;
+	if (!m_TextureShader)
+	{
+		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// TextureShader 초기화
+	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
 		return false;
 	}
 
@@ -153,6 +188,25 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void GraphicsClass::Shutdown()
 {
+	// Release the cursor bitmap
+	if (m_TextureShader)
+	{
+		m_TextureShader->Shutdown();
+		delete m_TextureShader;
+		m_TextureShader = 0;
+	}
+
+	if (m_DebugWindow)
+	{
+		delete m_DebugWindow;
+		m_DebugWindow = 0;
+	}
+
+	if (m_RenderTexture)
+	{
+		delete m_RenderTexture;
+		m_RenderTexture = 0;
+	}
 
 	// Release the light
 	if (m_Light)
@@ -167,14 +221,6 @@ void GraphicsClass::Shutdown()
 		m_MultiTextureShader->Shutdown();
 		delete m_MultiTextureShader;
 		m_MultiTextureShader = 0;
-	}
-
-	// Release the cursor bitmap
-	if (m_TextureShader)
-	{
-		m_TextureShader->Shutdown();
-		delete m_TextureShader;
-		m_TextureShader = 0;
 	}
 
 	// Release the cursor bitmap
@@ -251,12 +297,85 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 
 bool GraphicsClass::Render()
 {
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
 	bool result;
 
+	// Render the entire scene to the texture first.
+	result = RenderToTexture();
+	if (!result)
+	{
+		return false;
+	}
 
 	// Clear the buffers to begin the scene.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
+	result = RenderScene();
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_D3D->TurnZBufferOff();
+
+	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetOrthoMatrix(orthoMatrix);
+
+	// Debug window의 vertex와 index buffer를 그래픽스 파이프라인에 묶어 렌더할 준비를 함
+	result = m_DebugWindow->Render(m_D3D->GetDeviceContext(), 130, 130);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Render debug window using texture shader.
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_DebugWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_RenderTexture->GetShaderResourceView());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_D3D->TurnZBufferOn();
+
+	// Present the rendered scene to the screen.
+	m_D3D->EndScene();
+
+	return true;
+}
+
+bool GraphicsClass::RenderToTexture()
+{
+	bool result;
+
+	// render to texture로 렌더타겟을 지정해 준다.
+	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+
+	// render to texture 배경을 blue로 clear해서 기존 장면과 구분한다.
+	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
+
+	// scene을 렌더하면, 이제 back buffer 대신 render to texture에 render 한다.
+	result = RenderScene();
+	if (!result)
+	{
+		return false;
+	}
+
+	// 원래의 back buffer로 렌더타겟을 리셋
+	m_D3D->SetBackBufferRenderTarget();
+
+	return true;
+
+}
+
+// 원래 하던 렌더를 여기에서 함
+bool GraphicsClass::RenderScene()
+{
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	bool result;
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -271,10 +390,10 @@ bool GraphicsClass::Render()
 	m_Model->Render(m_D3D->GetDeviceContext());
 
 	// multiTextureShader로 model object를 그린다.
-	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), XMMatrixMultiply(worldMatrix, rotationMatrix), viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition());
+	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition());
 
 	// Turn off the Z buffer to begin all 2D rendering.
-	m_D3D->TurnZBufferOff();
+//	m_D3D->TurnZBufferOff();
 
 	// Alpha blending 켜기
 	m_D3D->TurnOnAlphaBlending();
@@ -285,7 +404,6 @@ bool GraphicsClass::Render()
 	{
 		return false;
 	}
-
 
 	result = m_Cursor->Render(m_D3D->GetDeviceContext(), m_Cursor->mouseX, m_Cursor->mouseY);
 	if (!result)
@@ -305,10 +423,8 @@ bool GraphicsClass::Render()
 	m_D3D->TurnOffAlphaBlending();
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
-	m_D3D->TurnZBufferOn();
-
-	// Present the rendered scene to the screen.
-	m_D3D->EndScene();
+//	m_D3D->TurnZBufferOn();
 
 	return true;
+
 }

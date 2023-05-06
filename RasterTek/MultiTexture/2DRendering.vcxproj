@@ -23,6 +23,7 @@
     <ClInclude Include="CameraClass.h" />
     <ClInclude Include="CpuClass.h" />
     <ClInclude Include="D3DClass.h" />
+    <ClInclude Include="DebugWindowClass.h" />
     <ClInclude Include="FontClass.h" />
     <ClInclude Include="FontShaderClass.h" />
     <ClInclude Include="FpsClass.h" />
@@ -31,6 +32,7 @@
     <ClInclude Include="LightClass.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ModelClass.h" />
+    <ClInclude Include="RenderToTextureClass.h" />
     <ClInclude Include="TextureArrayClass.h" />
     <ClInclude Include="MultiTextureShaderClass.h" />
     <ClInclude Include="stdafx.h" />
@@ -45,6 +47,7 @@
     <ClCompile Include="CameraClass.cpp" />
     <ClCompile Include="CpuClass.cpp" />
     <ClCompile Include="D3DClass.cpp" />
+    <ClCompile Include="DebugWindowClass.cpp" />
     <ClCompile Include="FontClass.cpp" />
     <ClCompile Include="FontShaderClass.cpp" />
     <ClCompile Include="FpsClass.cpp" />
@@ -53,6 +56,7 @@
     <ClCompile Include="LightClass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ModelClass.cpp" />
+    <ClCompile Include="RenderToTextureClass.cpp" />
     <ClCompile Include="TextureArrayClass.cpp" />
     <ClCompile Include="MultiTextureShaderClass.cpp" />
     <ClCompile Include="SystemClass.cpp" />

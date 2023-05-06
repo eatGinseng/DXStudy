@@ -27,6 +27,22 @@ D3DClass::~D3DClass()
 
 }
 
+// depthStencilView로의 접근 허용
+ID3D11DepthStencilView* D3DClass::GetDepthStencilView()
+{
+	return m_depthStencilView;
+}
+
+// RenderTarget이 끝나고 다시 Back Buffer에 렌더하고 싶을 때
+void D3DClass::SetBackBufferRenderTarget()
+{
+	// Bind the render target view and depth stencil buffer to the output render pipeline.
+	m_deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
+
+	return;
+}
+
+
 bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hwnd, bool fullscreen, float screenDepth, float screenNear)
 {
 	HRESULT result;

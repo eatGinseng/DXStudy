@@ -49,6 +49,10 @@ public:
 	void GetWorldMatrix(XMMATRIX&);
 	void GetOrthoMatrix(XMMATRIX&);
 
+	ID3D11DepthStencilView* GetDepthStencilView();
+
+	void SetBackBufferRenderTarget();
+
 	void GetVideoCardInfo(char*, int&);
 
 	void TurnZBufferOn();

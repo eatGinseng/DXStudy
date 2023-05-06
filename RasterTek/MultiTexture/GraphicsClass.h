@@ -12,6 +12,8 @@
 #include "cameraclass.h"
 #include "TextClass.h"
 #include "BitmapClass.h"
+#include "rendertotextureclass.h"
+#include "debugwindowclass.h"
 #include "TextureShaderClass.h"
 #include "ModelClass.h"
 #include "MultiTextureShaderClass.h"
@@ -43,6 +45,10 @@ public:
 	bool Render();
 
 private:
+	bool RenderToTexture();
+	bool RenderScene();
+
+private:
 	D3DClass* m_D3D;
 	CameraClass* m_Camera;
 	TextureShaderClass* m_TextureShader;
@@ -52,6 +58,9 @@ private:
 	ModelClass* m_Model;
 
 	LightClass* m_Light;
+
+	RenderToTextureClass* m_RenderTexture;
+	DebugWindowClass* m_DebugWindow;
 
 	XMMATRIX baseViewMatrix;
 	MultiTextureShaderClass* m_MultiTextureShader;
