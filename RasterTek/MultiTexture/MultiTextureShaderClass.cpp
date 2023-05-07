@@ -12,7 +12,9 @@ MultiTextureShaderClass::MultiTextureShaderClass()
 	m_matrixBuffer = 0;
 	m_lightBuffer = 0;
 	m_cameraBuffer = 0;
+	m_fogBuffer = 0;
 	m_sampleState = 0;
+
 }
 
 
@@ -51,13 +53,13 @@ void MultiTextureShaderClass::Shutdown()
 
 
 bool MultiTextureShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDir, XMVECTOR lightColor, XMFLOAT3 cameraPosition)
+	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDir, XMVECTOR lightColor, XMFLOAT3 cameraPosition, float fogStart, float fogEnd)
 {
 	bool result;
 
 
 	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, textureArray, lightDir, lightColor, cameraPosition);
+	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, textureArray, lightDir, lightColor, cameraPosition, fogStart, fogEnd);
 	if(!result)
 	{
 		return false;
@@ -78,7 +80,7 @@ bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, 
 	ID3D10Blob* pixelShaderBuffer;
 	D3D11_INPUT_ELEMENT_DESC polygonLayout[5];
 	unsigned int numElements;
-	D3D11_BUFFER_DESC matrixBufferDesc, lightBufferDesc, cameraBufferDesc;
+	D3D11_BUFFER_DESC matrixBufferDesc, lightBufferDesc, cameraBufferDesc, fogBufferDesc;
     D3D11_SAMPLER_DESC samplerDesc;
 
 
@@ -244,6 +246,21 @@ bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, 
 		return false;
 	}
 
+	// fog buffer description 생성
+	fogBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	fogBufferDesc.ByteWidth = sizeof(FogBufferType);
+	fogBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	fogBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	fogBufferDesc.MiscFlags = 0;
+	fogBufferDesc.StructureByteStride = 0;
+
+	// Create fog buffer pointer
+	result = device->CreateBuffer(&fogBufferDesc, NULL, &m_fogBuffer);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 	// Create a texture sampler state description.
     samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
     samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -272,11 +289,19 @@ bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, 
 
 void MultiTextureShaderClass::ShutdownShader()
 {
+
 	// Release the sampler state.
 	if(m_sampleState)
 	{
 		m_sampleState->Release();
 		m_sampleState = 0;
+	}
+
+	// Release the fog constant buffer.
+	if (m_fogBuffer)
+	{
+		m_fogBuffer->Release();
+		m_fogBuffer = 0;
 	}
 
 	if (m_cameraBuffer)
@@ -325,7 +350,7 @@ void MultiTextureShaderClass::ShutdownShader()
 }
 
 
-void  MultiTextureShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, LPCWSTR shaderFilename)
+void MultiTextureShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, LPCWSTR shaderFilename)
 {
 	char* compileErrors;
 	unsigned long bufferSize, i;
@@ -362,13 +387,14 @@ void  MultiTextureShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage
 
 
 bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDirection, XMVECTOR LightColor, XMFLOAT3 camerPosition)
+	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDirection, XMVECTOR LightColor, XMFLOAT3 camerPosition, float fogStart, float fogEnd)
 {
 	HRESULT result;
     D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
 	LightBufferType* dataPtr2;
 	CameraBufferType* dataPtr3;
+	FogBufferType* dataPtr4;
 	unsigned int bufferNumber;
 
 	// Transpose the matrices to prepare them for the shader.
@@ -445,6 +471,22 @@ bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCon
 	// Set shader texture Array in the pixel shader.
 	// 1st Param : where to start in the array, 2nd Param = how many textures are in the array
 	deviceContext->PSSetShaderResources(0, 4, textureArray);
+
+	// constant buffer에 쓰기
+	result = deviceContext->Map(m_fogBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	dataPtr4 = (FogBufferType*)mappedResource.pData;
+	dataPtr4->fogStart = fogStart;
+	dataPtr4->fogEnd = fogEnd;
+
+	deviceContext->Unmap(m_fogBuffer, 0);
+
+	bufferNumber = 2;
+	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_fogBuffer);
 
 	return true;
 }

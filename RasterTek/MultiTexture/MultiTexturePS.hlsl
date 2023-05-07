@@ -22,6 +22,7 @@ struct PixelInputType
     float3 tangent : TANGENT;
     float3 binormal : BINORMAL;
     float3 viewDirection : TEXCOORD1;
+    float fogFactor : FOG;
 
 };
 
@@ -35,6 +36,8 @@ float4 MultiTexturePixelShader(PixelInputType input) : SV_TARGET
     float alpha;
     float4 bumpColor;
     float3 bumpNormal;
+
+    float4 fogColor;
 
     float4 blendColor;
 
@@ -78,6 +81,12 @@ float4 MultiTexturePixelShader(PixelInputType input) : SV_TARGET
     // blend pixel colors and multiply gamma valye
     blendColor = saturate(lightIntensity * diffuseColor * lerp(color1, color2, alpha));
     blendColor += Specular;
+
+    // Set the color of the fog to grey.
+    fogColor = float4(0.5f, 0.5f, 0.5f, 1.0f);
+
+    // Calculate the final color using the fog effect equation.
+    blendColor = input.fogFactor * blendColor + (1.0 - input.fogFactor) * fogColor;
 
     return blendColor;
 }

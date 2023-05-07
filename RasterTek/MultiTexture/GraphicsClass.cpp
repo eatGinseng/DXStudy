@@ -298,6 +298,8 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 bool GraphicsClass::Render()
 {
 	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	float fogColor;
+
 	bool result;
 
 	// Render the entire scene to the texture first.
@@ -307,8 +309,11 @@ bool GraphicsClass::Render()
 		return false;
 	}
 
-	// Clear the buffers to begin the scene.
-	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+	// Set the color of the fog to grey.
+	fogColor = 0.5f;
+
+	// Clear the buffers to begin the scene. clear with fog color.
+	m_D3D->BeginScene(fogColor, fogColor, fogColor, 1.0f);
 
 	result = RenderScene();
 	if (!result)
@@ -337,60 +342,6 @@ bool GraphicsClass::Render()
 	{
 		return false;
 	}
-
-	// Turn the Z buffer back on now that all 2D rendering has completed.
-	m_D3D->TurnZBufferOn();
-
-	// Present the rendered scene to the screen.
-	m_D3D->EndScene();
-
-	return true;
-}
-
-bool GraphicsClass::RenderToTexture()
-{
-	bool result;
-
-	// render to texture로 렌더타겟을 지정해 준다.
-	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
-
-	// render to texture 배경을 blue로 clear해서 기존 장면과 구분한다.
-	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
-
-	// scene을 렌더하면, 이제 back buffer 대신 render to texture에 render 한다.
-	result = RenderScene();
-	if (!result)
-	{
-		return false;
-	}
-
-	// 원래의 back buffer로 렌더타겟을 리셋
-	m_D3D->SetBackBufferRenderTarget();
-
-	return true;
-
-}
-
-// 원래 하던 렌더를 여기에서 함
-bool GraphicsClass::RenderScene()
-{
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
-	bool result;
-
-	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
-
-	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
-	m_Camera->GetViewMatrix(viewMatrix);
-	m_D3D->GetWorldMatrix(worldMatrix);
-	m_D3D->GetProjectionMatrix(projectionMatrix);
-	m_D3D->GetOrthoMatrix(orthoMatrix);
-
-	XMMATRIX rotationMatrix = XMMatrixRotationY(45.0f);
-	m_Model->Render(m_D3D->GetDeviceContext());
-
-	// multiTextureShader로 model object를 그린다.
-	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition());
 
 	// Turn off the Z buffer to begin all 2D rendering.
 //	m_D3D->TurnZBufferOff();
@@ -424,6 +375,69 @@ bool GraphicsClass::RenderScene()
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 //	m_D3D->TurnZBufferOn();
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_D3D->TurnZBufferOn();
+
+	// Present the rendered scene to the screen.
+	m_D3D->EndScene();
+
+	return true;
+}
+
+bool GraphicsClass::RenderToTexture()
+{
+	bool result;
+
+	// render to texture로 렌더타겟을 지정해 준다.
+	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+
+	// render to texture 배경을 blue로 clear해서 기존 장면과 구분한다.
+	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
+
+	// scene을 렌더하면, 이제 back buffer 대신 render to texture에 render 한다.
+	result = RenderScene();
+	if (!result)
+	{
+		return false;
+	}
+
+	// 원래의 back buffer로 렌더타겟을 리셋
+	m_D3D->SetBackBufferRenderTarget();
+
+
+
+	return true;
+
+}
+
+// 원래 하던 렌더를 여기에서 함
+bool GraphicsClass::RenderScene()
+{
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	float fogStart, fogEnd;
+	bool result;
+
+	// Set the start and end of the fog.
+	fogStart = 0.0f;
+	fogEnd = 10.0f;
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetProjectionMatrix(projectionMatrix);
+	m_D3D->GetOrthoMatrix(orthoMatrix);
+
+	XMMATRIX rotationMatrix = XMMatrixRotationY(45.0f);
+	m_Model->Render(m_D3D->GetDeviceContext());
+
+	// multiTextureShader로 model object를 그린다.
+	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition(), fogStart, fogEnd);
+
+
 
 	return true;
 

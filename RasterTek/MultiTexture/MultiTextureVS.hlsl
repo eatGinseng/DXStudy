@@ -11,6 +11,12 @@ cbuffer CameraBuffer
     float padding;
 };
 
+cbuffer FogBuffer
+{
+    float fogStart;
+    float fogEnd;
+};
+
 struct VertexInputType
 {
     float4 position : POSITION;
@@ -28,12 +34,14 @@ struct PixelInputType
     float3 tangent : TANGENT;
     float3 binormal : BINORMAL;
     float3 viewDirection : TEXCOORD1;
+    float fogFactor : FOG;
 };
 
 PixelInputType MultiTextureVertexShader(VertexInputType input)
 {
     PixelInputType output;
     float4 worldPosition;
+    float4 CameraPosition;
     
     // Change the position vector to be 4 units for proper matrix calculations.
     input.position.w = 1.0f;
@@ -65,5 +73,15 @@ PixelInputType MultiTextureVertexShader(VertexInputType input)
     // Normalize the viewing direction vector.
     output.viewDirection = normalize(output.viewDirection);
 
+    // calculate Z position of the vertex in view space.
+    // use this data with the fog end and start position in the fog factor equation
+    // and produce a fog factor, send it to pixel shader.
+    CameraPosition = mul(input.position, worldMatrix);
+    CameraPosition = mul(CameraPosition, viewMatrix);
+
+    // calculate linear fog
+    output.fogFactor = saturate((fogEnd - CameraPosition.z) / (fogEnd - fogStart));
+
     return output;
+
 }
