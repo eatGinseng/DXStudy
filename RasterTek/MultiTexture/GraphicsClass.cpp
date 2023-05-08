@@ -288,7 +288,7 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 	}
 
 	// Set the position of the camera.
-	m_Camera->SetPosition(0.0f, 3.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 1.0f, -6.0f);
 	m_Camera->SetRotation(12.0f, 0.0f, 0.0f);
 
 	return true;
@@ -405,8 +405,6 @@ bool GraphicsClass::RenderToTexture()
 	// 원래의 back buffer로 렌더타겟을 리셋
 	m_D3D->SetBackBufferRenderTarget();
 
-
-
 	return true;
 
 }
@@ -416,7 +414,12 @@ bool GraphicsClass::RenderScene()
 {
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	float fogStart, fogEnd;
+	XMVECTOR clipPlane;
+
 	bool result;
+
+	// Setup a clipping plane.
+	clipPlane = XMVectorSet(0.0f, -1.0f, 0.0f, 0.5f);
 
 	// Set the start and end of the fog.
 	fogStart = 0.0f;
@@ -435,7 +438,7 @@ bool GraphicsClass::RenderScene()
 	m_Model->Render(m_D3D->GetDeviceContext());
 
 	// multiTextureShader로 model object를 그린다.
-	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition(), fogStart, fogEnd);
+	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), XMMatrixMultiply(worldMatrix, rotationMatrix), viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition(), fogStart, fogEnd, clipPlane);
 
 
 

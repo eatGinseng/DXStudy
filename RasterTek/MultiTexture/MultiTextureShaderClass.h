@@ -51,6 +51,10 @@ private:
 		float padding1, padding2;
 	};
 
+	struct ClipPlaneBufferType
+	{
+		XMVECTOR clipPlane;
+	};
 
 public:
 	MultiTextureShaderClass();
@@ -59,14 +63,14 @@ public:
 
 	bool Initialize(ID3D11Device*, HWND);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView**, XMFLOAT3, XMVECTOR, XMFLOAT3, float, float);
+	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView**, XMFLOAT3, XMVECTOR, XMFLOAT3, float, float, XMVECTOR);
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, LPCWSTR, LPCWSTR);
 	void ShutdownShader();
 	void OutputShaderErrorMessage(ID3D10Blob*, HWND, LPCWSTR);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView**, XMFLOAT3, XMVECTOR, XMFLOAT3, float, float);
+	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView**, XMFLOAT3, XMVECTOR, XMFLOAT3, float, float, XMVECTOR);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
@@ -78,6 +82,8 @@ private:
 	ID3D11Buffer* m_cameraBuffer;
 	ID3D11Buffer* m_fogBuffer;
 	ID3D11SamplerState* m_sampleState;
+	ID3D11Buffer* m_clipPlaneBuffer;
+
 };
 
 #endif
