@@ -11,6 +11,12 @@ cbuffer LightBuffer
     float padding;
 }
 
+cbuffer TranslationBuffer
+{
+    float textureTranslation;
+};
+
+
 //////////////
 // TYPEDEFS //
 //////////////
@@ -46,6 +52,9 @@ float4 MultiTexturePixelShader(PixelInputType input) : SV_TARGET
     float lightIntensity;
 
     float3 ViewDir = normalize(input.viewDirection);
+
+     // Translate the position where we sample the pixel from.
+    input.tex.x += textureTranslation;  
 
     // first texture color
     color1 = shaderTexture[0].Sample(SampleType, input.tex);

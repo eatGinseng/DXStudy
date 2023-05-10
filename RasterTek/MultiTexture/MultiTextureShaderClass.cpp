@@ -15,6 +15,7 @@ MultiTextureShaderClass::MultiTextureShaderClass()
 	m_fogBuffer = 0;
 	m_sampleState = 0;
 	m_clipPlaneBuffer = 0;
+	m_translateBuffer = 0;
 }
 
 
@@ -53,13 +54,13 @@ void MultiTextureShaderClass::Shutdown()
 
 
 bool MultiTextureShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDir, XMVECTOR lightColor, XMFLOAT3 cameraPosition, float fogStart, float fogEnd, XMVECTOR clipPlane)
+	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDir, XMVECTOR lightColor, XMFLOAT3 cameraPosition, float fogStart, float fogEnd, XMVECTOR clipPlane, float translation)
 {
 	bool result;
 
 
 	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, textureArray, lightDir, lightColor, cameraPosition, fogStart, fogEnd, clipPlane);
+	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, textureArray, lightDir, lightColor, cameraPosition, fogStart, fogEnd, clipPlane, translation);
 	if(!result)
 	{
 		return false;
@@ -80,9 +81,8 @@ bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, 
 	ID3D10Blob* pixelShaderBuffer;
 	D3D11_INPUT_ELEMENT_DESC polygonLayout[5];
 	unsigned int numElements;
-	D3D11_BUFFER_DESC matrixBufferDesc, lightBufferDesc, cameraBufferDesc, fogBufferDesc, clipPlaneBufferDesc;
+	D3D11_BUFFER_DESC matrixBufferDesc, lightBufferDesc, cameraBufferDesc, fogBufferDesc, clipPlaneBufferDesc, translateBufferDesc;
     D3D11_SAMPLER_DESC samplerDesc;
-
 
 	// Initialize the pointers this function will use to null.
 	errorMessage = 0;
@@ -298,6 +298,21 @@ bool MultiTextureShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, 
 		return false;
 	}
 
+	// Setup the description of the texture translation dynamic constant buffer that is in the pixel shader.
+	translateBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	translateBufferDesc.ByteWidth = sizeof(TranslateBufferType);
+	translateBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	translateBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	translateBufferDesc.MiscFlags = 0;
+	translateBufferDesc.StructureByteStride = 0;
+
+	// Create the constant buffer pointer so we can access the pixel shader constant buffer from within this class.
+	result = device->CreateBuffer(&translateBufferDesc, NULL, &m_translateBuffer);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -408,7 +423,7 @@ void MultiTextureShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage,
 
 
 bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDirection, XMVECTOR LightColor, XMFLOAT3 camerPosition, float fogStart, float fogEnd, XMVECTOR clipPlane)
+	XMMATRIX projectionMatrix, ID3D11ShaderResourceView** textureArray, XMFLOAT3 lightDirection, XMVECTOR LightColor, XMFLOAT3 camerPosition, float fogStart, float fogEnd, XMVECTOR clipPlane, float translation)
 {
 	HRESULT result;
     D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -417,6 +432,7 @@ bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCon
 	CameraBufferType* dataPtr3;
 	FogBufferType* dataPtr4;
 	ClipPlaneBufferType* dataPtr5;
+	TranslateBufferType* dataPtr6;
 
 	unsigned int bufferNumber;
 
@@ -516,6 +532,19 @@ bool MultiTextureShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceCon
 	deviceContext->Unmap(m_lightBuffer, 0);
 	bufferNumber = 0;
 	deviceContext->PSSetConstantBuffers(bufferNumber, 1, &m_lightBuffer);
+
+	result = deviceContext->Map(m_translateBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(result))
+	{
+		return false;
+	}
+
+	dataPtr6 = (TranslateBufferType*)mappedResource.pData;
+	dataPtr6->translation = translation;
+
+	deviceContext->Unmap(m_translateBuffer, 0);
+	bufferNumber = 1;
+	deviceContext->PSSetConstantBuffers(bufferNumber, 1, &m_translateBuffer);
 
 	// Set shader texture Array in the pixel shader.
 	// 1st Param : where to start in the array, 2nd Param = how many textures are in the array

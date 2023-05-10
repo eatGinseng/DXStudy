@@ -37,6 +37,12 @@ private:
 		float padding;
 	};
 
+	struct TranslateBufferType
+	{
+		float translation;
+		D3DXVECTOR3 padding;
+	};
+
 	struct CameraBufferType
 	{
 		XMFLOAT3 cameraPosition;
@@ -63,14 +69,14 @@ public:
 
 	bool Initialize(ID3D11Device*, HWND);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView**, XMFLOAT3, XMVECTOR, XMFLOAT3, float, float, XMVECTOR);
+	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView**, XMFLOAT3, XMVECTOR, XMFLOAT3, float, float, XMVECTOR, float);
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, LPCWSTR, LPCWSTR);
 	void ShutdownShader();
 	void OutputShaderErrorMessage(ID3D10Blob*, HWND, LPCWSTR);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView**, XMFLOAT3, XMVECTOR, XMFLOAT3, float, float, XMVECTOR);
+	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView**, XMFLOAT3, XMVECTOR, XMFLOAT3, float, float, XMVECTOR, float);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:
@@ -81,6 +87,7 @@ private:
 	ID3D11Buffer* m_lightBuffer;
 	ID3D11Buffer* m_cameraBuffer;
 	ID3D11Buffer* m_fogBuffer;
+	ID3D11Buffer* m_translateBuffer;
 	ID3D11SamplerState* m_sampleState;
 	ID3D11Buffer* m_clipPlaneBuffer;
 

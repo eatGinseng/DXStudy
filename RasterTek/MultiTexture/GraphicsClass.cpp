@@ -415,6 +415,7 @@ bool GraphicsClass::RenderScene()
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	float fogStart, fogEnd;
 	XMVECTOR clipPlane;
+	static float textureTranslation = 0.0f;
 
 	bool result;
 
@@ -424,6 +425,13 @@ bool GraphicsClass::RenderScene()
 	// Set the start and end of the fog.
 	fogStart = 0.0f;
 	fogEnd = 10.0f;
+
+	// Increment the texture translation position.
+	textureTranslation += 0.0001f;
+	if (textureTranslation > 1.0f)
+	{
+		textureTranslation -= 1.0f;
+	}
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -438,7 +446,7 @@ bool GraphicsClass::RenderScene()
 	m_Model->Render(m_D3D->GetDeviceContext());
 
 	// multiTextureShader로 model object를 그린다.
-	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), XMMatrixMultiply(worldMatrix, rotationMatrix), viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition(), fogStart, fogEnd, clipPlane);
+	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), XMMatrixMultiply(worldMatrix, rotationMatrix), viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition(), fogStart, fogEnd, clipPlane, textureTranslation);
 
 
 
