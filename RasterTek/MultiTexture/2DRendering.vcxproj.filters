@@ -81,6 +81,9 @@
     <ClInclude Include="DebugWindowClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TransparentShaderClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TimerClass.cpp">
@@ -144,6 +147,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DebugWindowClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TransparentShaderClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

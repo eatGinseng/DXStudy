@@ -41,6 +41,7 @@
     <ClInclude Include="TextureClass.h" />
     <ClInclude Include="TextureShaderClass.h" />
     <ClInclude Include="TimerClass.h" />
+    <ClInclude Include="TransparentShaderClass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BitmapClass.cpp" />
@@ -64,6 +65,7 @@
     <ClCompile Include="TextureClass.cpp" />
     <ClCompile Include="TextureShaderClass.cpp" />
     <ClCompile Include="TimerClass.cpp" />
+    <ClCompile Include="TransparentShaderClass.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

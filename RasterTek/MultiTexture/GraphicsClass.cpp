@@ -13,7 +13,9 @@ GraphicsClass::GraphicsClass()
 
 	m_Cursor = 0;
 	m_TextureShader = 0;
+	m_TransparentShader = 0;
 	m_Model = 0;
+	m_Model2 = 0;
 
 	m_RenderTexture = 0;
 	m_DebugWindow = 0;
@@ -132,6 +134,18 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// ModelClass 초기화
 	m_Model = new ModelClass;
 	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename1, textureFilename2, textureFilename3, textureFilename4, hwnd, modelFilename);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Model 2 초기화
+	m_Model2 = new ModelClass;
+	result = m_Model2->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename1, textureFilename2, textureFilename3, textureFilename4, hwnd, modelFilename);
+	if (!result)
+	{
+		return false;
+	}
 
 	m_RenderTexture = new RenderToTextureClass;
 	if (!m_RenderTexture)
@@ -182,6 +196,14 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	// Transparent shader 초기화
+	m_TransparentShader = new TransparentShaderClass;
+	result = m_TransparentShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if(!result)
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -221,6 +243,28 @@ void GraphicsClass::Shutdown()
 		m_MultiTextureShader->Shutdown();
 		delete m_MultiTextureShader;
 		m_MultiTextureShader = 0;
+	}
+
+	if (m_TextureShader)
+	{
+		m_TextureShader->Shutdown();
+		delete m_TextureShader;
+		m_TextureShader = 0;
+	}
+
+	// Release the second model object.
+	if (m_Model2)
+	{
+		m_Model2->Shutdown();
+		delete m_Model2;
+		m_Model2 = 0;
+	}
+
+	if (m_Model)
+	{
+		m_Model->Shutdown();
+		delete m_Model;
+		m_Model = 0;
 	}
 
 	// Release the cursor bitmap
@@ -311,6 +355,8 @@ bool GraphicsClass::Render()
 
 	// Set the color of the fog to grey.
 	fogColor = 0.5f;
+
+
 
 	// Clear the buffers to begin the scene. clear with fog color.
 	m_D3D->BeginScene(fogColor, fogColor, fogColor, 1.0f);
@@ -413,7 +459,7 @@ bool GraphicsClass::RenderToTexture()
 bool GraphicsClass::RenderScene()
 {
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
-	float fogStart, fogEnd;
+	float fogStart, fogEnd, blendAmount;
 	XMVECTOR clipPlane;
 	static float textureTranslation = 0.0f;
 
@@ -425,6 +471,9 @@ bool GraphicsClass::RenderScene()
 	// Set the start and end of the fog.
 	fogStart = 0.0f;
 	fogEnd = 10.0f;
+
+	// Set the blending amount to 50%.
+	blendAmount = 0.5f;
 
 	// Increment the texture translation position.
 	textureTranslation += 0.0001f;
@@ -448,7 +497,20 @@ bool GraphicsClass::RenderScene()
 	// multiTextureShader로 model object를 그린다.
 	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), XMMatrixMultiply(worldMatrix, rotationMatrix), viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition(), fogStart, fogEnd, clipPlane, textureTranslation);
 
+	// Turn on alpha blending for the transparency to work.
+	m_D3D->TurnOnAlphaBlending();
 
+	XMMATRIX translateMatrix = XMMatrixTranslation(1.0f, 1.0f, 0.0f);
+
+	m_Model2->Render(m_D3D->GetDeviceContext());
+	result = m_TransparentShader->Render(m_D3D->GetDeviceContext(), m_Model2->GetIndexCount(), XMMatrixMultiply(worldMatrix, translateMatrix), viewMatrix, projectionMatrix, m_Model2->GetTexture()[0], blendAmount);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn off alpha blending.
+	m_D3D->TurnOffAlphaBlending();
 
 	return true;
 
