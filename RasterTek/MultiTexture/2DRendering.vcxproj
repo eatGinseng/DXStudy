@@ -32,6 +32,7 @@
     <ClInclude Include="LightClass.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ModelClass.h" />
+    <ClInclude Include="ReflectionShaderClass.h" />
     <ClInclude Include="RenderToTextureClass.h" />
     <ClInclude Include="TextureArrayClass.h" />
     <ClInclude Include="MultiTextureShaderClass.h" />
@@ -57,6 +58,7 @@
     <ClCompile Include="LightClass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ModelClass.cpp" />
+    <ClCompile Include="ReflectionShaderClass.cpp" />
     <ClCompile Include="RenderToTextureClass.cpp" />
     <ClCompile Include="TextureArrayClass.cpp" />
     <ClCompile Include="MultiTextureShaderClass.cpp" />

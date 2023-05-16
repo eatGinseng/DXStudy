@@ -29,7 +29,6 @@ struct PixelInputType
     float3 binormal : BINORMAL;
     float3 viewDirection : TEXCOORD1;
     float fogFactor : FOG;
-    float clip : SV_ClipDistance0;
 
 };
 
@@ -96,10 +95,6 @@ float4 MultiTexturePixelShader(PixelInputType input) : SV_TARGET
 
     // Calculate the final color using the fog effect equation.
     blendColor = input.fogFactor * blendColor + (1.0 - input.fogFactor) * fogColor;
-    if(input.position.y < 0.2f)
-    {
-         clip(blendColor);
-    }
 
     return blendColor;
 }

@@ -19,6 +19,7 @@
 #include "MultiTextureShaderClass.h"
 #include "transparentshaderclass.h"
 #include "LightClass.h"
+#include "ReflectionShaderClass.h"
 
 
 /////////////
@@ -57,16 +58,15 @@ private:
 	TextClass* m_Text;
 	BitmapClass* m_Cursor;
 	ModelClass* m_Model;
-	ModelClass* m_Model2;
+	ModelClass* m_Plane;
 
 	LightClass* m_Light;
 
 	RenderToTextureClass* m_RenderTexture;
-	DebugWindowClass* m_DebugWindow;
 
 	XMMATRIX baseViewMatrix;
 	MultiTextureShaderClass* m_MultiTextureShader;
-	TransparentShaderClass* m_TransparentShader;
+	ReflectionShaderClass* m_ReflectionShader;
 
 };
 

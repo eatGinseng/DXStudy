@@ -71,7 +71,54 @@ void CameraClass::Render()
 
 }
 
-// 
+// Build a reflection view matrix. 보통의 view matrix를 만드는 것과 비슷하지만, input으로 받은 height가 Y축 Plane의 높이로 동작한다.
+// 이 height를 position.y 값을 반전시키는데 사용할 것이다. 이 매트릭스를 셰이더에서 사용한다.
+// 이 function은 y 축 plane에만 적용되는 함수이다.
+
+void CameraClass::RenderReflection(float height)
+{
+	XMFLOAT4 up, position, lookAt;
+	XMVECTOR upV, positionV, lookAtV;
+	float radians;
+
+	// 위를 향하는 벡터 생성
+	up.x = 0.0f;
+	up.y = 1.0f;
+	up.z = 0.0f;
+	up.w = 0.0f;
+
+	upV = XMLoadFloat4(&up);
+
+	// 월드공간 내의 Camera의 position을 셋업한다.
+	// planar reflection을 위해, 카메라의 y position을 반전시킨다.
+	position.x = m_positionX;
+	position.y = -m_positionY + (height * 2.0f);
+	position.z = m_positionZ;
+	position.w = 0.0f;
+
+	positionV = XMLoadFloat4(&position);
+
+	// rotation을 radian 으로 계산
+	radians = m_rotationY * 0.0174532925f;
+
+	// camera가 바라보는 곳
+	lookAt.x = sinf(radians) + m_positionX;
+	lookAt.y = position.y;
+	lookAt.z = cosf(radians) + m_positionZ;
+	lookAt.w = 0.0f;
+
+	lookAtV = XMLoadFloat4(&lookAt);
+
+	// 위 3개 벡터로 view matrix 생성
+	m_reflectionViewMatrix = XMMatrixLookAtLH(positionV, lookAtV, upV);
+}
+
+XMMATRIX CameraClass::GetReflectionViewMatrix()
+{
+	return m_reflectionViewMatrix;
+}
+
+ 
 void CameraClass::GetViewMatrix(XMMATRIX& viewMatrix)
 {
 	viewMatrix = m_viewMatrix;

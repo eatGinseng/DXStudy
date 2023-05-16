@@ -41,7 +41,6 @@ struct PixelInputType
     float3 binormal : BINORMAL;
     float3 viewDirection : TEXCOORD1;
     float fogFactor : FOG;
-    float clip : SV_ClipDistance0;
 };
 
 PixelInputType MultiTextureVertexShader(VertexInputType input)
@@ -88,10 +87,6 @@ PixelInputType MultiTextureVertexShader(VertexInputType input)
 
     // calculate linear fog
     output.fogFactor = saturate((fogEnd - CameraPosition.z) / (fogEnd - fogStart));
-
-    // Set the clipping plane.
-    // vertex의 world space와 clip plane을 dot 한다. 이렇게 하면 pixel shader에서는 clip plane이 culling 하는 것은 그리지 않게 된다.
-    output.clip = dot(mul(input.position, worldMatrix), clipPlane);
 
     return output;
 

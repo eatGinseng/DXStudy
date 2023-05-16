@@ -13,16 +13,17 @@ GraphicsClass::GraphicsClass()
 
 	m_Cursor = 0;
 	m_TextureShader = 0;
-	m_TransparentShader = 0;
 	m_Model = 0;
-	m_Model2 = 0;
+
+	m_Plane = 0;
 
 	m_RenderTexture = 0;
-	m_DebugWindow = 0;
 
 	m_Light = 0;
 
 	m_MultiTextureShader = 0;
+
+	m_ReflectionShader = 0;
 }
 
 
@@ -131,6 +132,10 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	ZeroMemory(modelFilename, sizeof(char) * 128);
 	strcpy_s(modelFilename, "ChamferredBox.txt");
 
+	char planeModelFilename[128];
+	ZeroMemory(planeModelFilename, sizeof(char) * 128);
+	strcpy_s(planeModelFilename, "plane.txt");
+
 	// ModelClass 초기화
 	m_Model = new ModelClass;
 	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename1, textureFilename2, textureFilename3, textureFilename4, hwnd, modelFilename);
@@ -139,11 +144,12 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Model 2 초기화
-	m_Model2 = new ModelClass;
-	result = m_Model2->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename1, textureFilename2, textureFilename3, textureFilename4, hwnd, modelFilename);
+	// Plane model 초기화
+	m_Plane = new ModelClass;
+	result = m_Plane->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename2, textureFilename2, textureFilename3, textureFilename4, hwnd, planeModelFilename);
 	if (!result)
 	{
+		MessageBox(hwnd, L"Could not initialize the floor model object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -155,20 +161,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	// initialize render to texture object
 	result = m_RenderTexture->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight);
-	if (!result)
-	{
-		return false;
-	}
-
-	// create debugWindow object
-	m_DebugWindow = new DebugWindowClass;
-	if (!m_DebugWindow)
-	{
-		return false;
-	}
-
-	// Initialize debugwindow class
-	result = m_DebugWindow->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), screenWidth, screenHeight, 320, 180, hwnd);
 	if (!result)
 	{
 		return false;
@@ -196,11 +188,18 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Transparent shader 초기화
-	m_TransparentShader = new TransparentShaderClass;
-	result = m_TransparentShader->Initialize(m_D3D->GetDevice(), hwnd);
-	if(!result)
+	// reflection shader 초기화
+	m_ReflectionShader = new ReflectionShaderClass;
+	if (!m_ReflectionShader)
 	{
+		return false;
+	}
+
+	// initialize the reflection shader object
+	result = m_ReflectionShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the reflection shader object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -210,18 +209,20 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void GraphicsClass::Shutdown()
 {
+	// Release the reflection shader object.
+	if (m_ReflectionShader)
+	{
+		m_ReflectionShader->Shutdown();
+		delete m_ReflectionShader;
+		m_ReflectionShader = 0;
+	}
+
 	// Release the cursor bitmap
 	if (m_TextureShader)
 	{
 		m_TextureShader->Shutdown();
 		delete m_TextureShader;
 		m_TextureShader = 0;
-	}
-
-	if (m_DebugWindow)
-	{
-		delete m_DebugWindow;
-		m_DebugWindow = 0;
 	}
 
 	if (m_RenderTexture)
@@ -252,12 +253,12 @@ void GraphicsClass::Shutdown()
 		m_TextureShader = 0;
 	}
 
-	// Release the second model object.
-	if (m_Model2)
+	// Release Plane Model
+	if (m_Plane)
 	{
-		m_Model2->Shutdown();
-		delete m_Model2;
-		m_Model2 = 0;
+		m_Plane->Shutdown();
+		delete m_Plane;
+		m_Plane = 0;
 	}
 
 	if (m_Model)
@@ -346,27 +347,23 @@ bool GraphicsClass::Render()
 
 	bool result;
 
-	// Render the entire scene to the texture first.
+	// Set the color of the fog to grey.
+	fogColor = 0.5f;
+
+	// Clear the buffers to begin the scene. clear with fog color.
+	m_D3D->BeginScene(fogColor, fogColor, fogColor, 1.0f);
+
 	result = RenderToTexture();
 	if (!result)
 	{
 		return false;
 	}
 
-	// Set the color of the fog to grey.
-	fogColor = 0.5f;
-
-
-
-	// Clear the buffers to begin the scene. clear with fog color.
-	m_D3D->BeginScene(fogColor, fogColor, fogColor, 1.0f);
-
 	result = RenderScene();
 	if (!result)
 	{
 		return false;
 	}
-
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_D3D->TurnZBufferOff();
 
@@ -374,23 +371,6 @@ bool GraphicsClass::Render()
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetOrthoMatrix(orthoMatrix);
-
-	// Debug window의 vertex와 index buffer를 그래픽스 파이프라인에 묶어 렌더할 준비를 함
-	result = m_DebugWindow->Render(m_D3D->GetDeviceContext(), 130, 130);
-	if (!result)
-	{
-		return false;
-	}
-
-	// Render debug window using texture shader.
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_DebugWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_RenderTexture->GetShaderResourceView());
-	if (!result)
-	{
-		return false;
-	}
-
-	// Turn off the Z buffer to begin all 2D rendering.
-//	m_D3D->TurnZBufferOff();
 
 	// Alpha blending 켜기
 	m_D3D->TurnOnAlphaBlending();
@@ -420,10 +400,8 @@ bool GraphicsClass::Render()
 	m_D3D->TurnOffAlphaBlending();
 
 	// Turn the Z buffer back on now that all 2D rendering has completed.
-//	m_D3D->TurnZBufferOn();
-
-	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_D3D->TurnZBufferOn();
+
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();
@@ -431,34 +409,63 @@ bool GraphicsClass::Render()
 	return true;
 }
 
+// 리플렉션을 렌더
 bool GraphicsClass::RenderToTexture()
 {
-	bool result;
+	XMMATRIX worldMatrix, reflectionViewMatrix, projectionMatrix;
+	float fogStart, fogEnd, blendAmount;
+	XMVECTOR clipPlane;
+	static float textureTranslation = 0.0f;
+	
+	// Setup a clipping plane.
+	clipPlane = XMVectorSet(0.0f, -12.0f, 0.0f, 0.5f);
 
-	// render to texture로 렌더타겟을 지정해 준다.
-	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+	// Set the start and end of the fog.
+	fogStart = 0.0f;
+	fogEnd = 10.0f;
 
-	// render to texture 배경을 blue로 clear해서 기존 장면과 구분한다.
-	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 1.0f, 1.0f);
+	// Set the blending amount to 50%.
+	blendAmount = 0.5f;
 
-	// scene을 렌더하면, 이제 back buffer 대신 render to texture에 render 한다.
-	result = RenderScene();
-	if (!result)
+	// Increment the texture translation position.
+	textureTranslation += 0.0001f;
+	if (textureTranslation > 1.0f)
 	{
-		return false;
+		textureTranslation -= 1.0f;
 	}
 
-	// 원래의 back buffer로 렌더타겟을 리셋
+	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+
+	// Clear the render to texture.
+	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	// 장면을 rendering 하기 전에, 바닥 높이인 1.5f로 reflection matrix를 생성한다.
+	m_Camera->RenderReflection(-1.0f);
+
+	// 보통처럼 장면을 렌더링 하지만, view matrix 대신 reflection matrix를 사용한다.
+	// 반사된 것만 렌더링하면 되기 때문에, floor는 렌더링 할 필요가 없다.
+	reflectionViewMatrix = m_Camera->GetReflectionViewMatrix();
+
+	// Get the world and projection matrices.
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetProjectionMatrix(projectionMatrix);
+	XMMATRIX rotationMatrix = XMMatrixRotationY(45.0f);
+
+	m_Model->Render(m_D3D->GetDeviceContext());
+
+	// Render the model using the texture shader and the reflection view matrix.
+	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), XMMatrixMultiply(worldMatrix, rotationMatrix), reflectionViewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition(), fogStart, fogEnd, clipPlane, textureTranslation);
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
 	m_D3D->SetBackBufferRenderTarget();
 
 	return true;
-
 }
 
 // 원래 하던 렌더를 여기에서 함
 bool GraphicsClass::RenderScene()
 {
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, reflectionMatrix;
 	float fogStart, fogEnd, blendAmount;
 	XMVECTOR clipPlane;
 	static float textureTranslation = 0.0f;
@@ -466,7 +473,7 @@ bool GraphicsClass::RenderScene()
 	bool result;
 
 	// Setup a clipping plane.
-	clipPlane = XMVectorSet(0.0f, -1.0f, 0.0f, 0.5f);
+	clipPlane = XMVectorSet(0.0f, -6.0f, 0.0f, 0.5f);
 
 	// Set the start and end of the fog.
 	fogStart = 0.0f;
@@ -489,6 +496,10 @@ bool GraphicsClass::RenderScene()
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
+
+	// Get the camera reflection view matrix.
+	reflectionMatrix = m_Camera->GetReflectionViewMatrix();
+
 	m_D3D->GetOrthoMatrix(orthoMatrix);
 
 	XMMATRIX rotationMatrix = XMMatrixRotationY(45.0f);
@@ -497,20 +508,10 @@ bool GraphicsClass::RenderScene()
 	// multiTextureShader로 model object를 그린다.
 	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), XMMatrixMultiply(worldMatrix, rotationMatrix), viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition(), fogStart, fogEnd, clipPlane, textureTranslation);
 
-	// Turn on alpha blending for the transparency to work.
-	m_D3D->TurnOnAlphaBlending();
+	m_Plane->Render(m_D3D->GetDeviceContext());
 
-	XMMATRIX translateMatrix = XMMatrixTranslation(1.0f, 1.0f, 0.0f);
-
-	m_Model2->Render(m_D3D->GetDeviceContext());
-	result = m_TransparentShader->Render(m_D3D->GetDeviceContext(), m_Model2->GetIndexCount(), XMMatrixMultiply(worldMatrix, translateMatrix), viewMatrix, projectionMatrix, m_Model2->GetTexture()[0], blendAmount);
-	if (!result)
-	{
-		return false;
-	}
-
-	// Turn off alpha blending.
-	m_D3D->TurnOffAlphaBlending();
+	XMMATRIX translateMatrix = XMMatrixTranslation(0.0f, -1.5f, 0.0f);
+	m_ReflectionShader->Render(m_D3D->GetDeviceContext(), m_Plane->GetIndexCount(), XMMatrixMultiply(worldMatrix, translateMatrix), viewMatrix, projectionMatrix, m_Plane->GetTexture()[1], m_RenderTexture->GetShaderResourceView(), reflectionMatrix);
 
 	return true;
 
