@@ -62,6 +62,8 @@ private:
 		XMVECTOR clipPlane;
 	};
 
+
+
 public:
 	MultiTextureShaderClass();
 	MultiTextureShaderClass(const MultiTextureShaderClass&);
@@ -90,6 +92,7 @@ private:
 	ID3D11Buffer* m_translateBuffer;
 	ID3D11SamplerState* m_sampleState;
 	ID3D11Buffer* m_clipPlaneBuffer;
+
 
 };
 

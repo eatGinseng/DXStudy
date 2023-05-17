@@ -17,9 +17,8 @@
 #include "TextureShaderClass.h"
 #include "ModelClass.h"
 #include "MultiTextureShaderClass.h"
-#include "transparentshaderclass.h"
 #include "LightClass.h"
-#include "ReflectionShaderClass.h"
+#include "FadeShaderClass.h"
 
 
 /////////////
@@ -47,8 +46,9 @@ public:
 	bool Render();
 
 private:
-	bool RenderToTexture();
+	bool RenderToTexture(float rotation);
 	bool RenderScene();
+	bool RenderFadingScene();
 
 private:
 	D3DClass* m_D3D;
@@ -66,7 +66,12 @@ private:
 
 	XMMATRIX baseViewMatrix;
 	MultiTextureShaderClass* m_MultiTextureShader;
-	ReflectionShaderClass* m_ReflectionShader;
+
+	float m_fadeInTime, m_accumulatedTime, m_fadePercentage;
+	bool m_fadeDone;
+
+	BitmapClass* m_Bitmap;
+	FadeShaderClass* m_FadeShader;
 
 };
 

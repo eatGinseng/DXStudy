@@ -16,6 +16,7 @@ MultiTextureShaderClass::MultiTextureShaderClass()
 	m_sampleState = 0;
 	m_clipPlaneBuffer = 0;
 	m_translateBuffer = 0;
+
 }
 
 

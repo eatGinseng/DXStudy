@@ -36,6 +36,8 @@ public:
 	~BitmapClass();
 
 	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, int, int, int, int, const char*, HWND);
+	bool Initialize(ID3D11Device*, int, int, int, int);
+
 	void Shutdown();
 	bool Render(ID3D11DeviceContext*, int, int);
 
