@@ -47,5 +47,15 @@ PixelInputType WaterVertexShader(VertexInputType input)
     // Create the refraction projection world matrix. reflection matrix 만들었을 때 처럼.
     reflectProjectWorld = mul(reflectionMatrix, projectionMatrix);
     reflectProjectWorld = mul(worldMatrix, reflectProjectWorld);
+    output.reflectionPosition = mul(input.position, reflectProjectWorld);
 
-    
+    // refraction을 위한 view projection world matrix 만들기
+    viewProjectWorld = mul(viewMatrix, projectionMatrix);
+    viewProjectWorld = mul(worldMatrix, viewProjectWorld);
+
+    // viewProjectWorldMatrix에 대한 input position 생성
+    output.refractionPosition = mul(input.position, viewProjectWorld);
+
+    return output;
+
+}

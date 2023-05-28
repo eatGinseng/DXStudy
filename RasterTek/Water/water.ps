@@ -1,0 +1,67 @@
+Samplerstate SampleType;
+
+// reflection texture, refraction texture, normal map texture
+
+Texture2D reflectionTexture;
+Texture2D refractionTexture;
+Texture2D normalTexture;
+
+// texture를 이동시켜서 물의 흐름을 표현한다.
+// Normal map 으로 구현한 ripple의 사이즈를 결정한다.
+cbuffer WaterBuffer
+{
+    float waterTranslation;
+    float reflectRefractScale;
+    float2 padding;
+};
+
+
+struct PixelInputType
+{
+    float4 position : SV_POSITION;
+    float2 tex      : TEXCOORD0;
+    float4 reflectionPosition : TEXCOORD1;
+    float4 refractionPosition : TEXCOORD2;
+};
+
+float4 WaterPixelShader(PixelInputType input) : SV_TARGET
+{
+    float2 reflectTexCoord;
+    float2 refractTexCoord;
+    float4 normalMap;
+    float3 normal;
+    float4 reflectionColor;
+    float4 refractionColor;
+    float4 color;
+
+    // texture translation
+    input.tex.y = waterTransition;
+
+    // reflection과 refraction 을 모두 -1 ~ 1에서 0 ~ 1 범위로
+    reflectTexCoord.x = input.reflectionPosition.x / input.reflectionPosition.w / 2.0f + 0.5f;
+    reflectTexCoord.y = input.reflectionPosition.y / input.reflectionPosition.w / 2.0f + 0.5f;
+
+    // refractiontexture coordinates
+    refractTexCoord.x = input.refractionPosition.x / input.refractionPosition.w / 2.0f + 0.5f;
+    refractTexCoord.y = input.refractionPosition.y / input.refractionPosition.w / 2.0f + 0.5f;
+
+    // normal map texture sample
+    normalMap = normalTexture.Sample(sampleType, input.tex);
+
+    // normal을 0, 1에서 -1, 1로 확장
+    normal = (normalMap.xyz * 2.0f) - 1.0f;
+
+    // Re-position the texture coordinate sampling position by the normal map value to simulate the rippling wave effect.
+    reflectTexCoord = reflectTexCoord + (normal.xy * reflectRefractScale);
+    refractTexCoord = refractTexCoord + (normal.xy * reflectRefractScale);
+
+    // Sample the texture pixels from the textures using the updated texture coordinates.
+    reflectionColor = reflectionTexture.Sample(SampleType, reflectTexCoord);
+    refractionColor = refractionTexture.Sample(SampleType, refractTexCoord);
+
+     // Combine the reflection and refraction results for the final color.
+    color = lerp(reflectionColor, refractionColor, 0.6f);
+	
+    return color;   
+
+}

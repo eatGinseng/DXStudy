@@ -13,12 +13,12 @@
 #include "TextClass.h"
 #include "BitmapClass.h"
 #include "rendertotextureclass.h"
-#include "debugwindowclass.h"
+#include "lightshaderclass.h"
 #include "TextureShaderClass.h"
 #include "ModelClass.h"
-#include "MultiTextureShaderClass.h"
 #include "LightClass.h"
-#include "FadeShaderClass.h"
+#include "refractionshaderclass.h"
+#include "watershaderclass.h"
 
 
 /////////////
@@ -46,9 +46,9 @@ public:
 	bool Render();
 
 private:
-	bool RenderToTexture(float rotation);
+	bool RenderRefractionTexture(float rotation);
+	bool RenderReflectionTexture();
 	bool RenderScene();
-	bool RenderFadingScene();
 
 private:
 	D3DClass* m_D3D;
@@ -57,21 +57,21 @@ private:
 
 	TextClass* m_Text;
 	BitmapClass* m_Cursor;
-	ModelClass* m_Model;
-	ModelClass* m_Plane;
+	ModelClass* m_GroundModel, *m_WallModel, *m_BathModel, *m_WaterModel;
 
 	LightClass* m_Light;
 
-	RenderToTextureClass* m_RenderTexture;
+	RenderToTextureClass *m_RefractionTexture, *m_ReflectionTexture;
 
 	XMMATRIX baseViewMatrix;
-	MultiTextureShaderClass* m_MultiTextureShader;
 
-	float m_fadeInTime, m_accumulatedTime, m_fadePercentage;
-	bool m_fadeDone;
+	LightShaderClass* m_LightShader;
+	RefractionShaderClass* m_RefractionShader;
+	WaterShaderClass* m_WaterShader;
 
 	BitmapClass* m_Bitmap;
-	FadeShaderClass* m_FadeShader;
+
+	float m_waterHeight, m_waterTranslation;
 
 };
 

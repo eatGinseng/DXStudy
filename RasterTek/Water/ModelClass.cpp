@@ -86,9 +86,9 @@ int ModelClass::GetIndexCount()
 }
 
 
-ID3D11ShaderResourceView** ModelClass::GetTexture()
+ID3D11ShaderResourceView* ModelClass::GetTexture()
 {
-	return m_Texture->GetTextureArray();
+	return m_Texture->GetTexture();
 }
 
 
@@ -230,7 +230,7 @@ bool ModelClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceCo
 
 
 	// Create the texture object.
-	m_Texture = new TextureArrayClass;
+	m_Texture = new TextureClass;
 	if(!m_Texture)
 	{
 		return false;

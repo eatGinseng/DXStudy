@@ -19,7 +19,7 @@ using namespace std;
 ///////////////////////
 // MY CLASS INCLUDES //
 ///////////////////////
-#include "TextureArrayclass.h"
+#include "TextureClass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ public:
 	void Render(ID3D11DeviceContext*);
 
 	int GetIndexCount();
-	ID3D11ShaderResourceView** GetTexture();
+	ID3D11ShaderResourceView* GetTexture();
 
 
 private:
@@ -92,7 +92,7 @@ private:
 private:
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	int m_vertexCount, m_indexCount;
-	TextureArrayClass* m_Texture;
+	TextureClass* m_Texture;
 
 	ModelType* m_model;
 };
