@@ -582,16 +582,80 @@ bool GraphicsClass::RenderScene()
 
 	m_D3D->GetOrthoMatrix(orthoMatrix);
 
-	XMMATRIX rotationMatrix = XMMatrixRotationY(45.0f);
-	m_Model->Render(m_D3D->GetDeviceContext());
+	XMMATRIX translationMatrix = XMMatrixTranslate(0.0f, 1.0f, 0.0f);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMatrix);
+	m_GroundModel->Render(m_D3D->GetDeviceContext());
 
-	// multiTextureShader로 model object를 그린다.
-	m_MultiTextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), XMMatrixMultiply(worldMatrix, rotationMatrix), viewMatrix, projectionMatrix, m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetDiffuseColor(), m_Camera->GetPosition(), fogStart, fogEnd, clipPlane, textureTranslation);
+	// Render the ground model using the light shader.
+	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix,
+		projectionMatrix, m_GroundModel->GetTexture(), m_Light->GetDirection(),
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	if (!result)
+	{
+		return false;
+	}
 
-//	m_Plane->Render(m_D3D->GetDeviceContext());
 
-//	XMMATRIX translateMatrix = XMMatrixTranslation(0.0f, -1.5f, 0.0f);
-//	m_ReflectionShader->Render(m_D3D->GetDeviceContext(), m_Plane->GetIndexCount(), XMMatrixMultiply(worldMatrix, translateMatrix), viewMatrix, projectionMatrix, m_Plane->GetTexture()[1], m_RenderTexture->GetShaderResourceView(), reflectionMatrix);
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	// Translate to where the wall model will be rendered.
+	translationMatrix = XMMatrixTranslate(0.0f, 6.0f, 8.0f);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMatrix);
+
+	// Put the wall model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_WallModel->Render(m_D3D->GetDeviceContext());
+
+	// Render the wall model using the light shader.
+	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_WallModel->GetIndexCount(), worldMatrix, viewMatrix,
+		projectionMatrix, m_WallModel->GetTexture(), m_Light->GetDirection(),
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	// Translate to where the bath model will be rendered.'
+	translationMatrix = XMMatrixTranslate(0.0f, 2.0f, 0.0f);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMatrix);
+
+	// Put the bath model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_BathModel->Render(m_D3D->GetDeviceContext());
+
+	// Render the bath model using the light shader.
+	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_BathModel->GetIndexCount(), worldMatrix, viewMatrix,
+		projectionMatrix, m_BathModel->GetTexture(), m_Light->GetDirection(),
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	reflectionMatrix = m_Camera->GetReflectionViewMatrix();
+
+	translationMatrix = XMMatrixTranslate(0.0f, m_waterHeight, 0.0f);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMatrix);
+
+	m_WaterModel->Render(m_D3D->GetDeviceContext());
+
+	// Render the water model using the water shader.
+	result = m_WaterShader->Render(m_D3D->GetDeviceContext(), m_WaterModel->GetIndexCount(), worldMatrix, viewMatrix,
+		projectionMatrix, reflectionMatrix, m_ReflectionTexture->GetShaderResourceView(),
+		m_RefractionTexture->GetShaderResourceView(), m_WaterModel->GetTexture(),
+		m_waterTranslation, 0.01f);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Present the rendered scene to the screen.
+	m_D3D->EndScene();
 
 	return true;
 

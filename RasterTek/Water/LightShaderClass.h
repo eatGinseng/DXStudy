@@ -46,14 +46,14 @@ public:
 
 	bool Initialize(ID3D11Device*, HWND);
 	void Shutdown();
-	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMVECTOR, XMVECTOR, XMVECTOR, XMFLOAT3, XMVECTOR, float);
+	bool Render(ID3D11DeviceContext*, int, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMVECTOR, XMVECTOR, XMVECTOR);
 
 private:
 	bool InitializeShader(ID3D11Device*, HWND, LPCWSTR, LPCWSTR);
 	void ShutdownShader();
 	void OutputShaderErrorMessage(ID3D10Blob*, HWND, LPCWSTR);
 
-	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMVECTOR, XMVECTOR, XMVECTOR, XMFLOAT3, XMVECTOR, float);
+	bool SetShaderParameters(ID3D11DeviceContext*, XMMATRIX, XMMATRIX, XMMATRIX, ID3D11ShaderResourceView*, XMVECTOR, XMVECTOR, XMVECTOR);
 	void RenderShader(ID3D11DeviceContext*, int);
 
 private:

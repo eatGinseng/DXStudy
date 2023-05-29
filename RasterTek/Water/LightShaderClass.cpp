@@ -44,12 +44,12 @@ void LightShaderClass::Shutdown()
 }
 
 bool LightShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, XMVECTOR lightDirection, XMVECTOR diffuseColor, XMVECTOR ambientColor, XMFLOAT3 cameraPosition, XMVECTOR specularColor, float specularPower)
+	XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, XMVECTOR lightDirection, XMVECTOR diffuseColor, XMVECTOR ambientColor)
 {
 	bool result;
 
 	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, texture, lightDirection, diffuseColor, ambientColor, cameraPosition, specularColor, specularPower);
+	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, texture, lightDirection, diffuseColor, ambientColor);
 	if (!result)
 	{
 		return false;
@@ -340,7 +340,7 @@ void LightShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND h
 
 bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
 	XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, XMVECTOR lightDirection,
-	XMVECTOR diffuseColor, XMVECTOR ambientColor, XMFLOAT3 cameraPosition, XMVECTOR specularColor, float specularPower)
+	XMVECTOR diffuseColor, XMVECTOR ambientColor)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -378,25 +378,6 @@ bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	// Now set the constant buffer in the vertex shader with the updated values.
 	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_matrixBuffer);
 
-	// Lock the camera constant buffer so it cam be written to
-	result = deviceContext->Map(m_cameraBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	dataPtr3 = (CameraBufferType*)mappedResource.pData;
-
-	// constant buffer에 카메라 위치 카피
-	dataPtr3->cameraPosition = cameraPosition;
-	dataPtr3->padding = 0.0f;
-
-	deviceContext->Unmap(m_cameraBuffer, 0);
-
-	// set the position of the camera constant buffer in the vertex shader
-	bufferNumber = 1;
-	// set the camera constant buffer in the vertex shader with the updated value
-	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_cameraBuffer);
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
@@ -415,8 +396,6 @@ bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	dataPtr2->ambientColor = ambientColor;
 	dataPtr2->diffuseColor = diffuseColor;
 	dataPtr2->lightDirection = lightDirection;
-	dataPtr2->specularColor = specularColor;
-	dataPtr2->specularPower = specularPower;
 
 	// Unlock the constant buffer.
 	deviceContext->Unmap(m_lightBuffer, 0);
