@@ -23,7 +23,7 @@ ModelClass::~ModelClass()
 }
 
 
-bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* textureFilename1, char* textureFilename2, char* textureFilename3, char* textureFilename4, HWND hwnd, char* modelFilename)
+bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* textureFilename1, HWND hwnd, char* modelFilename)
 {
 	bool result;
 
@@ -45,7 +45,7 @@ bool ModelClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCon
 	}
 
 	// Load the texture for this model.
-	result = LoadTexture(device, deviceContext, textureFilename1, textureFilename2, textureFilename3, textureFilename4, hwnd);
+	result = LoadTexture(device, deviceContext, textureFilename1, hwnd);
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not Load Texture.", L"Error", MB_OK);
@@ -224,7 +224,7 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 }
 
 
-bool ModelClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename1, char* filename2, char* filename3, char* filename4, HWND hwnd)
+bool ModelClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceContext, char* filename1, HWND hwnd)
 {
 	bool result;
 
@@ -237,7 +237,7 @@ bool ModelClass::LoadTexture(ID3D11Device* device, ID3D11DeviceContext* deviceCo
 	}
 
 	// Initialize the texture object.
-	result = m_Texture->Initialize(device, deviceContext, filename1, filename2, filename3, filename4, hwnd);
+	result = m_Texture->Initialize(device, deviceContext, filename1, hwnd);
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the Texture object.", L"Error", MB_OK);

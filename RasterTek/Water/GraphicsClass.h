@@ -46,8 +46,8 @@ public:
 	bool Render();
 
 private:
-	bool RenderRefractionTexture(float rotation);
-	bool RenderReflectionTexture();
+	bool RenderRefractionTexture();
+	bool RenderReflectionToTexture();
 	bool RenderScene();
 
 private:

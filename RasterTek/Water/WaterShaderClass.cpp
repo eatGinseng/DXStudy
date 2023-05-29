@@ -43,8 +43,8 @@ void WaterShaderClass::Shutdown()
 	return;
 }
 
-bool WaterShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, D3DXMATRIX worldMatrix, D3DXMATRIX viewMatrix,
-	D3DXMATRIX projectionMatrix, D3DXMATRIX reflectionMatrix,
+bool WaterShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
+	XMMATRIX projectionMatrix, XMMATRIX reflectionMatrix,
 	ID3D11ShaderResourceView* reflectionTexture, ID3D11ShaderResourceView* refractionTexture,
 	ID3D11ShaderResourceView* normalTexture, float waterTranslation, float reflectRefractScale)
 {
