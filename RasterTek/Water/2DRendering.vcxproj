@@ -34,6 +34,8 @@
     <ClInclude Include="LightShaderClass.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ModelClass.h" />
+    <ClInclude Include="PointLightClass.h" />
+    <ClInclude Include="PointLightShaderClass.h" />
     <ClInclude Include="ReflectionShaderClass.h" />
     <ClInclude Include="RefractionShaderClass.h" />
     <ClInclude Include="RenderToTextureClass.h" />
@@ -64,6 +66,7 @@
     <ClCompile Include="LightShaderClass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ModelClass.cpp" />
+    <ClCompile Include="PointLightShaderClass.cpp" />
     <ClCompile Include="ReflectionShaderClass.cpp" />
     <ClCompile Include="RefractionShader.cpp" />
     <ClCompile Include="RenderToTextureClass.cpp" />

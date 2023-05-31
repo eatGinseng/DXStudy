@@ -593,10 +593,7 @@ bool GraphicsClass::RenderRefractionTexture()
 bool GraphicsClass::RenderScene()
 {
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, reflectionMatrix;
-
 	bool result;
-
-
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -607,7 +604,7 @@ bool GraphicsClass::RenderScene()
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 
 	// Get the camera reflection view matrix.
-//	reflectionMatrix = m_Camera->GetReflectionViewMatrix();
+	// reflectionMatrix = m_Camera->GetReflectionViewMatrix();
 
 	m_D3D->GetOrthoMatrix(orthoMatrix);
 
@@ -683,7 +680,6 @@ bool GraphicsClass::RenderScene()
 	{
 		return false;
 	}
-
 
 	return true;
 
