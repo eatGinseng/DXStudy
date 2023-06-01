@@ -1,3 +1,5 @@
+#define NUM_LIGHTS 4
+
 Texture2D shaderTexture;
 SamplerState SampleType;
 
@@ -17,7 +19,7 @@ struct PixelInputType
     float3 lightPos4 : TEXCOORD4;
 };
 
-float4 LightPixelShader(PixelInputType input) : SV_TARGET
+float4 PointLightPixelShader(PixelInputType input) : SV_TARGET
 {
     float4 textureColor;
     float lightIntensity1, lightIntensity2, lightIntensity3, lightIntensity4;
@@ -38,7 +40,7 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
     // Sample the texture pixel at this location.
     textureColor = shaderTexture.Sample(SampleType, input.tex);
 
-       // Multiply the texture pixel by the combination of all four light colors to get the final result.
+    // Multiply the texture pixel by the combination of all four light colors to get the final result.
     color = saturate(color1 + color2 + color3 + color4) * textureColor;
 	
     return color;

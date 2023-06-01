@@ -14,9 +14,11 @@
 #include "BitmapClass.h"
 #include "rendertotextureclass.h"
 #include "lightshaderclass.h"
+#include "PointLightShaderClass.h"
 #include "TextureShaderClass.h"
 #include "ModelClass.h"
 #include "LightClass.h"
+#include "PointLightClass.h"
 #include "refractionshaderclass.h"
 #include "watershaderclass.h"
 
@@ -60,6 +62,9 @@ private:
 	ModelClass* m_GroundModel, *m_WallModel, *m_BathModel, *m_WaterModel;
 
 	LightClass* m_Light;
+
+	PointLightShaderClass* m_PointLightShader;
+	PointLightClass *m_PointLight1, *m_PointLight2, *m_PointLight3, *m_PointLight4;
 
 	RenderToTextureClass *m_RefractionTexture, *m_ReflectionTexture;
 

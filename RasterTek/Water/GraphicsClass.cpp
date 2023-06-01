@@ -24,6 +24,12 @@ GraphicsClass::GraphicsClass()
 	m_Light = 0;
 	m_LightShader = 0;
 
+	m_PointLightShader = 0;
+	m_PointLight1 = 0;
+	m_PointLight2 = 0;
+	m_PointLight3 = 0;
+	m_PointLight4 = 0;
+
 	m_RefractionShader = 0;
 	m_WaterShader = 0;
 
@@ -220,6 +226,64 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_PointLightShader = new PointLightShaderClass;
+	if (!m_PointLightShader)
+	{
+		return false;
+	}
+
+	result = m_PointLightShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the Point Light shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	/// Create Point Lights
+	// Create the first light object.
+	m_PointLight1 = new PointLightClass;
+	if (!m_PointLight1)
+	{
+		return false;
+	}
+
+	// Initialize the first light object.
+	m_PointLight1->SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f);
+	m_PointLight1->SetPosition(-6.0f, 5.0f, 6.0f);
+
+	// Create the second light object.
+	m_PointLight2 = new PointLightClass;
+	if (!m_PointLight2)
+	{
+		return false;
+	}
+
+	// Initialize the second light object.
+	m_PointLight2->SetDiffuseColor(0.0f, 1.0f, 0.0f, 1.0f);
+	m_PointLight2->SetPosition(6.0f, 5.0f, 6.0f);
+
+	// Create the third light object.
+	m_PointLight3 = new PointLightClass;
+	if (!m_PointLight3)
+	{
+		return false;
+	}
+
+	// Initialize the third light object.
+	m_PointLight3->SetDiffuseColor(0.0f, 0.0f, 1.0f, 1.0f);
+	m_PointLight3->SetPosition(-6.0f, 5.0f, -6.0f);
+
+	// Create the fourth light object.
+	m_PointLight4 = new PointLightClass;
+	if (!m_PointLight4)
+	{
+		return false;
+	}
+
+	// Initialize the fourth light object.
+	m_PointLight4->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+	m_PointLight4->SetPosition(6.0f, 5.0f, -6.0f);
+
 	// Create the refraction shader object.
 	m_RefractionShader = new RefractionShaderClass;
 	if (!m_RefractionShader)
@@ -334,6 +398,38 @@ void GraphicsClass::Shutdown()
 		m_TextureShader = 0;
 	}
 
+	// Release the light objects.
+	if (m_PointLight1)
+	{
+		delete m_PointLight1;
+		m_PointLight1 = 0;
+	}
+
+	if (m_PointLight2)
+	{
+		delete m_PointLight2;
+		m_PointLight2 = 0;
+	}
+
+	if (m_PointLight3)
+	{
+		delete m_PointLight3;
+		m_PointLight3 = 0;
+	}
+
+	if (m_PointLight4)
+	{
+		delete m_PointLight4;
+		m_PointLight4 = 0;
+	}
+
+	// Release the light shader object.
+	if (m_PointLightShader)
+	{
+		m_PointLightShader->Shutdown();
+		delete m_PointLightShader;
+		m_PointLightShader = 0;
+	}
 
 	// Release the light
 	if (m_Light)
@@ -544,9 +640,11 @@ bool GraphicsClass::RenderReflectionToTexture()
 
 bool GraphicsClass::RenderRefractionTexture()
 {
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
+
 	bool result;
 
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
+
 	static float textureTranslation = 0.0f;
 
 	// Setup a clipping plane based on the height of the water to clip everything above it.
@@ -593,6 +691,23 @@ bool GraphicsClass::RenderRefractionTexture()
 bool GraphicsClass::RenderScene()
 {
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, reflectionMatrix;
+
+	// Light Color and Position Arrays
+	XMVECTOR diffuseColor[4];
+	XMVECTOR lightPosition[4];
+
+	// Create the diffuse color array from the four light colors.
+	diffuseColor[0] = m_PointLight1->GetDiffuseColor();
+	diffuseColor[1] = m_PointLight2->GetDiffuseColor();
+	diffuseColor[2] = m_PointLight3->GetDiffuseColor();
+	diffuseColor[3] = m_PointLight4->GetDiffuseColor();
+
+	// Create the light position array from the four light positions.
+	lightPosition[0] = m_PointLight1->GetPosition();
+	lightPosition[1] = m_PointLight2->GetPosition();
+	lightPosition[2] = m_PointLight3->GetPosition();
+	lightPosition[3] = m_PointLight4->GetPosition();
+
 	bool result;
 
 	// Generate the view matrix based on the camera's position.
@@ -612,12 +727,9 @@ bool GraphicsClass::RenderScene()
 	worldMatrix = XMMatrixMultiply(worldMatrix, translationMatrix);
 	m_GroundModel->Render(m_D3D->GetDeviceContext());
 
-	XMVECTOR lightDirection = XMVectorSet(m_Light->GetDirection().x, m_Light->GetDirection().y, m_Light->GetDirection().z, 1.0f);
-
 	// Render the ground model using the light shader.
-	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix,
-		projectionMatrix, m_GroundModel->GetTexture(), lightDirection,
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	result = m_PointLightShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix,
+		projectionMatrix, m_GroundModel->GetTexture(), diffuseColor, lightPosition);
 	if (!result)
 	{
 		return false;
@@ -634,9 +746,8 @@ bool GraphicsClass::RenderScene()
 	m_WallModel->Render(m_D3D->GetDeviceContext());
 
 	// Render the wall model using the light shader.
-	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_WallModel->GetIndexCount(), worldMatrix, viewMatrix,
-		projectionMatrix, m_WallModel->GetTexture(), lightDirection,
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	result = m_PointLightShader->Render(m_D3D->GetDeviceContext(), m_WallModel->GetIndexCount(), worldMatrix, viewMatrix,
+		projectionMatrix, m_WallModel->GetTexture(), diffuseColor, lightPosition);
 	if (!result)
 	{
 		return false;
@@ -653,9 +764,8 @@ bool GraphicsClass::RenderScene()
 	m_BathModel->Render(m_D3D->GetDeviceContext());
 
 	// Render the bath model using the light shader.
-	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_BathModel->GetIndexCount(), worldMatrix, viewMatrix,
-		projectionMatrix, m_BathModel->GetTexture(), lightDirection,
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	result = m_PointLightShader->Render(m_D3D->GetDeviceContext(), m_BathModel->GetIndexCount(), worldMatrix, viewMatrix,
+		projectionMatrix, m_BathModel->GetTexture(), diffuseColor, lightPosition);
 	if (!result)
 	{
 		return false;

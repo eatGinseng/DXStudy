@@ -56,8 +56,12 @@ C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\d3d10.h(608,1):
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winerror.h(56841): message : see previous definition of 'D3D10_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS'
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\d3d10.h(609,1): warning C4005: 'D3D10_ERROR_FILE_NOT_FOUND': macro redefinition
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winerror.h(56850): message : see previous definition of 'D3D10_ERROR_FILE_NOT_FOUND'
-I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(51,22): warning C4316: 'D3DClass': object allocated on the heap may not be aligned 16
-I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(66,28): warning C4316: 'CameraClass': object allocated on the heap may not be aligned 16
-I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(163,26): warning C4316: 'LightClass': object allocated on the heap may not be aligned 16
-I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(254,24): warning C4316: 'TextClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(57,22): warning C4316: 'D3DClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(72,28): warning C4316: 'CameraClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(169,26): warning C4316: 'LightClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(244,37): warning C4316: 'PointLightClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(255,37): warning C4316: 'PointLightClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(266,37): warning C4316: 'PointLightClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(277,37): warning C4316: 'PointLightClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Water\GraphicsClass.cpp(318,24): warning C4316: 'TextClass': object allocated on the heap may not be aligned 16
   2DRendering.vcxproj -> I:\DXStudy\RasterTek\Water\Debug\Water.exe

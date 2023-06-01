@@ -1,7 +1,3 @@
-#ifndef _LIGHTCLASS_H_
-#define _LIGHTCLASS_H_
-
-
 #include <DirectXMath.h>
 using namespace DirectX;
 using namespace std;
@@ -23,8 +19,7 @@ public:
 private:
 
 	XMVECTOR m_diffuseColor;
-	XMFLOAT3 m_position;
+	XMVECTOR m_position;
 
 };
 
-#endif

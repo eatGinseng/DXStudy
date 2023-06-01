@@ -31,11 +31,10 @@ struct PixelInputType
     float3 lightPos4 : TEXCOORD4;
 };
 
-PixelInputType LightVertexShader(VertexInputType input)
+PixelInputType PointLightVertexShader(VertexInputType input)
 {
     PixelInputType output;
     float4 worldPosition;
-
 
     // Change the position vector to be 4 units for proper matrix calculations.
     input.position.w = 1.0f;
