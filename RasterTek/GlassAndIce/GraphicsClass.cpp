@@ -686,12 +686,8 @@ bool GraphicsClass::RenderScene(float rotation)
 	m_CubeModel->Render(m_D3D->GetDeviceContext());
 
 	// Render the Cube model using the light shader.
-result = m_GlassShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix,
+	result = m_GlassShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix,
 		projectionMatrix, m_CubeModel->GetTexture(), m_CubeModel->GetNormalMap(), m_RefractionTexture->GetShaderResourceView(), refractionScale);
-
-//	result = m_PointLightShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix,
-// 		projectionMatrix, m_CubeModel->GetTexture(), diffuseColor, lightPosition);
-
 
 	if (!result)
 	{

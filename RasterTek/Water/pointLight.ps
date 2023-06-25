@@ -44,4 +44,5 @@ float4 PointLightPixelShader(PixelInputType input) : SV_TARGET
     color = saturate(color1 + color2 + color3 + color4) * textureColor;
 	
     return color;
+    // return float4(1.0f, 0.0f, 1.0f, 1.0f);
 }

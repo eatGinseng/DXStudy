@@ -1,0 +1,3 @@
+I:\DXStudy\RasterTek\2DRendering\Debug\2DRendering.exe
+I:\DXStudy\RasterTek\MultiTexture\Debug\MultiTexture.exe
+I:\DXStudy\RasterTek\Fire\Debug\Fire.exe
