@@ -18,15 +18,15 @@
 #include "ModelClass.h"
 #include "MultiTextureShaderClass.h"
 #include "LightClass.h"
-#include "FireShaderClass.h"
+#include "DepthShaderClass.h"
 
 /////////////
 // GLOBALS //
 /////////////
 const bool FULL_SCREEN = true;
 const bool VSYNC_ENABLED = false;
-const float SCREEN_DEPTH = 1000.0f;
-const float SCREEN_NEAR = 0.1f;
+const float SCREEN_DEPTH = 30.0f;
+const float SCREEN_NEAR = 1.0f;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -60,8 +60,7 @@ private:
 	LightClass* m_Light;
 
 	XMMATRIX baseViewMatrix;
-	MultiTextureShaderClass* m_MultiTextureShader;
-	FireShaderClass* m_FireShader;
+	DepthShaderClass* m_DepthShader;
 
 	BitmapClass* m_Bitmap;
 

@@ -18,9 +18,7 @@ GraphicsClass::GraphicsClass()
 	m_Plane = 0;
 
 	m_Light = 0;
-
-	m_MultiTextureShader = 0;
-	m_FireShader = 0;
+	m_DepthShader = 0;
 
 	m_Bitmap = 0;
 
@@ -68,20 +66,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
-	
-
-	// Create the light object
-	m_Light = new LightClass;
-	if (!m_Light)
-	{
-		return false;
-	}
-
-	m_Light->SetDiffuseColor(1.0f, 1.0f, 0.7f, 1.0f);
-	m_Light->SetDirection(0.6f, 0.0f, 0.5f);
-
-	// Create the render to texture object
-
 
 	// Create text object
 	m_Text = new TextClass;
@@ -124,7 +108,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	char modelFilename[128];
 	ZeroMemory(modelFilename, sizeof(char) * 128);
-	strcpy_s(modelFilename, "square.txt");
+	strcpy_s(modelFilename, "floor.txt");
 
 	// ModelClass 초기화
 	m_Model = new ModelClass;
@@ -134,22 +118,15 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	m_MultiTextureShader = new MultiTextureShaderClass;
-	result = m_MultiTextureShader->Initialize(m_D3D->GetDevice(), hwnd);
+	m_DepthShader = new DepthShaderClass;
+	result = m_DepthShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the multitexture shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the Depth shader object.", L"Error", MB_OK);
 		return false;
 	}
 
-	m_FireShader = new FireShaderClass;
-	if (!m_FireShader)
-	{
-		MessageBox(hwnd, L"Could not initialize the Fire shader object.", L"Error", MB_OK);
-		return false;
-	}
-
-	result = m_FireShader->Initialize(m_D3D->GetDevice(), hwnd);
+	result = m_DepthShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
 		return false;
@@ -207,11 +184,11 @@ void GraphicsClass::Shutdown()
 		m_TextureShader = 0;
 	}
 	// Release the fire shader object.
-	if (m_FireShader)
+	if (m_DepthShader)
 	{
-		m_FireShader->Shutdown();
-		delete m_FireShader;
-		m_FireShader = 0;
+		m_DepthShader->Shutdown();
+		delete m_DepthShader;
+		m_DepthShader = 0;
 	}
 
 	// Release the light
@@ -219,14 +196,6 @@ void GraphicsClass::Shutdown()
 	{
 		delete m_Light;
 		m_Light = 0;
-	}
-
-	// Release the multiTextureShaderClass
-	if (m_MultiTextureShader)
-	{
-		m_MultiTextureShader->Shutdown();
-		delete m_MultiTextureShader;
-		m_MultiTextureShader = 0;
 	}
 
 	if (m_TextureShader)
@@ -316,8 +285,14 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 	}
 
 	// Set the position of the camera.
-	m_Camera->SetPosition(0.0f, 1.0f, -6.0f);
-	m_Camera->SetRotation(12.0f, 0.0f, 0.0f);
+	m_Camera->SetPosition(0.0f, 2.0f, -10.0f);
+
+	// Render the graphics scene.
+	result = Render();
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -328,36 +303,8 @@ bool GraphicsClass::Render()
 	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix;
 	bool result;
 
-	XMFLOAT3 scrollSpeeds, scales;
-	XMFLOAT2 distortion1, distortion2, distortion3;
-
-	float distortionScale, distortionBias;
-	static float frameTime = 0.0f;
-
 	// Alpha blending 켜기
 	m_D3D->TurnOnAlphaBlending();
-
-	// Increment the frame time counter.
-	frameTime += 0.01f;
-	if (frameTime > 1000.0f)
-	{
-		frameTime = 0.0f;
-	}
-
-	// Set the three scrolling speeds for the three different noise textures.
-	scrollSpeeds = XMFLOAT3(0.03f, 0.021f, 0.023f);
-
-	// Set the three scales which will be used to create the three different noise octave textures.
-	scales = XMFLOAT3(1.0f, 2.0f, 3.0f);
-
-	// Set the three different x and y distortion factors for the three different noise textures.
-	distortion1 = XMFLOAT2(0.1f, 0.2f);
-	distortion2 = XMFLOAT2(0.1f, 0.3f);
-	distortion3 = XMFLOAT2(0.1f, 0.1f);
-
-	// The the scale and bias of the texture coordinate sampling perturbation.
-	distortionScale = 0.8f;
-	distortionBias = 0.5f;
 
 	// Clear the buffers to begin the scene. clear with fog color.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -373,9 +320,7 @@ bool GraphicsClass::Render()
 	m_Model->Render(m_D3D->GetDeviceContext());
 
 	// Render the square model using the fire shader.
-	result = m_FireShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_Model->GetTexture()[0], m_Model->GetTexture()[1], m_Model->GetTexture()[2], frameTime, scrollSpeeds,
-		scales, distortion1, distortion2, distortion3, distortionScale, distortionBias);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
 	if (!result)
 	{
 		return false;

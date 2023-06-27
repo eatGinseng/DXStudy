@@ -24,6 +24,7 @@
     <ClInclude Include="CpuClass.h" />
     <ClInclude Include="D3DClass.h" />
     <ClInclude Include="DebugWindowClass.h" />
+    <ClInclude Include="DepthShaderClass.h" />
     <ClInclude Include="FadeShaderClass.h" />
     <ClInclude Include="FireShaderClass.h" />
     <ClInclude Include="FontClass.h" />
@@ -52,6 +53,7 @@
     <ClCompile Include="CpuClass.cpp" />
     <ClCompile Include="D3DClass.cpp" />
     <ClCompile Include="DebugWindowClass.cpp" />
+    <ClCompile Include="DepthShaderClass.cpp" />
     <ClCompile Include="FadeShaderClass.cpp" />
     <ClCompile Include="FireShaderClass.cpp" />
     <ClCompile Include="FontClass.cpp" />
