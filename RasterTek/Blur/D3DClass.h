@@ -61,6 +61,8 @@ public:
 	void TurnOnAlphaBlending();
 	void TurnOffAlphaBlending();
 
+	void ResetViewport();
+
 private:
 	bool m_vsync_enabled;
 	int m_videoCardMemory;
@@ -83,6 +85,8 @@ private:
 	// alpha blending을 위한 state 두 가지
 	ID3D11BlendState* m_alphaEnableBlendingState;
 	ID3D11BlendState* m_alphaDisableBlendingState;
+
+	D3D11_VIEWPORT m_viewport;
 
 };
 

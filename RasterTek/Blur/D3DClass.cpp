@@ -366,6 +366,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	}
 
+
 	m_deviceContext->RSSetState(m_rasterState);
 
 	// viewport를 셋팅한다. 렌더타겟 스페이스에 clip space 좌표를 맵핑할 수 있게..
@@ -377,7 +378,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
 
-	m_deviceContext->RSSetViewports(1, &viewport);
+	m_deviceContext->RSSetViewports(1, &m_viewport);
 
 	// set up projection matrix
 
@@ -457,6 +458,13 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 }
 
 
+void D3DClass::ResetViewport()
+{
+	// Set the viewport.
+	m_deviceContext->RSSetViewports(1, &m_viewport);
+
+	return;
+}
 
 
 // Direct3D를 shutdown 할 때, 강제로 fullscreen모드 종료 : 그렇지 않으면 swap chain 을 release 할 때 exception이 생김
