@@ -574,10 +574,10 @@ bool GraphicsClass::RenderSceneToTexture(float rotation)
 	bool result;
 
 	// Set the render target to be the render to texture.
-	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
 
 	// Clear the render to texture.
-	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
