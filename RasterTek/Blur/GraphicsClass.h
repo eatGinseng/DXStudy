@@ -11,7 +11,6 @@
 #include "d3dclass.h"
 #include <DirectXMath.h>
 #include "cameraclass.h"
-#include "TextClass.h"
 #include "BitmapClass.h"
 #include "rendertotextureclass.h"
 
@@ -28,9 +27,9 @@ using namespace DirectX;
 // GLOBALS //
 /////////////
 const bool FULL_SCREEN = true;
-const bool VSYNC_ENABLED = false;
-const float SCREEN_DEPTH = 100.0f;
-const float SCREEN_NEAR = 1.0f;
+const bool VSYNC_ENABLED = true;
+const float SCREEN_DEPTH = 1000.0f;
+const float SCREEN_NEAR = 0.1f;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,6 +48,7 @@ public:
 
 
 private:
+
 	bool Render(float);
 	bool RenderSceneToTexture(float);
 	bool DownSampleTexture();
@@ -62,7 +62,6 @@ private:
 	CameraClass* m_Camera;
 	TextureShaderClass* m_TextureShader;
 
-	TextClass* m_Text;
 	BitmapClass* m_Cursor;
 	ModelClass* m_Model;
 
@@ -71,7 +70,7 @@ private:
 	VerticalBlurShaderClass* m_VerticalBlurShader;
 
 	RenderToTextureClass* m_RenderTexture, *m_DownSampleTexture, *m_HorizontalBlurTexture, *m_VerticalBlurTexture, *m_UpSampleTexture;
-	OrthowindowClass* m_SmallWindow, *m_FullScreenWindow;
+	OrthoWindowClass* m_SmallWindow, *m_FullScreenWindow;
 
 	BitmapClass* m_Bitmap;
 

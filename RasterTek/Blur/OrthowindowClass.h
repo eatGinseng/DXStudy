@@ -1,29 +1,33 @@
+////////////////////////////////////////////////////////////////////////////////
+// Filename: orthowindowclass.h
+////////////////////////////////////////////////////////////////////////////////
+#ifndef _ORTHOWINDOWCLASS_H_
+#define _ORTHOWINDOWCLASS_H_
+
 
 //////////////
 // INCLUDES //
 //////////////
 #include <d3d11.h>
 #include <d3dx10math.h>
-#include <DirectXMath.h>
-using namespace DirectX;
 
-#include <fstream>
-using namespace std;
 
-class OrthowindowClass
+////////////////////////////////////////////////////////////////////////////////
+// Class name: OrthoWindowClass
+////////////////////////////////////////////////////////////////////////////////
+class OrthoWindowClass
 {
 private:
 	struct VertexType
 	{
-		XMFLOAT3 position;
-	    XMFLOAT2 texture;
-
+		D3DXVECTOR3 position;
+	    D3DXVECTOR2 texture;
 	};
 
 public:
-	OrthowindowClass();
-	OrthowindowClass(const OrthowindowClass&);
-	~OrthowindowClass();
+	OrthoWindowClass();
+	OrthoWindowClass(const OrthoWindowClass&);
+	~OrthoWindowClass();
 
 	bool Initialize(ID3D11Device*, int, int);
 	void Shutdown();
@@ -39,6 +43,6 @@ private:
 private:
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	int m_vertexCount, m_indexCount;
-
 };
 
+#endif

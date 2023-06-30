@@ -9,8 +9,6 @@ GraphicsClass::GraphicsClass()
 	m_D3D = 0;
 	m_Camera = 0;
 
-	m_Text = 0;
-
 	m_Cursor = 0;
 	m_TextureShader = 0;
 	m_Model = 0;
@@ -49,8 +47,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	downSampleWidth = screenWidth / 2;
 	downSampleHeight = screenHeight / 2;
 
-
-
 	// Create the Direct3D object.
 	m_D3D = new D3DClass;
 	if(!m_D3D)
@@ -78,20 +74,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
 
-	// Create text object
-	m_Text = new TextClass;
-	if (!m_Text)
-	{
-		return false;
-	}
-
-	// text object 초기화
-	result = m_Text->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), hwnd, screenWidth, screenHeight, baseViewMatrix);
-	if (!result)
-	{
-		return false;
-	}
-
 	// cursor bitmap object 초기화
 	m_Cursor = new BitmapClass;
 	if (!m_Cursor)
@@ -106,20 +88,12 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	char textureFilename1[128];
-	strcpy_s(textureFilename1, "fire01.tga");
-
-	char textureFilename2[128];
-	strcpy_s(textureFilename2, "noise01.tga");
-
-	char textureFilename3[128];
-	strcpy_s(textureFilename3, "alpha01.tga");
-
-	char textureFilename4[128];
-	strcpy_s(textureFilename4, "normal.tga");
+	ZeroMemory(textureFilename1, sizeof(char) * 128);
+	strcpy_s(textureFilename1, "seafloor.tga");
 
 	char modelFilename[128];
 	ZeroMemory(modelFilename, sizeof(char) * 128);
-	strcpy_s(modelFilename, "floor.txt");
+	strcpy_s(modelFilename, "cube.txt");
 
 	// ModelClass 초기화
 	m_Model = new ModelClass;
@@ -264,7 +238,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Create the small ortho window object.
-	m_SmallWindow = new OrthowindowClass;
+	m_SmallWindow = new OrthoWindowClass;
 	if (!m_SmallWindow)
 	{
 		return false;
@@ -279,7 +253,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Create the full screen ortho window object.
-	m_FullScreenWindow = new OrthowindowClass;
+	m_FullScreenWindow = new OrthoWindowClass;
 	if (!m_FullScreenWindow)
 	{
 		return false;
@@ -386,13 +360,6 @@ void GraphicsClass::Shutdown()
 		m_TextureShader = 0;
 	}
 
-	if (m_TextureShader)
-	{
-		m_TextureShader->Shutdown();
-		delete m_TextureShader;
-		m_TextureShader = 0;
-	}
-
 	if (m_Model)
 	{
 		m_Model->Shutdown();
@@ -406,14 +373,6 @@ void GraphicsClass::Shutdown()
 		m_Cursor->Shutdown();
 		delete m_Cursor;
 		m_Cursor = 0;
-	}
-
-	// Release the text object.
-	if (m_Text)
-	{
-		m_Text->Shutdown();
-		delete m_Text;
-		m_Text = 0;
 	}
 
 	// Release the camera object.
@@ -448,33 +407,12 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 		rotation -= 360.0f;
 	}
 	
-	// Set the location of the mouse.
-	result = m_Text->SetMousePosition(mouseX, mouseY, m_D3D->GetDeviceContext());
-	if (!result)
-	{
-		return false;
-	}
 
 	result = m_Cursor->SetMousePosition(mouseX, mouseY);
 	if (!result)
 	{
 		return false;
 	}
-
-	result = m_Text->SetFps(fps, m_D3D->GetDeviceContext());
-	if(!result)
-	{
-		return false;
-	}
-
-	result = m_Text->SetCpu(cpu, m_D3D->GetDeviceContext());
-	if (!result)
-	{
-		return false;
-	}
-
-	// Set the position of the camera.
-	m_Camera->SetPosition(0.0f, 2.0f, -10.0f);
 
 	// Render the graphics scene.
 	result = Render(rotation);
@@ -489,11 +427,8 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 
 bool GraphicsClass::Render(float rotation)
 {
-	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix;
 	bool result;
 
-	// Alpha blending 켜기
-	m_D3D->TurnOnAlphaBlending();
 	// First render the scene to a render texture.
 	result = RenderSceneToTexture(rotation);
 	if (!result)
@@ -536,44 +471,6 @@ bool GraphicsClass::Render(float rotation)
 		return false;
 	}
 
-	// Turn off the Z buffer to begin all 2D rendering.
-	m_D3D->TurnZBufferOff();
-
-	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
-	m_D3D->GetWorldMatrix(worldMatrix);
-	m_Camera->GetViewMatrix(viewMatrix);
-	m_D3D->GetOrthoMatrix(orthoMatrix);
-
-	// text string 렌더하기
-	result = m_Text->Render(m_D3D->GetDeviceContext(), worldMatrix, orthoMatrix);
-	if (!result)
-	{
-		return false;
-	}
-
-	result = m_Cursor->Render(m_D3D->GetDeviceContext(), m_Cursor->mouseX, m_Cursor->mouseY);
-	if (!result)
-	{
-		return false;
-	}
-
-	// Render the bitmap with the texture shader.
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Cursor->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_Cursor->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
-
-	// alpha blending off
-	// Turn off alpha blending after rendering the text.
-	m_D3D->TurnOffAlphaBlending();
-
-	// Turn the Z buffer back on now that all 2D rendering has completed.
-	m_D3D->TurnZBufferOn();
-
-	// Present the rendered scene to the screen.
-	m_D3D->EndScene();
-
 	return true;
 }
 
@@ -583,10 +480,10 @@ bool GraphicsClass::RenderSceneToTexture(float rotation)
 	bool result;
 
 	// Set the render target to be the render to texture.
-	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext());
 
 	// Clear the render to texture.
-	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 0.0f, 1.0f);
+	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -627,10 +524,10 @@ bool GraphicsClass::DownSampleTexture()
 
 
 	// Set the render target to be the render to texture.
-	m_DownSampleTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+	m_DownSampleTexture->SetRenderTarget(m_D3D->GetDeviceContext());
 
 	// Clear the render to texture.
-	m_DownSampleTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 1.0f, 0.0f, 1.0f);
+	m_DownSampleTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 1.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -679,10 +576,10 @@ bool GraphicsClass::RenderHorizontalBlurToTexture()
 	screenSizeX = (float)m_HorizontalBlurTexture->GetTextureWidth();
 
 	// Set the render target to be the render to texture.
-	m_HorizontalBlurTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+	m_HorizontalBlurTexture->SetRenderTarget(m_D3D->GetDeviceContext());
 
 	// Clear the render to texture.
-	m_HorizontalBlurTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 0.0f, 1.0f);
+	m_HorizontalBlurTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -731,10 +628,10 @@ bool GraphicsClass::RenderVerticalBlurToTexture()
 	screenSizeY = (float)m_VerticalBlurTexture->GetTextureHeight();
 
 	// Set the render target to be the render to texture.
-	m_VerticalBlurTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+	m_VerticalBlurTexture->SetRenderTarget(m_D3D->GetDeviceContext());
 
 	// Clear the render to texture.
-	m_VerticalBlurTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 0.0f, 1.0f);
+	m_VerticalBlurTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -779,10 +676,10 @@ bool GraphicsClass::UpSampleTexture()
 
 
 	// Set the render target to be the render to texture.
-	m_UpSampleTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+	m_UpSampleTexture->SetRenderTarget(m_D3D->GetDeviceContext());
 
 	// Clear the render to texture.
-	m_UpSampleTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 0.0f, 1.0f);
+	m_UpSampleTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 1.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();

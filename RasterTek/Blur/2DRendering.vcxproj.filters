@@ -33,9 +33,6 @@
     <ClInclude Include="D3DClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FontClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FontShaderClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -55,9 +52,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SystemClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextureClass.h">
@@ -122,9 +116,6 @@
     <ClCompile Include="D3DClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FontClass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FontShaderClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -141,9 +132,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SystemClass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TextureClass.cpp">

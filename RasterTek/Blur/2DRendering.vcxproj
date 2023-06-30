@@ -27,7 +27,6 @@
     <ClInclude Include="DepthShaderClass.h" />
     <ClInclude Include="FadeShaderClass.h" />
     <ClInclude Include="FireShaderClass.h" />
-    <ClInclude Include="FontClass.h" />
     <ClInclude Include="FontShaderClass.h" />
     <ClInclude Include="FpsClass.h" />
     <ClInclude Include="GraphicsClass.h" />
@@ -43,7 +42,6 @@
     <ClInclude Include="MultiTextureShaderClass.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SystemClass.h" />
-    <ClInclude Include="TextClass.h" />
     <ClInclude Include="TextureClass.h" />
     <ClInclude Include="TextureShaderClass.h" />
     <ClInclude Include="TimerClass.h" />
@@ -59,7 +57,6 @@
     <ClCompile Include="DepthShaderClass.cpp" />
     <ClCompile Include="FadeShaderClass.cpp" />
     <ClCompile Include="FireShaderClass.cpp" />
-    <ClCompile Include="FontClass.cpp" />
     <ClCompile Include="FontShaderClass.cpp" />
     <ClCompile Include="FpsClass.cpp" />
     <ClCompile Include="GraphicsClass.cpp" />
@@ -74,7 +71,6 @@
     <ClCompile Include="TextureArrayClass.cpp" />
     <ClCompile Include="MultiTextureShaderClass.cpp" />
     <ClCompile Include="SystemClass.cpp" />
-    <ClCompile Include="TextClass.cpp" />
     <ClCompile Include="TextureClass.cpp" />
     <ClCompile Include="TextureShaderClass.cpp" />
     <ClCompile Include="TimerClass.cpp" />

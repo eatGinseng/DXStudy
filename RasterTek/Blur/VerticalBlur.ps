@@ -1,3 +1,6 @@
+Texture2D shaderTexture;
+SamplerState SampleType;
+
 struct PixelInputType
 {
     float4 position : SV_POSITION;
@@ -56,3 +59,4 @@ float4 VerticalBlurPixelShader(PixelInputType input) : SV_TARGET
 
     return color;
 }
+

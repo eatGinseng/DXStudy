@@ -1,4 +1,4 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (2DRendering.vcxproj, Fire.vcxproj, MultiTexture.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(513,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (2DRendering.vcxproj, DepthBuffer.vcxproj, Fire.vcxproj, MultiTexture.vcxproj).  This can lead to incorrect clean and rebuild behavior.
   GraphicsClass.cpp
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\dxgitype.h(12,1): warning C4005: 'DXGI_STATUS_OCCLUDED': macro redefinition
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winerror.h(56388): message : see previous definition of 'DXGI_STATUS_OCCLUDED'
@@ -56,14 +56,14 @@ C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\d3d10.h(608,1):
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winerror.h(56841): message : see previous definition of 'D3D10_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS'
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\d3d10.h(609,1): warning C4005: 'D3D10_ERROR_FILE_NOT_FOUND': macro redefinition
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winerror.h(56850): message : see previous definition of 'D3D10_ERROR_FILE_NOT_FOUND'
-I:\DXStudy\RasterTek\DepthBuffer\GraphicsClass.cpp(44,22): warning C4316: 'D3DClass': object allocated on the heap may not be aligned 16
-I:\DXStudy\RasterTek\DepthBuffer\GraphicsClass.cpp(59,28): warning C4316: 'CameraClass': object allocated on the heap may not be aligned 16
-I:\DXStudy\RasterTek\DepthBuffer\GraphicsClass.cpp(71,24): warning C4316: 'TextClass': object allocated on the heap may not be aligned 16
-I:\DXStudy\RasterTek\DepthBuffer\GraphicsClass.cpp(377,7): warning C4101: 'result': unreferenced local variable
-I:\DXStudy\RasterTek\DepthBuffer\GraphicsClass.cpp(375,36): warning C4101: 'projectionMatrix': unreferenced local variable
-I:\DXStudy\RasterTek\DepthBuffer\GraphicsClass.cpp(375,24): warning C4101: 'viewMatrix': unreferenced local variable
-I:\DXStudy\RasterTek\DepthBuffer\GraphicsClass.cpp(375,11): warning C4101: 'worldMatrix': unreferenced local variable
-  main.cpp
+I:\DXStudy\RasterTek\Blur\GraphicsClass.cpp(51,22): warning C4316: 'D3DClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Blur\GraphicsClass.cpp(66,28): warning C4316: 'CameraClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Blur\GraphicsClass.cpp(166,44): warning C4316: 'RenderToTextureClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Blur\GraphicsClass.cpp(181,48): warning C4316: 'RenderToTextureClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Blur\GraphicsClass.cpp(196,52): warning C4316: 'RenderToTextureClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Blur\GraphicsClass.cpp(211,50): warning C4316: 'RenderToTextureClass': object allocated on the heap may not be aligned 16
+I:\DXStudy\RasterTek\Blur\GraphicsClass.cpp(226,46): warning C4316: 'RenderToTextureClass': object allocated on the heap may not be aligned 16
+  RenderToTextureClass.cpp
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\dxgitype.h(12,1): warning C4005: 'DXGI_STATUS_OCCLUDED': macro redefinition
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winerror.h(56388): message : see previous definition of 'DXGI_STATUS_OCCLUDED'
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\dxgitype.h(13,1): warning C4005: 'DXGI_STATUS_CLIPPED': macro redefinition
@@ -121,4 +121,4 @@ C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winerror.h(56
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\d3d10.h(609,1): warning C4005: 'D3D10_ERROR_FILE_NOT_FOUND': macro redefinition
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.19041.0\shared\winerror.h(56850): message : see previous definition of 'D3D10_ERROR_FILE_NOT_FOUND'
   Generating Code...
-  2DRendering.vcxproj -> I:\DXStudy\RasterTek\DepthBuffer\Debug\DepthBuffer.exe
+  2DRendering.vcxproj -> I:\DXStudy\RasterTek\Blur\Debug\Blur.exe
