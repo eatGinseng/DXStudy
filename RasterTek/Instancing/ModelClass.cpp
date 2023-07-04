@@ -227,7 +227,7 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	bufferPointers[1] = m_instanceBuffer;
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
-	deviceContext->IASetVertexBuffers(0, 2, &m_vertexBuffer, strides, offsets);
+	deviceContext->IASetVertexBuffers(0, 2, bufferPointers, strides, offsets);
 
     // Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
