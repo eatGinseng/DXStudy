@@ -19,6 +19,7 @@
 #include "MultiTextureShaderClass.h"
 #include "LightClass.h"
 #include "DepthShaderClass.h"
+#include "ColorShaderClass.h"
 
 /////////////
 // GLOBALS //
@@ -44,8 +45,6 @@ public:
 	bool Frame(int, int, float, int, int);
 	bool Render();
 
-private:
-	bool RenderScene();
 
 private:
 	D3DClass* m_D3D;
@@ -61,6 +60,7 @@ private:
 
 	XMMATRIX baseViewMatrix;
 	DepthShaderClass* m_DepthShader;
+	ColorShaderClass* m_ColorShader;
 
 	BitmapClass* m_Bitmap;
 

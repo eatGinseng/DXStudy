@@ -20,6 +20,8 @@ GraphicsClass::GraphicsClass()
 	m_Light = 0;
 	m_DepthShader = 0;
 
+	m_ColorShader = 0;
+
 	m_Bitmap = 0;
 
 }
@@ -126,9 +128,12 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	result = m_DepthShader->Initialize(m_D3D->GetDevice(), hwnd);
+
+	m_ColorShader = new ColorShaderClass;
+	result = m_ColorShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
+		MessageBox(hwnd, L"Could not initialize the ColorShader shader object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -183,7 +188,16 @@ void GraphicsClass::Shutdown()
 		delete m_TextureShader;
 		m_TextureShader = 0;
 	}
-	// Release the fire shader object.
+
+	// Release the Color shader object.
+	if (m_ColorShader)
+	{
+		m_ColorShader->Shutdown();
+		delete m_ColorShader;
+		m_ColorShader = 0;
+	}
+
+	// Release the depth shader object.
 	if (m_DepthShader)
 	{
 		m_DepthShader->Shutdown();
@@ -285,7 +299,7 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 	}
 
 	// Set the position of the camera.
-	m_Camera->SetPosition(0.0f, 2.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 
 	// Render the graphics scene.
 	result = Render();
@@ -320,7 +334,7 @@ bool GraphicsClass::Render()
 	m_Model->Render(m_D3D->GetDeviceContext());
 
 	// Render the square model using the fire shader.
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
+	result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 12.0f);
 	if (!result)
 	{
 		return false;
@@ -369,18 +383,3 @@ bool GraphicsClass::Render()
 	return true;
 }
 
-// 원래 하던 렌더를 여기에서 함
-bool GraphicsClass::RenderScene()
-{
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
-
-	bool result;
-
-
-	m_D3D->GetOrthoMatrix(orthoMatrix);
-
-
-
-	return true;
-
-}
