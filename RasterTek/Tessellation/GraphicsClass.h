@@ -10,15 +10,10 @@
 ///////////////////////
 #include "d3dclass.h"
 #include "cameraclass.h"
-#include "TextClass.h"
-#include "BitmapClass.h"
-#include "rendertotextureclass.h"
-#include "debugwindowclass.h"
+
 #include "TextureShaderClass.h"
 #include "ModelClass.h"
-#include "MultiTextureShaderClass.h"
-#include "LightClass.h"
-#include "DepthShaderClass.h"
+
 #include "ColorShaderClass.h"
 
 /////////////
@@ -27,7 +22,7 @@
 const bool FULL_SCREEN = true;
 const bool VSYNC_ENABLED = false;
 const float SCREEN_DEPTH = 100.0f;
-const float SCREEN_NEAR = 1.0f;
+const float SCREEN_NEAR = 0.1f;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,18 +46,11 @@ private:
 	CameraClass* m_Camera;
 	TextureShaderClass* m_TextureShader;
 
-	TextClass* m_Text;
-	BitmapClass* m_Cursor;
 	ModelClass* m_Model;
-	ModelClass* m_Plane;
-
-	LightClass* m_Light;
 
 	XMMATRIX baseViewMatrix;
-	DepthShaderClass* m_DepthShader;
-	ColorShaderClass* m_ColorShader;
 
-	BitmapClass* m_Bitmap;
+	ColorShaderClass* m_ColorShader;
 
 
 };

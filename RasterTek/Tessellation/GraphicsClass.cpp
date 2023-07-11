@@ -9,20 +9,10 @@ GraphicsClass::GraphicsClass()
 	m_D3D = 0;
 	m_Camera = 0;
 
-	m_Text = 0;
-
-	m_Cursor = 0;
 	m_TextureShader = 0;
 	m_Model = 0;
 
-	m_Plane = 0;
-
-	m_Light = 0;
-	m_DepthShader = 0;
-
 	m_ColorShader = 0;
-
-	m_Bitmap = 0;
 
 }
 
@@ -65,36 +55,9 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 0.0f, -4.0f);
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
-
-	// Create text object
-	m_Text = new TextClass;
-	if (!m_Text)
-	{
-		return false;
-	}
-
-	// text object 초기화
-	result = m_Text->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), hwnd, screenWidth, screenHeight, baseViewMatrix);
-	if (!result)
-	{
-		return false;
-	}
-
-	// cursor bitmap object 초기화
-	m_Cursor = new BitmapClass;
-	if (!m_Cursor)
-	{
-		return false;
-	}
-
-	result = m_Cursor->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), screenWidth, screenHeight, 50, 50, "Cursor.tga", hwnd);
-	if (!result)
-	{
-		return false;
-	}
 
 	char textureFilename1[128];
 	strcpy_s(textureFilename1, "fire01.tga");
@@ -120,15 +83,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	m_DepthShader = new DepthShaderClass;
-	result = m_DepthShader->Initialize(m_D3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the Depth shader object.", L"Error", MB_OK);
-		return false;
-	}
-
-
 	m_ColorShader = new ColorShaderClass;
 	result = m_ColorShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
@@ -137,34 +91,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	m_TextureShader = new TextureShaderClass;
-	if (!m_TextureShader)
-	{
-		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// TextureShader 초기화
-	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		return false;
-	}
-
-	// Create the bitmap object.
-	m_Bitmap = new BitmapClass;
-	if (!m_Bitmap)
-	{
-		return false;
-	}
-
-	// Initialize the bitmap object.
-	result = m_Bitmap->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight, screenWidth, screenHeight);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the bitmap object.", L"Error", MB_OK);
-		return false;
-	}
 
 
 	return true;
@@ -174,57 +100,12 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 void GraphicsClass::Shutdown()
 {
 
-	// Release the bitmap object.
-	if (m_Bitmap)
-	{
-		m_Bitmap->Shutdown();
-		delete m_Bitmap;
-		m_Bitmap = 0;
-	}
-	// Release the cursor bitmap
-	if (m_TextureShader)
-	{
-		m_TextureShader->Shutdown();
-		delete m_TextureShader;
-		m_TextureShader = 0;
-	}
-
 	// Release the Color shader object.
 	if (m_ColorShader)
 	{
 		m_ColorShader->Shutdown();
 		delete m_ColorShader;
 		m_ColorShader = 0;
-	}
-
-	// Release the depth shader object.
-	if (m_DepthShader)
-	{
-		m_DepthShader->Shutdown();
-		delete m_DepthShader;
-		m_DepthShader = 0;
-	}
-
-	// Release the light
-	if (m_Light)
-	{
-		delete m_Light;
-		m_Light = 0;
-	}
-
-	if (m_TextureShader)
-	{
-		m_TextureShader->Shutdown();
-		delete m_TextureShader;
-		m_TextureShader = 0;
-	}
-
-	// Release Plane Model
-	if (m_Plane)
-	{
-		m_Plane->Shutdown();
-		delete m_Plane;
-		m_Plane = 0;
 	}
 
 	if (m_Model)
@@ -234,21 +115,6 @@ void GraphicsClass::Shutdown()
 		m_Model = 0;
 	}
 
-	// Release the cursor bitmap
-	if (m_Cursor)
-	{
-		m_Cursor->Shutdown();
-		delete m_Cursor;
-		m_Cursor = 0;
-	}
-
-	// Release the text object.
-	if (m_Text)
-	{
-		m_Text->Shutdown();
-		delete m_Text;
-		m_Text = 0;
-	}
 
 	// Release the camera object.
 	if(m_Camera)
@@ -272,34 +138,9 @@ void GraphicsClass::Shutdown()
 bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mouseY)
 {
 	bool result;
-	
-	// Set the location of the mouse.
-	result = m_Text->SetMousePosition(mouseX, mouseY, m_D3D->GetDeviceContext());
-	if (!result)
-	{
-		return false;
-	}
-
-	result = m_Cursor->SetMousePosition(mouseX, mouseY);
-	if (!result)
-	{
-		return false;
-	}
-
-	result = m_Text->SetFps(fps, m_D3D->GetDeviceContext());
-	if(!result)
-	{
-		return false;
-	}
-
-	result = m_Text->SetCpu(cpu, m_D3D->GetDeviceContext());
-	if (!result)
-	{
-		return false;
-	}
 
 	// Set the position of the camera.
-	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 0.0f, -4.0f);
 
 	// Render the graphics scene.
 	result = Render();
@@ -334,48 +175,11 @@ bool GraphicsClass::Render()
 	m_Model->Render(m_D3D->GetDeviceContext());
 
 	// Render the square model using the fire shader.
-	result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 12.0f);
+	result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 1.0f);
 	if (!result)
 	{
 		return false;
 	}
-
-	// Turn off the Z buffer to begin all 2D rendering.
-	m_D3D->TurnZBufferOff();
-
-	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
-	m_D3D->GetWorldMatrix(worldMatrix);
-	m_Camera->GetViewMatrix(viewMatrix);
-	m_D3D->GetOrthoMatrix(orthoMatrix);
-
-
-
-	// text string 렌더하기
-	result = m_Text->Render(m_D3D->GetDeviceContext(), worldMatrix, orthoMatrix);
-	if (!result)
-	{
-		return false;
-	}
-
-	result = m_Cursor->Render(m_D3D->GetDeviceContext(), m_Cursor->mouseX, m_Cursor->mouseY);
-	if (!result)
-	{
-		return false;
-	}
-
-	// Render the bitmap with the texture shader.
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Cursor->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_Cursor->GetTexture());
-	if (!result)
-	{
-		return false;
-	}
-
-	// alpha blending off
-	// Turn off alpha blending after rendering the text.
-	m_D3D->TurnOffAlphaBlending();
-
-	// Turn the Z buffer back on now that all 2D rendering has completed.
-	m_D3D->TurnZBufferOn();
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();
