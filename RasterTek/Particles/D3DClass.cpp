@@ -219,7 +219,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Don't set the advanced flags.
 	swapChainDesc.Flags = 0;
 
-	// 어느 버전의 DX를 상요할지 셜정. 11.0은 DirectX 11을 의미. 더 낮은 버전을 지원하려면 이걸 낮추면 돤다.
+	// 어느 버전의 DX를 사용할지 셜정. 11.0은 DirectX 11을 의미. 더 낮은 버전을 지원하려면 이걸 낮추면 돤다.
 	featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 	// 이제 SwapChain을 생성할 준비 완료.
@@ -427,8 +427,10 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// alpha blend state description 생성
 	blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
-	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+
+	//  the equation ends up being color = (1 * source) + (1 * destination).
+	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
 	blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
 	blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 	blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;

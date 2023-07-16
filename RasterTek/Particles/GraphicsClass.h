@@ -15,6 +15,8 @@
 #include "ModelClass.h"
 
 #include "ColorShaderClass.h"
+#include "ParticleShaderClass.h"
+#include "ParticleSystemClass.h"
 
 /////////////
 // GLOBALS //
@@ -52,6 +54,8 @@ private:
 
 	ColorShaderClass* m_ColorShader;
 
+	ParticleSystemClass* m_ParticleSystem;
+	ParticleShaderClass* m_ParticleShader;
 
 };
 

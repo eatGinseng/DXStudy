@@ -14,6 +14,8 @@ GraphicsClass::GraphicsClass()
 
 	m_ColorShader = 0;
 
+	m_ParticleShader = 0;
+	m_ParticleSystem = 0;
 }
 
 
@@ -55,12 +57,11 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	m_Camera->SetPosition(0.0f, 0.0f, -4.0f);
+	m_Camera->SetPosition(0.0f, -2.0f, -10.0f);
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
 
-	char textureFilename1[128];
-	strcpy_s(textureFilename1, "fire01.tga");
+
 
 	char textureFilename2[128];
 	strcpy_s(textureFilename2, "noise01.tga");
@@ -75,23 +76,37 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	ZeroMemory(modelFilename, sizeof(char) * 128);
 	strcpy_s(modelFilename, "ChamferredBox.txt");
 
-	// ModelClass ÃÊ±âÈ­
-	m_Model = new ModelClass;
-	result = m_Model->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename1, textureFilename2, textureFilename3, textureFilename4, hwnd, modelFilename);
-	if (!result)
+
+	
+	m_ParticleShader = new ParticleShaderClass;
+	if (!m_ParticleShader)
 	{
 		return false;
 	}
 
-	m_ColorShader = new ColorShaderClass;
-	result = m_ColorShader->Initialize(m_D3D->GetDevice(), hwnd);
+	result = m_ParticleShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the ColorShader shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the particle shader object.", L"Error", MB_OK);
 		return false;
 	}
 
+	// Create the particle system object.
+	m_ParticleSystem = new ParticleSystemClass;
+	if (!m_ParticleSystem)
+	{
+		return false;
+	}
 
+	char textureFilename[128];
+	strcpy_s(textureFilename, "star.tga");
+
+	// Initialize the particle system object.
+	result = m_ParticleSystem->Initialize(m_D3D->GetDevice(),m_D3D->GetDeviceContext(), textureFilename, hwnd);
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -99,6 +114,22 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void GraphicsClass::Shutdown()
 {
+
+	// Release the particle system object.
+	if (m_ParticleSystem)
+	{
+		m_ParticleSystem->Shutdown();
+		delete m_ParticleSystem;
+		m_ParticleSystem = 0;
+	}
+
+	// Release the particle shader object.
+	if (m_ParticleShader)
+	{
+		m_ParticleShader->Shutdown();
+		delete m_ParticleShader;
+		m_ParticleShader = 0;
+	}
 
 	// Release the Color shader object.
 	if (m_ColorShader)
@@ -114,7 +145,6 @@ void GraphicsClass::Shutdown()
 		delete m_Model;
 		m_Model = 0;
 	}
-
 
 	// Release the camera object.
 	if(m_Camera)
@@ -141,6 +171,9 @@ bool GraphicsClass::Frame(int fps, int cpu, float frameTime, int mouseX, int mou
 
 	// Set the position of the camera.
 	m_Camera->SetPosition(0.0f, 0.0f, -4.0f);
+
+	// Run the frame processing for the particle system.
+	m_ParticleSystem->Frame(frameTime, m_D3D->GetDeviceContext());
 
 	// Render the graphics scene.
 	result = Render();
@@ -172,14 +205,22 @@ bool GraphicsClass::Render()
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 
-	m_Model->Render(m_D3D->GetDeviceContext());
+	// Turn on alpha blending.
+	m_D3D->TurnOffAlphaBlending();
 
-	// Render the square model using the fire shader.
-	result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 1.0f);
+	// Put the particle system vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_ParticleSystem->Render(m_D3D->GetDeviceContext());
+
+	// Render the model using the texture shader.
+	result = m_ParticleShader->Render(m_D3D->GetDeviceContext(), m_ParticleSystem->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_ParticleSystem->GetTexture());
 	if (!result)
 	{
 		return false;
 	}
+
+	// Turn off alpha blending.
+	m_D3D->TurnOffAlphaBlending();
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();
