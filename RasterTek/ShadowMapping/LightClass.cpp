@@ -27,6 +27,11 @@ void LightClass::SetDiffuseColor(float red, float green, float blue, float alpha
 	return;
 }
 
+void LightClass::SetPosition(float x, float y, float z)
+{
+	m_position = XMFLOAT3(x, y, z);
+}
+
 // light가 바라보는 방향, 이후에 light의 view matrix를 만드는 데 사용된다.
 void LightClass::SetLookAt(float x, float y, float z)
 {
@@ -65,7 +70,35 @@ void LightClass::GenerateViewMatrix()
 	up.z = 0.0f;
 
 	// Create the view matrix from the three vectors.
-	m_viewMatrix = XMMatrixLookAtLH(m_position, m_lookAt, up);
+	
+	m_viewMatrix = XMMatrixLookAtLH(XMLoadFloat3(&m_position), XMLoadFloat3(&m_lookAt), XMLoadFloat3(&up));
 
 	return;
 }
+
+void LightClass::GenerateProjectionMatrix(float screenDepth, float screenNear)
+{
+	float fieldOfView, screenAspect;
+
+	fieldOfView = (float)XM_PI / 2.0f;
+	screenAspect = 1.0f;
+
+	// Create projection matrix for the light
+	m_projectionMatrix = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
+
+	return;
+
+}
+
+void LightClass::GetViewMatrix(XMMATRIX& viewMatrix)
+{
+	viewMatrix = m_viewMatrix;
+	return;
+}
+
+void LightClass::GetProjectionMatrix(XMMATRIX& projectionMatrix)
+{
+	projectionMatrix = m_projectionMatrix;
+	return;
+}
+

@@ -25,7 +25,7 @@ RenderToTextureClass::~RenderToTextureClass()
 // 텍스처의 Description을 생성한 후, 텍스처를 생성한다. 그리고 그 텍스처를 렌더타겟 view로 설정해 텍스처가 그려질 수 있도록 한다.
 // 그리고 나서 shader resource view를 생성해 렌더 된 데이터들을 원하는 오브젝트들에서 사용할 수 있도록 한다.
 
-bool RenderToTextureClass::Initialize(ID3D11Device* device, int textureWidth, int textureHeight)
+bool RenderToTextureClass::Initialize(ID3D11Device* device, int textureWidth, int textureHeight, int screenDepth, int screenNear)
 {
 	D3D11_TEXTURE2D_DESC textureDesc;
 	HRESULT result;

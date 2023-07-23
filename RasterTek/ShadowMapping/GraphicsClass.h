@@ -15,8 +15,11 @@
 #include "ModelClass.h"
 
 #include "ColorShaderClass.h"
-#include "ParticleShaderClass.h"
-#include "ParticleSystemClass.h"
+
+#include "RenderToTextureClass.h"
+#include "DepthShaderClass.h"
+#include "LightClass.h"
+#include "ShadowShaderClass.h"
 
 /////////////
 // GLOBALS //
@@ -26,6 +29,8 @@ const bool VSYNC_ENABLED = false;
 const float SCREEN_DEPTH = 100.0f;
 const float SCREEN_NEAR = 0.1f;
 
+const int SHADOWMAP_WIDTH = 1024;
+const int SHADOWMAP_HEIGHT = 1024;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: GraphicsClass
@@ -39,23 +44,26 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame(int, int, float, int, int);
+	bool Frame(float, float, float, float, float, float);
 	bool Render();
-
+	bool RenderSceneToTexture();
 
 private:
 	D3DClass* m_D3D;
 	CameraClass* m_Camera;
 	TextureShaderClass* m_TextureShader;
 
-	ModelClass* m_Model;
+	ModelClass* m_CubeModel, * m_GroundModel, * m_SphereModel;
+	LightClass* m_Light;
 
 	XMMATRIX baseViewMatrix;
 
 	ColorShaderClass* m_ColorShader;
 
-	ParticleSystemClass* m_ParticleSystem;
-	ParticleShaderClass* m_ParticleShader;
+	RenderToTextureClass* m_RenderTexture;
+
+	DepthShaderClass* m_DepthShader;
+	ShadowShaderClass* m_ShadowShader;
 
 };
 

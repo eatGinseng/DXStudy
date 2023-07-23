@@ -1,8 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////
-// Filename: modelclass.h
-////////////////////////////////////////////////////////////////////////////////
-#ifndef _MODELCLASS_H_
-#define _MODELCLASS_H_
 
 
 //////////////
@@ -16,6 +11,12 @@ using namespace DirectX;
 #include <fstream>
 using namespace std;
 
+///////////////////////
+// MY CLASS INCLUDES //
+///////////////////////
+#include "TextureClass.h"
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: ModelClass
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +26,32 @@ private:
 	struct VertexType
 	{
 		XMFLOAT3 position;
-	    XMVECTOR color;
+	    XMFLOAT2 texture;
+		XMFLOAT3 normal;
+		XMFLOAT3 tangent;
+		XMFLOAT3 binormal;
+	};
+
+	struct ModelType
+	{
+		float x, y, z;
+		float tu, tv;
+		float nx, ny, nz;
+		float tx, ty, tz;
+		float bx, by, bz;
+	};
+
+	// 아래 구조체로 binormal과 tangent 계산
+	struct TempVertexType
+	{
+		float x, y, z;
+		float tu, tv;
+		float nx, ny, nz;
+	};
+
+	struct VectorType
+	{
+		float x, y, z;
 	};
 
 
@@ -34,22 +60,36 @@ public:
 	ModelClass(const ModelClass&);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*, char*, char*, char*, HWND, char*);
+	bool Initialize(ID3D11Device*, ID3D11DeviceContext*, char*, HWND, char*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
 	int GetIndexCount();
+	ID3D11ShaderResourceView* GetTexture();
+	ID3D11ShaderResourceView* GetNormalMap();
 
 private:
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
+	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*, HWND);
+	void ReleaseTexture();
+
+
+	bool LoadModel(char*);
+	void ReleaseModel();
+
+	// 아래 함수들로 tangent, binormal을 계산할 것임..
+	void CalculateModelVectors();
+	void CalculateTangentBinormal(TempVertexType, TempVertexType, TempVertexType, VectorType&, VectorType&);
+	void CalculateNormal(VectorType, VectorType, VectorType&);
+
 private:
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	int m_vertexCount, m_indexCount;
+	TextureClass* m_Texture;
+	TextureClass* m_normalTexture;
 
-
+	ModelType* m_model;
 };
-
-#endif

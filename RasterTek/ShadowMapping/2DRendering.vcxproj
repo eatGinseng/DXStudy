@@ -27,10 +27,12 @@
     <ClInclude Include="FpsClass.h" />
     <ClInclude Include="GraphicsClass.h" />
     <ClInclude Include="InputClass.h" />
+    <ClInclude Include="LightClass.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ModelClass.h" />
     <ClInclude Include="ParticleShaderClass.h" />
     <ClInclude Include="ParticleSystemClass.h" />
+    <ClInclude Include="RenderToTextureClass.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SystemClass.h" />
     <ClInclude Include="TextureClass.h" />
@@ -45,10 +47,12 @@
     <ClCompile Include="FpsClass.cpp" />
     <ClCompile Include="GraphicsClass.cpp" />
     <ClCompile Include="InputClass.cpp" />
+    <ClCompile Include="LightClass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ModelClass.cpp" />
     <ClCompile Include="particleShaderClass.cpp" />
     <ClCompile Include="ParticleSystemClass.cpp" />
+    <ClCompile Include="RenderToTextureClass.cpp" />
     <ClCompile Include="SystemClass.cpp" />
     <ClCompile Include="TextureClass.cpp" />
     <ClCompile Include="TimerClass.cpp" />
