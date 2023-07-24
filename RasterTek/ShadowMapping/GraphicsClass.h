@@ -26,7 +26,7 @@
 /////////////
 const bool FULL_SCREEN = true;
 const bool VSYNC_ENABLED = false;
-const float SCREEN_DEPTH = 100.0f;
+const float SCREEN_DEPTH = 30.0f;
 const float SCREEN_NEAR = 0.1f;
 
 const int SHADOWMAP_WIDTH = 1024;
@@ -44,7 +44,7 @@ public:
 
 	bool Initialize(int, int, HWND);
 	void Shutdown();
-	bool Frame(float, float, float, float, float, float);
+	bool Frame();
 	bool Render();
 	bool RenderSceneToTexture();
 

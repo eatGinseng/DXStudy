@@ -86,7 +86,7 @@ float4 ShadowPixelShader(PixelInputType input) : SV_TARGET
         }
     }
 
-       // Sample the pixel color from the texture using the sampler at this texture coordinate location.
+    // Sample the pixel color from the texture using the sampler at this texture coordinate location.
     textureColor = shaderTexture.Sample(SampleTypeWrap, input.tex);
 
     // Combine the light and texture color.

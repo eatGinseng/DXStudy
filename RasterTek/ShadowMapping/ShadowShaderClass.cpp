@@ -28,7 +28,7 @@ bool ShadowShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
 	bool result;
 
 	// Initialize the vertex and pixel shaders.
-	result = InitializeShader(device, hwnd, L"../Engine/shadow.vs", L"../Engine/shadow.ps");
+	result = InitializeShader(device, hwnd, L"shadow.vs", L"shadow.ps");
 	if (!result)
 	{
 		return false;
@@ -51,12 +51,17 @@ void ShadowShaderClass::Shutdown()
 bool ShadowShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
 	XMMATRIX projectionMatrix, XMMATRIX lightViewMatrix, XMMATRIX lightProjectionMatrix,
 	ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* depthMapTexture, XMFLOAT3 lightPosition,
-	XMFLOAT4 ambientColor, XMFLOAT4 diffuseColor)
-{
+	XMVECTOR ambientColor, XMVECTOR diffuseColor)
+{	
 	bool result;
+
+	XMFLOAT4 ambientCol, diffuseCol;
+	XMStoreFloat4(&ambientCol, ambientColor);
+	XMStoreFloat4(&diffuseCol, diffuseColor);
+
 	// Set the shader parameters that it will use for rendering.
 	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightProjectionMatrix, texture,
-		depthMapTexture, lightPosition, ambientColor, diffuseColor);
+		depthMapTexture, lightPosition, ambientCol, diffuseCol);
 	if (!result)
 	{
 		return false;
@@ -326,7 +331,7 @@ void ShadowShaderClass::ShutdownShader()
 	return;
 }
 
-void ShadowShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, WCHAR* shaderFilename)
+void ShadowShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, LPCWSTR shaderFilename)
 {
 	char* compileErrors;
 	unsigned long bufferSize, i;

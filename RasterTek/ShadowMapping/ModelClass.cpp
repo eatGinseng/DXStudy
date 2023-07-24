@@ -349,6 +349,20 @@ void ModelClass::ReleaseModel()
 	return;
 }
 
+void ModelClass::SetPosition(float x, float y, float z)
+{
+	m_posX = x;
+	m_posY = y;
+	m_posZ = z;
+}
+
+void ModelClass::GetPosition(float& x, float& y, float& z)
+{
+	x = m_posX;
+	y = m_posY;
+	z = m_posZ;
+}
+
 void ModelClass::CalculateModelVectors()
 {
 	int faceCount, i, index;

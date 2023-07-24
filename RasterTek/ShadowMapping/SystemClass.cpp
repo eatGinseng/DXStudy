@@ -226,8 +226,10 @@ bool SystemClass::Frame()
 	// Get the location of the mouse from the input object,
 	m_Input->GetMouseLocation(mouseX, mouseY);
 
+
+
 	// graphics ohject에 대해서 frame 처리 수행
-	result = m_Graphics->Frame(m_Fps->GetFps(), m_Cpu->GetCpuPercentage(), m_Timer->GetTime(), mouseX, mouseY);
+	result = m_Graphics->Frame();
 	if (!result)
 	{
 		return false;

@@ -65,6 +65,9 @@ public:
 	void Render(ID3D11DeviceContext*);
 
 	int GetIndexCount();
+	void GetPosition(float&, float&, float&);
+	void SetPosition(float, float, float);
+
 	ID3D11ShaderResourceView* GetTexture();
 	ID3D11ShaderResourceView* GetNormalMap();
 
@@ -75,7 +78,6 @@ private:
 
 	bool LoadTexture(ID3D11Device*, ID3D11DeviceContext*, char*, HWND);
 	void ReleaseTexture();
-
 
 	bool LoadModel(char*);
 	void ReleaseModel();
@@ -92,4 +94,5 @@ private:
 	TextureClass* m_normalTexture;
 
 	ModelType* m_model;
+	float m_posX, m_posY, m_posZ;
 };

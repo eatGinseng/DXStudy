@@ -71,7 +71,8 @@ void LightClass::GenerateViewMatrix()
 
 	// Create the view matrix from the three vectors.
 	
-	m_viewMatrix = XMMatrixLookAtLH(XMLoadFloat3(&m_position), XMLoadFloat3(&m_lookAt), XMLoadFloat3(&up));
+
+	m_viewMatrix = XMMatrixLookAtLH(XMVectorSet(m_position.x, m_position.y, m_position.z, 1.0f), XMVectorSet(m_lookAt.x, m_lookAt.y, m_lookAt.z, 1.0f), XMVectorSet(up.x, up.y, up.z, 1.0f));
 
 	return;
 }

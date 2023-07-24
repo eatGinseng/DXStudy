@@ -60,7 +60,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
 	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
 	D3D11_RASTERIZER_DESC rasterDesc;
-	D3D11_VIEWPORT viewport;
+
 	float fieldOfView, screenAspect;
 
 	D3D11_DEPTH_STENCIL_DESC depthDisabledStencilDesc;
@@ -219,7 +219,7 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 	// Don't set the advanced flags.
 	swapChainDesc.Flags = 0;
 
-	// 어느 버전의 DX를 사용할지 셜정. 11.0은 DirectX 11을 의미. 더 낮은 버전을 지원하려면 이걸 낮추면 돤다.
+	// 어느 버전의 DX를 상요할지 셜정. 11.0은 DirectX 11을 의미. 더 낮은 버전을 지원하려면 이걸 낮추면 돤다.
 	featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 	// 이제 SwapChain을 생성할 준비 완료.
@@ -366,18 +366,19 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 		return false;
 	}
 
+
 	m_deviceContext->RSSetState(m_rasterState);
 
 	// viewport를 셋팅한다. 렌더타겟 스페이스에 clip space 좌표를 맵핑할 수 있게..
 	// viewport 크기는 윈도우 전체 사이즈와 같게 한다.
-	viewport.Width = (float)screenWidth;
-	viewport.Height = (float)screenHeight;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
+	m_viewport.Width = (float)screenWidth;
+	m_viewport.Height = (float)screenHeight;
+	m_viewport.MinDepth = 0.0f;
+	m_viewport.MaxDepth = 1.0f;
+	m_viewport.TopLeftX = 0.0f;
+	m_viewport.TopLeftY = 0.0f;
 
-	m_deviceContext->RSSetViewports(1, &viewport);
+	m_deviceContext->RSSetViewports(1, &m_viewport);
 
 	// set up projection matrix
 
@@ -427,12 +428,9 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 
 	// alpha blend state description 생성
 	blendStateDescription.RenderTarget[0].BlendEnable = TRUE;
-
-	//  the equation ends up being color = (1 * source) + (1 * destination).
-	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-	blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blendStateDescription.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	blendStateDescription.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 	blendStateDescription.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-
 	blendStateDescription.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 	blendStateDescription.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 	blendStateDescription.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
@@ -460,6 +458,13 @@ bool D3DClass::Initialize(int screenWidth, int screenHeight, bool vsync, HWND hw
 }
 
 
+void D3DClass::ResetViewport()
+{
+	// Set the viewport.
+	m_deviceContext->RSSetViewports(1, &m_viewport);
+
+	return;
+}
 
 
 // Direct3D를 shutdown 할 때, 강제로 fullscreen모드 종료 : 그렇지 않으면 swap chain 을 release 할 때 exception이 생김
