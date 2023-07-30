@@ -175,10 +175,10 @@ void RenderToTextureClass::Shutdown()
 }
 
 // SetRenderTarget 함수에서는 현재 모든 렌더링을 rendertarget에 해도록 셋해 준다.
-void RenderToTextureClass::SetRenderTarget(ID3D11DeviceContext* deviceContext, ID3D11DepthStencilView* depthStencilView)
+void RenderToTextureClass::SetRenderTarget(ID3D11DeviceContext* deviceContext)
 {
 	// output render pipeline에 render target view와 depth stencil buffer를 묶는다.
-	deviceContext->OMSetRenderTargets(1, &m_renderTargetView, depthStencilView);
+	deviceContext->OMSetRenderTargets(1, &m_renderTargetView, m_depthStencilView);
 
 	// Set the viewport.
 	deviceContext->RSSetViewports(1, &m_viewport);

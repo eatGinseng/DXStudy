@@ -47,6 +47,7 @@ public:
 	bool Frame();
 	bool Render();
 	bool RenderSceneToTexture();
+	bool RenderSceneToTexture2();
 
 private:
 	D3DClass* m_D3D;
@@ -55,12 +56,15 @@ private:
 
 	ModelClass* m_CubeModel, * m_GroundModel, * m_SphereModel;
 	LightClass* m_Light;
+	LightClass* m_Light2;
 
 	XMMATRIX baseViewMatrix;
 
 	ColorShaderClass* m_ColorShader;
 
 	RenderToTextureClass* m_RenderTexture;
+	RenderToTextureClass* m_RenderTexture2;
+
 
 	DepthShaderClass* m_DepthShader;
 	ShadowShaderClass* m_ShadowShader;

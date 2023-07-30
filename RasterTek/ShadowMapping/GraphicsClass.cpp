@@ -11,8 +11,13 @@ GraphicsClass::GraphicsClass()
 	m_CubeModel = 0;
 	m_GroundModel = 0;
 	m_SphereModel = 0;
+
 	m_Light = 0;
+	m_Light2 = 0;
+
 	m_RenderTexture = 0;
+	m_RenderTexture = 0;
+
 	m_DepthShader = 0;
 	m_ShadowShader = 0;
 }
@@ -133,13 +138,25 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_Light2 = new LightClass;
+	if (!m_Light2)
+	{
+		return false;
+	}
+
 	// Initialize the light object.
 	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
-	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light->SetPosition(0.0f, 6.0f, 0.0f);
 
-	m_Light->SetLookAt(0.0f, -3.0f, -1.0f);
+	m_Light->SetDiffuseColor(0.0f, 1.0f, 0.0f, 1.0f);
+	m_Light->SetPosition(5.0f, 8.0f, -5.0f);
+	m_Light->SetLookAt(0.0f, 0.0f, 0.0f);
 	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
+
+	// Initialize the second light object.
+	m_Light2->SetDiffuseColor(1.0f, 0.0f, 0.0f, 1.0f);
+	m_Light2->SetPosition(-5.0f, 8.0f, -5.0f);
+	m_Light2->SetLookAt(0.0f, 0.0f, 0.0f);
+	m_Light2->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
 
 	// Create the render to texture object.
 	m_RenderTexture = new RenderToTextureClass;
@@ -153,6 +170,21 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the render to texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the second render to texture object.
+	m_RenderTexture2 = new RenderToTextureClass;
+	if (!m_RenderTexture2)
+	{
+		return false;
+	}
+
+	// Initialize the second render to texture object.
+	result = m_RenderTexture2->Initialize(m_D3D->GetDevice(), SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the second render to texture object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -192,6 +224,22 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 void GraphicsClass::Shutdown()
 {
+
+	// Release the second render to texture object.
+	if (m_RenderTexture2)
+	{
+		m_RenderTexture2->Shutdown();
+		delete m_RenderTexture2;
+		m_RenderTexture2 = 0;
+	}
+
+	// Release the second light object.
+	if (m_Light2)
+	{
+		delete m_Light2;
+		m_Light2 = 0;
+	}
+
 	// Release the shadow shader object.
 	if (m_ShadowShader)
 	{
@@ -288,7 +336,7 @@ bool GraphicsClass::RenderSceneToTexture()
 	bool result;
 
 	// Set the render target to be the render to texture.
-	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
+	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext());
 
 	// Clear the render to texture.
 	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
@@ -358,15 +406,101 @@ bool GraphicsClass::RenderSceneToTexture()
 	return true;
 }
 
+bool GraphicsClass::RenderSceneToTexture2()
+{
+	XMMATRIX worldMatrix, lightViewMatrix, lightProjectionMatrix, translateMat;
+	float posX, posY, posZ;
+	bool result;
+
+	// Set the render target to be the render to texture.
+	m_RenderTexture2->SetRenderTarget(m_D3D->GetDeviceContext());
+
+	// Clear the render to texture.
+	m_RenderTexture2->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Generate the light view matrix based on the light's position.
+	m_Light2->GenerateViewMatrix();
+	m_Light2->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
+
+	// Get the world matrix from the d3d object.
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	// Get the view and orthographic matrices from the light object.
+	m_Light2->GetViewMatrix(lightViewMatrix);
+	m_Light2->GetProjectionMatrix(lightProjectionMatrix);
+
+	// Setup the translation matrix for the cube model.
+	m_CubeModel->GetPosition(posX, posY, posZ);
+	translateMat = XMMatrixTranslation(posX, posY, posZ);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translateMat);
+
+	// Render the cube model with the depth shader.
+	m_CubeModel->Render(m_D3D->GetDeviceContext());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	// Setup the translation matrix for the sphere model.
+	m_SphereModel->GetPosition(posX, posY, posZ);
+	translateMat = XMMatrixTranslation(posX, posY, posZ);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translateMat);
+
+	// Render the sphere model with the depth shader.
+	m_SphereModel->Render(m_D3D->GetDeviceContext());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	// Setup the translation matrix for the ground model.
+	m_GroundModel->GetPosition(posX, posY, posZ);
+	translateMat = XMMatrixTranslation(posX, posY, posZ);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translateMat);
+
+	// Render the ground model with the depth shader.
+	m_GroundModel->Render(m_D3D->GetDeviceContext());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the render target back to the original back buffer and not the render to texture anymore.
+	m_D3D->SetBackBufferRenderTarget();
+
+	// Reset the viewport back to the original.
+	m_D3D->ResetViewport();
+
+	return true;
+
+}
+
 bool GraphicsClass::Render()
 {
 	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, translationMat;
 	XMMATRIX lightViewMatrix, lightProjectionMatrix;
+	XMMATRIX lightViewMatrix2, lightProjectionMatrix2;
 	bool result;
 	float posX, posY, posZ;
 
 	// 먼저 장면의 depth 정보를 shadowmap 텍스처에 렌더한다.
 	result = RenderSceneToTexture();
+	if (!result)
+	{
+		return false;
+	}
+
+	// 두 번째 라이트의 depth 정보 렌더
+	result = RenderSceneToTexture2();
 	if (!result)
 	{
 		return false;
@@ -381,6 +515,9 @@ bool GraphicsClass::Render()
 	m_Light->GenerateViewMatrix();
 	m_Light->GetProjectionMatrix(lightProjectionMatrix);
 
+	m_Light2->GenerateViewMatrix();
+	m_Light2->GetProjectionMatrix(lightProjectionMatrix2);
+
 	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
@@ -389,6 +526,9 @@ bool GraphicsClass::Render()
 	// Get the light's view and projection matrices from the light object.
 	m_Light->GetViewMatrix(lightViewMatrix);
 	m_Light->GetProjectionMatrix(lightProjectionMatrix);
+
+	m_Light2->GetViewMatrix(lightViewMatrix2);
+	m_Light2->GetProjectionMatrix(lightProjectionMatrix2);
 
 	// 이제 각 모델을 Shadow map shader와 light 매트릭스들, 그리고 shadow map 텍스처로 렌더한다.
 	// Setup the translation matrix for the cube model.
@@ -402,7 +542,7 @@ bool GraphicsClass::Render()
 	// Render the model using the shadow shader.
 	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
 		lightProjectionMatrix, m_CubeModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetPosition(),
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), lightViewMatrix2, lightProjectionMatrix2, m_RenderTexture2->GetShaderResourceView(), m_Light2->GetPosition(), m_Light2->GetDiffuseColor());
 	if (!result)
 	{
 		return false;
@@ -420,7 +560,7 @@ bool GraphicsClass::Render()
 	m_SphereModel->Render(m_D3D->GetDeviceContext());
 	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
 		lightProjectionMatrix, m_SphereModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetPosition(),
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), lightViewMatrix2, lightProjectionMatrix2, m_RenderTexture2->GetShaderResourceView(), m_Light2->GetPosition(), m_Light2->GetDiffuseColor());
 	if (!result)
 	{
 		return false;
@@ -438,7 +578,7 @@ bool GraphicsClass::Render()
 	m_GroundModel->Render(m_D3D->GetDeviceContext());
 	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix,
 		lightProjectionMatrix, m_GroundModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetPosition(),
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), lightViewMatrix2, lightProjectionMatrix2, m_RenderTexture2->GetShaderResourceView(), m_Light2->GetPosition(), m_Light2->GetDiffuseColor());
 	if (!result)
 	{
 		return false;
