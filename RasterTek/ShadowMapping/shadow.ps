@@ -1,96 +1,104 @@
+////////////////////////////////////////////////////////////////////////////////
+// Filename: shadow.ps
+////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////
+// TEXTURES //
+//////////////
 Texture2D shaderTexture : register(t0);
 Texture2D depthMapTexture : register(t1);
 
+
+///////////////////
+// SAMPLE STATES //
+///////////////////
 SamplerState SampleTypeClamp : register(s0);
 SamplerState SampleTypeWrap  : register(s1);
 
+
+//////////////////////
+// CONSTANT BUFFERS //
+//////////////////////
 cbuffer LightBuffer
 {
-    float4 ambientColor;
-    float4 diffuseColor;
+	float4 ambientColor;
+	float4 diffuseColor;
 };
 
+
+//////////////
+// TYPEDEFS //
+//////////////
 struct PixelInputType
 {
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
-    float3 normal : NORMAL;
+	float3 normal : NORMAL;
     float4 lightViewPosition : TEXCOORD1;
-    float3 lightPos : TEXCOORD2;
+	float3 lightPos : TEXCOORD2;
 };
 
+
+////////////////////////////////////////////////////////////////////////////////
+// Pixel Shader
+////////////////////////////////////////////////////////////////////////////////
 float4 ShadowPixelShader(PixelInputType input) : SV_TARGET
 {
-    float bias;
+	float bias;
     float4 color;
-    float2 projectTexCoord;
-    float depthValue;
-    float lightDepthValue;
+	float2 projectTexCoord;
+	float depthValue;
+	float lightDepthValue;
     float lightIntensity;
-    float4 textureColor;
+	float4 textureColor;
 
-    // shadow mapping은 라이트와 오브젝트 간의 depth를 비교할 때 bias가 필요하다.
-    // 그 이유는 depth map의 floating point 정밀도가 낮기 때문이다.
-    
-    // Set the bias value for fixing the floating point precision issues.
-    bias = 0.001f;
 
-    // Set the default output color to the ambient light value for all pixels.
-    color = ambientColor;   
+	// Set the bias value for fixing the floating point precision issues.
+	bias = 0.001f;
 
-    // 라이트에서 바라 본 위치로 shadow map을 샘플링하기 위한 uv 좌표를 계산한다.
-    // Calculate the projected texture coordinates.
-    projectTexCoord.x =  input.lightViewPosition.x / input.lightViewPosition.w / 2.0f + 0.5f;
-    projectTexCoord.y = -input.lightViewPosition.y / input.lightViewPosition.w / 2.0f + 0.5f;
+	// Set the default output color to the ambient light value for all pixels.
+    color = ambientColor;
 
-    // project된 좌표가 라이트 view 안에 있는지 확인한다. 그렇지 않다면, 그 픽셀은 ambient value만을 받는다.
-    // Determine if the projected coordinates are in the 0 to 1 range.  If so then this pixel is in the view of the light.
-    if((saturate(projectTexCoord.x) == projectTexCoord.x) && (saturate(projectTexCoord.y) == projectTexCoord.y))
-    {  
+	// Calculate the projected texture coordinates.
+	projectTexCoord.x =  input.lightViewPosition.x / input.lightViewPosition.w / 2.0f + 0.5f;
+	projectTexCoord.y = -input.lightViewPosition.y / input.lightViewPosition.w / 2.0f + 0.5f;
 
-        // 이제 라이트로부터의 view를 얻었으니, shadowMap (= depthMapTexture)으로부터 depth value를 얻을 수 있다.
-        // 흑백 텍스처이기 때문에 r 채널만 샘플링할 것이다.
-        // 텍스처로부터 얻은 depth value는 가장 가까운 오브젝트까지의 거리 값으로 변환될 것이다.
-          // Sample the shadow map depth value from the depth texture using the sampler at the projected texture coordinate location.
-        depthValue = depthMapTexture.Sample(SampleTypeClamp, projectTexCoord).r;
+	// Determine if the projected coordinates are in the 0 to 1 range.  If so then this pixel is in the view of the light.
+	if((saturate(projectTexCoord.x) == projectTexCoord.x) && (saturate(projectTexCoord.y) == projectTexCoord.y))
+	{
+		// Sample the shadow map depth value from the depth texture using the sampler at the projected texture coordinate location.
+		depthValue = depthMapTexture.Sample(SampleTypeClamp, projectTexCoord).r;
 
-        // 이제 해당 픽셀의 depth value를 알았으니, light의 depth를 알아야 물체가 라이트 뒤에 있는지 앞에 있는지 알 수 있다.
-        // 이 값은 lightViewPosition으로부터 얻는다. 
-        // 여기에서 bias를 빼야 한다. 그렇지 않으면 floating point 문제가 생길 수 있다.
+		// Calculate the depth of the light.
+		lightDepthValue = input.lightViewPosition.z / input.lightViewPosition.w;
 
-        // Calculate the depth of the light.
-        lightDepthValue = input.lightViewPosition.z / input.lightViewPosition.w;
+		// Subtract the bias from the lightDepthValue.
+		lightDepthValue = lightDepthValue - bias;
 
-        // Subtract the bias from the lightDepthValue.
-        lightDepthValue = lightDepthValue - bias;
+		// Compare the depth of the shadow map value and the depth of the light to determine whether to shadow or to light this pixel.
+		// If the light is in front of the object then light the pixel, if not then shadow this pixel since an object (occluder) is casting a shadow on it.
+		if(lightDepthValue < depthValue)
+		{
+		    // Calculate the amount of light on this pixel.
+			lightIntensity = saturate(dot(input.normal, input.lightPos));
 
-        // 이제 light depth와 object depth 간의 비교를 수행한다. 만약 라이트가 우리에게 더 가깝다면, shadow가 없다.
-        // 그러나 만약 shadow map 상에서 라이트가 오브젝트 뒤에 있다면, shadow가 드리워진다.
-        // shadow가 드리워진다는 것은 ambient light만을 적용한다는 것을 의미한다.
-        
-         // Compare the depth of the shadow map value and the depth of the light to determine whether to shadow or to light this pixel.
-        // If the light is in front of the object then light the pixel, if not then shadow this pixel since an object (occluder) is casting a shadow on it.
-        if(lightDepthValue < depthValue)
-        {
-                  // Calculate the amount of light on this pixel.
-            lightIntensity = saturate(dot(input.normal, input.lightPos));
+		    if(lightIntensity > 0.0f)
+			{
+				// Determine the final diffuse color based on the diffuse color and the amount of light intensity.
+				color += (diffuseColor * lightIntensity);
 
-            if(lightIntensity > 0.0f)
-            {
-                // Determine the final diffuse color based on the diffuse color and the amount of light intensity.
-                color += (diffuseColor * lightIntensity);
+				// Saturate the final light color.
+				color = saturate(color);
+			}
+		}
+	}
 
-                // Saturate the final light color.
-                color = saturate(color);
-            }
-        }
-    }
+	// Sample the pixel color from the texture using the sampler at this texture coordinate location.
+	textureColor = shaderTexture.Sample(SampleTypeWrap, input.tex);
 
-    // Sample the pixel color from the texture using the sampler at this texture coordinate location.
-    textureColor = shaderTexture.Sample(SampleTypeWrap, input.tex);
-
-    // Combine the light and texture color.
-    color = color * textureColor;
+	// Combine the light and texture color.
+	color = color * textureColor;
 
     return color;
 }

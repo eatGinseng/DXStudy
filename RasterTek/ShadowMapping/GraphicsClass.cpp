@@ -56,7 +56,8 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Set the initial position of the camera.
-	m_Camera->SetPosition(0.0f, 3.0f, -10.0f);
+	m_Camera->SetPosition(0.0f, 4.0f, -10.0f);
+	m_Camera->SetRotation(8.0f, 0.0f, 0.0f);
 	m_Camera->Render();
 	m_Camera->GetViewMatrix(baseViewMatrix);
 
@@ -135,8 +136,9 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	// Initialize the light object.
 	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
 	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
+	m_Light->SetPosition(0.0f, 6.0f, 0.0f);
 
-	m_Light->SetLookAt(0.0f, 0.0f, 2.0f);
+	m_Light->SetLookAt(0.0f, -3.0f, -1.0f);
 	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
 
 	// Create the render to texture object.
@@ -268,17 +270,6 @@ bool GraphicsClass::Frame()
 	bool result;
 	static float lightPositionX = -5.0f;
 
-	// 매 프레임마다 라이트의 위치를 이동시켜 준다.
-	// Update the position of the light each frame.
-	lightPositionX += 0.002f;
-	if (lightPositionX > 5.0f)
-	{
-		lightPositionX = -5.0f;
-	}
-
-	// Update the position of the light.
-	m_Light->SetPosition(0.0f, 3.0f, -2.0f);
-
 	// Render the graphics scene.
 	result = Render();
 	if (!result)
@@ -300,10 +291,11 @@ bool GraphicsClass::RenderSceneToTexture()
 	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView());
 
 	// Clear the render to texture.
-	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), m_D3D->GetDepthStencilView(), 0.0f, 0.0f, 0.0f, 1.0f);
+	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the light view matrix based on the light's position.
 	m_Light->GenerateViewMatrix();
+	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
 
 	// Get the world matrix from the d3d object.
 	m_D3D->GetWorldMatrix(worldMatrix);
@@ -387,6 +379,7 @@ bool GraphicsClass::Render()
 	m_Camera->Render();
 
 	m_Light->GenerateViewMatrix();
+	m_Light->GetProjectionMatrix(lightProjectionMatrix);
 
 	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
