@@ -10,16 +10,17 @@
 ///////////////////////
 #include "d3dclass.h"
 #include "cameraclass.h"
+#include "modelclass.h"
+#include "lightclass.h"
+#include "rendertotextureclass.h"
+#include "depthshaderclass.h"
+#include "shadowshaderclass.h"
 
-#include "TextureShaderClass.h"
-#include "ModelClass.h"
-
-#include "ColorShaderClass.h"
-
-#include "RenderToTextureClass.h"
-#include "DepthShaderClass.h"
-#include "LightClass.h"
-#include "ShadowShaderClass.h"
+#include "orthowindowclass.h"
+#include "textureshaderclass.h"
+#include "horizontalblurshaderclass.h"
+#include "verticalblurshaderclass.h"
+#include "softshadowshaderclass.h"
 
 /////////////
 // GLOBALS //
@@ -45,9 +46,15 @@ public:
 	bool Initialize(int, int, HWND);
 	void Shutdown();
 	bool Frame();
-	bool Render();
+
 	bool RenderSceneToTexture();
-	bool RenderSceneToTexture2();
+	bool RenderBlackAndWhiteShadows();
+	bool DownSampleTexture();
+	bool RenderHorizontalBlurToTexture();
+	bool RenderVerticalBlurToTexture();
+	bool UpSampleTexture();
+
+	bool Render();
 
 private:
 	D3DClass* m_D3D;
@@ -56,18 +63,19 @@ private:
 
 	ModelClass* m_CubeModel, * m_GroundModel, * m_SphereModel;
 	LightClass* m_Light;
-	LightClass* m_Light2;
 
 	XMMATRIX baseViewMatrix;
 
-	ColorShaderClass* m_ColorShader;
-
-	RenderToTextureClass* m_RenderTexture;
-	RenderToTextureClass* m_RenderTexture2;
-
-
+	RenderToTextureClass* m_RenderTexture, * m_BlackWhiteRenderTexture, * m_DownSampleTexure;
+	RenderToTextureClass* m_HorizontalBlurTexture, * m_VerticalBlurTexture, * m_UpSampleTexure;
 	DepthShaderClass* m_DepthShader;
 	ShadowShaderClass* m_ShadowShader;
+	OrthoWindowClass* m_SmallWindow, * m_FullScreenWindow;
+
+	HorizontalBlurShaderClass* m_HorizontalBlurShader;
+	VerticalBlurShaderClass* m_VerticalBlurShader;
+	SoftShadowShaderClass* m_SoftShadowShader;
+
 
 };
 

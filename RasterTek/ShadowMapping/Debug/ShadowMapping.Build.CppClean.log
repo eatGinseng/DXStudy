@@ -1,8 +1,8 @@
 i:\dxstudy\rastertek\shadowmapping\debug\vc143.pdb
 i:\dxstudy\rastertek\shadowmapping\debug\vc143.idb
-i:\dxstudy\rastertek\shadowmapping\debug\timerclass.obj
 i:\dxstudy\rastertek\shadowmapping\debug\textureclass.obj
 i:\dxstudy\rastertek\shadowmapping\debug\systemclass.obj
+i:\dxstudy\rastertek\shadowmapping\debug\softshadowshaderclass.obj
 i:\dxstudy\rastertek\shadowmapping\debug\shadowshaderclass.obj
 i:\dxstudy\rastertek\shadowmapping\debug\rendertotextureclass.obj
 i:\dxstudy\rastertek\shadowmapping\debug\modelclass.obj
@@ -17,8 +17,13 @@ i:\dxstudy\rastertek\shadowmapping\debug\cpuclass.obj
 i:\dxstudy\rastertek\shadowmapping\debug\colorshaderclass.obj
 i:\dxstudy\rastertek\shadowmapping\debug\cameraclass.obj
 i:\dxstudy\rastertek\shadowmapping\debug\bitmapclass.obj
-i:\dxstudy\rastertek\shadowmapping\debug\shadowmapping.exe
+i:\dxstudy\rastertek\shadowmapping\debug\verticalblurshaderclass.obj
+i:\dxstudy\rastertek\shadowmapping\debug\orthowindowclass.obj
+i:\dxstudy\rastertek\shadowmapping\debug\horizontalblurshaderclass.obj
+i:\dxstudy\rastertek\shadowmapping\debug\timerclass.obj
+i:\dxstudy\rastertek\shadowmapping\debug\textureshaderclass.obj
 i:\dxstudy\rastertek\shadowmapping\debug\shadowmapping.ilk
+i:\dxstudy\rastertek\shadowmapping\debug\shadowmapping.exe
 i:\dxstudy\rastertek\shadowmapping\debug\shadowmapping.pdb
 i:\dxstudy\rastertek\shadowmapping\debug\shadowmapping.tlog\cl.command.1.tlog
 i:\dxstudy\rastertek\shadowmapping\debug\shadowmapping.tlog\cl.items.tlog

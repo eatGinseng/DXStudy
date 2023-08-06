@@ -1,3 +1,6 @@
+I:\DXStudy\RasterTek\Blur\HorizontalBlurShaderClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\HorizontalBlurShaderClass.obj
+I:\DXStudy\RasterTek\Blur\OrthowindowClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\OrthowindowClass.obj
+I:\DXStudy\RasterTek\Blur\VerticalBlurShaderClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\VerticalBlurShaderClass.obj
 I:\DXStudy\RasterTek\ShadowMapping\BitmapClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\BitmapClass.obj
 I:\DXStudy\RasterTek\ShadowMapping\CameraClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\CameraClass.obj
 I:\DXStudy\RasterTek\ShadowMapping\ColorShaderClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\ColorShaderClass.obj
@@ -12,6 +15,8 @@ I:\DXStudy\RasterTek\ShadowMapping\main.cpp;I:\DXStudy\RasterTek\ShadowMapping\D
 I:\DXStudy\RasterTek\ShadowMapping\ModelClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\ModelClass.obj
 I:\DXStudy\RasterTek\ShadowMapping\RenderToTextureClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\RenderToTextureClass.obj
 I:\DXStudy\RasterTek\ShadowMapping\ShadowShaderClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\ShadowShaderClass.obj
+I:\DXStudy\RasterTek\ShadowMapping\Softshadowshaderclass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\Softshadowshaderclass.obj
 I:\DXStudy\RasterTek\ShadowMapping\SystemClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\SystemClass.obj
 I:\DXStudy\RasterTek\ShadowMapping\TextureClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\TextureClass.obj
+I:\DXStudy\RasterTek\ShadowMapping\TextureShaderClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\TextureShaderClass.obj
 I:\DXStudy\RasterTek\ShadowMapping\TimerClass.cpp;I:\DXStudy\RasterTek\ShadowMapping\Debug\TimerClass.obj
