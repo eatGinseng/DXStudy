@@ -932,35 +932,30 @@ bool GraphicsClass::Render()
 	{
 		return false;
 	}
-
 	// Next render the shadowed scene in black and white.
 	result = RenderBlackAndWhiteShadows();
 	if (!result)
 	{
 		return false;
 	}
-
 	// Then down sample the black and white scene texture.
 	result = DownSampleTexture();
 	if (!result)
 	{
 		return false;
 	}
-
 	// Perform a horizontal blur on the down sampled texture.
 	result = RenderHorizontalBlurToTexture();
 	if (!result)
 	{
 		return false;
 	}
-
 	// Now perform a vertical blur on the texture.
 	result = RenderVerticalBlurToTexture();
 	if (!result)
 	{
 		return false;
 	}
-
 	// Finally up sample the final blurred render to texture that can now be used in the soft shadow shader.
 	result = UpSampleTexture();
 	if (!result)
