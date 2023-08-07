@@ -22,19 +22,14 @@ public:
 	XMVECTOR GetDiffuseColor();
 	XMFLOAT3 GetPosition();
 
-	void GenerateViewMatrix();
-	void GenerateProjectionMatrix(float, float);
-
-	void GetViewMatrix(XMMATRIX&);
-	void GetProjectionMatrix(XMMATRIX&);
+	XMVECTOR GetDirection();
 
 private:
 	XMVECTOR m_ambientColor;
 	XMVECTOR m_diffuseColor;
 	XMFLOAT3 m_position;
 	XMFLOAT3 m_lookAt;
-	XMMATRIX m_viewMatrix;
-	XMMATRIX m_projectionMatrix;
+
 
 };
 

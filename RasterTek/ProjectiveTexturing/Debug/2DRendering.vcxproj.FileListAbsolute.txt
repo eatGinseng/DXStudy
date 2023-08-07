@@ -1,1 +1,2 @@
 I:\DXStudy\RasterTek\ShadowMapping\Debug\ShadowMapping.exe
+I:\DXStudy\RasterTek\ProjectiveTexturing\Debug\ProjectiveTexturing.exe

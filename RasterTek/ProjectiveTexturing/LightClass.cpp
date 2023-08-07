@@ -58,46 +58,14 @@ XMFLOAT3 LightClass::GetPosition()
 	return m_position;
 }
 
-// light¿« view matrix setup
-void LightClass::GenerateViewMatrix()
+XMVECTOR LightClass::GetDirection()
 {
-	XMFLOAT3 up;
+	XMVECTOR lookAt, pos;
+	lookAt = XMLoadFloat3(&m_lookAt);
+	pos = XMLoadFloat3(&m_position);
 
+	XMVECTOR direction = XMVectorSubtract(lookAt, pos);
+	direction = XMVector3Normalize(direction);
 
-	// Setup the vector that points upwards.
-	up.x = 0.0f;
-	up.y = 1.0f;
-	up.z = 0.0f;
-
-	// Create the view matrix from the three vectors.
-	m_viewMatrix = XMMatrixLookAtLH(XMVectorSet(m_position.x, m_position.y, m_position.z, 1.0f), XMVectorSet(m_lookAt.x, m_lookAt.y, m_lookAt.z, 1.0f), XMVectorSet(up.x, up.y, up.z, 1.0f));
-
-	return;
+	return direction;
 }
-
-void LightClass::GenerateProjectionMatrix(float screenDepth, float screenNear)
-{
-	float fieldOfView, screenAspect;
-
-	fieldOfView = (float)XM_PI / 2.0f;
-	screenAspect = 1.0f;
-
-	// Create projection matrix for the light
-	m_projectionMatrix = XMMatrixPerspectiveFovLH(fieldOfView, screenAspect, screenNear, screenDepth);
-
-	return;
-
-}
-
-void LightClass::GetViewMatrix(XMMATRIX& viewMatrix)
-{
-	viewMatrix = m_viewMatrix;
-	return;
-}
-
-void LightClass::GetProjectionMatrix(XMMATRIX& projectionMatrix)
-{
-	projectionMatrix = m_projectionMatrix;
-	return;
-}
-
