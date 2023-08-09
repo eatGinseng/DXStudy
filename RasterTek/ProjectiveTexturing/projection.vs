@@ -9,6 +9,13 @@ cbuffer MatrixBuffer
     matrix projectionMatrix2;
 };
 
+
+cbuffer LightPositionBuffer
+{
+    float3 lightPosition;
+    float padding;
+}
+
 struct VertexInputType
 {
     float4 position : POSITION;
@@ -22,12 +29,14 @@ struct PixelInputType
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
 
-    float4 viewPosition : TEXCOORD1; 
+    float4 viewPosition : TEXCOORD1;
+    float3 lightPos : TEXCOORD2;
 };
 
 PixelInputType ProjectionVertexShader(VertexInputType input)
 {
     PixelInputType output;
+    float4 worldPosition;
     
     // Change the position vector to be 4 units for proper matrix calculations.
     input.position.w = 1.0f;
@@ -51,6 +60,11 @@ PixelInputType ProjectionVertexShader(VertexInputType input)
 	
     // Normalize the normal vector.
     output.normal = normalize(output.normal);
+
+    worldPosition = mul(input.position, worldMatrix);
+
+    output.lightPos = lightPosition.xyz - worldPosition.xyz;
+    output.lightPos = normalize(output.lightPos);
 
     return output;
 }

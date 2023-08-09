@@ -165,7 +165,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	char textureFilename2[128];
-	strcpy_s(textureFilename2, "grid01.tga");
+	strcpy_s(textureFilename2, "grate.tga");
 
 	// Initialize the projection texture object.
 	result = m_ProjectionTexture->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), textureFilename2, hwnd);
@@ -320,7 +320,7 @@ bool GraphicsClass::Render()
 	m_CubeModel->Render(m_D3D->GetDeviceContext());
 
 	// Render the model using the shadow shader.
-	result = m_ProjectionShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetDirection(),
+	result = m_ProjectionShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetPosition(),
 		 m_Light->GetDiffuseColor(), m_Light->GetAmbientColor(), viewMatrix2, projectionMatrix2, m_ProjectionTexture->GetTexture());
 	if (!result)
 	{
@@ -337,7 +337,7 @@ bool GraphicsClass::Render()
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_SphereModel->Render(m_D3D->GetDeviceContext());
-	result = m_ProjectionShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetDirection(),
+	result = m_ProjectionShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetPosition(),
 		m_Light->GetDiffuseColor(), m_Light->GetAmbientColor(), viewMatrix2, projectionMatrix2, m_ProjectionTexture->GetTexture());
 	if (!result)
 	{
@@ -354,7 +354,7 @@ bool GraphicsClass::Render()
 
 	// Render the ground model using the shadow shader.
 	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_ProjectionShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetDirection(),
+	result = m_ProjectionShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetPosition(),
 		m_Light->GetDiffuseColor(), m_Light->GetAmbientColor(), viewMatrix2, projectionMatrix2, m_ProjectionTexture->GetTexture());
 	if (!result)
 	{
