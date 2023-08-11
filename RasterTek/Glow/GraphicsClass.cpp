@@ -75,6 +75,19 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	m_Camera->GetViewMatrix(baseViewMatrix);
 
+	m_SmallWindow = new OrthoWindowClass;
+	if (!m_SmallWindow)
+	{
+		return false;
+	}
+
+	result = m_SmallWindow->Initialize(m_D3D->GetDevice(), downSampleWidth, downSampleHeight);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the Small Window object.", L"Error", MB_OK);
+		return false;
+	}
+
 	m_FullScreenWindow = new OrthoWindowClass;
 	if (!m_FullScreenWindow)
 	{
@@ -313,6 +326,13 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 			m_Light = 0;
 		}
 
+		if (m_SmallWindow)
+		{
+			m_SmallWindow->Shutdown();
+			delete m_SmallWindow;
+			m_SmallWindow = 0;
+		}
+
 		if (m_FullScreenWindow)
 		{
 			m_FullScreenWindow->Shutdown();
@@ -468,12 +488,34 @@ bool GraphicsClass::RenderGlowMapToTexture()
 
 bool GraphicsClass::DownSampleTexture()
 {
-	
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, translationMat, viewMatrix2, projectionMatrix2;
+	bool result;
+
+	m_DownSampleTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_DownSampleTexture->GetOrthoMatrix(orthoMatrix);
+
 	m_DownSampleTexture->SetRenderTarget(m_D3D->GetDeviceContext());
 	m_DownSampleTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
-	
+	m_SmallWindow->Render(m_D3D->GetDeviceContext());
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_GlowTexture->GetShaderResourceView() );
+	if (!result)
+	{
+		return false;
+	}
 
+	return true;
+}
+
+bool GraphicsClass::RenderHorizontalBlurTexture()
+{
 	return true;
 }
 
@@ -490,6 +532,8 @@ bool GraphicsClass::Render()
 	float posX, posY, posZ;
 
 	RenderGlowMapToTexture();
+
+	DownSampleTexture();
 
 	// Clear the buffers to begin the scene. clear with fog color.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
