@@ -11,6 +11,9 @@
 #include "TextureClass.h"
 
 #include "ProjectionShaderClass.h"
+#include "RenderToTextureClass.h"
+#include "TextureShaderClass.h"
+#include "OrthowindowClass.h"
 #include "viewPointClass.h"
 
 /////////////
@@ -35,18 +38,33 @@ public:
 	void Shutdown();
 	bool Frame();
 
+	bool RenderGlowMapToTexture();
+
+	bool DownSampleTexture();
+	bool RenderVerticalBlurTexture();
+	bool RenderHorizontalBlurTexture();
+	bool UpsampleTexture();
+
 	bool Render();
 
 private:
+
 	D3DClass* m_D3D;
 	CameraClass* m_Camera;
 
 	ModelClass* m_CubeModel, * m_GroundModel, * m_SphereModel;
 	LightClass* m_Light;
 
+	XMMATRIX baseViewMatrix;
+
 	ProjectionShaderClass* m_ProjectionShader;
+	TextureShaderClass* m_TextureShader;
 	TextureClass* m_ProjectionTexture;
 	ViewPointClass* m_ViewPoint;
+
+	OrthoWindowClass* m_SmallWindow, *m_FullScreenWindow;
+
+	RenderToTextureClass* m_GlowTexture, *m_DownSampleTexture, *m_HorizontalBlurTexture, *m_VerticalBlurTexture, *m_UpsampleTexture;
 
 
 };

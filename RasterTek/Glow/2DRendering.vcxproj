@@ -29,10 +29,13 @@
     <ClInclude Include="LightClass.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ModelClass.h" />
+    <ClInclude Include="OrthowindowClass.h" />
     <ClInclude Include="ProjectionShaderClass.h" />
+    <ClInclude Include="RenderToTextureClass.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SystemClass.h" />
     <ClInclude Include="TextureClass.h" />
+    <ClInclude Include="TextureShaderClass.h" />
     <ClInclude Include="TimerClass.h" />
     <ClInclude Include="viewPointClass.h" />
   </ItemGroup>
@@ -47,9 +50,12 @@
     <ClCompile Include="LightClass.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ModelClass.cpp" />
+    <ClCompile Include="OrthowindowClass.cpp" />
     <ClCompile Include="ProjectionShaderClass.cpp" />
+    <ClCompile Include="RenderToTextureClass.cpp" />
     <ClCompile Include="SystemClass.cpp" />
     <ClCompile Include="TextureClass.cpp" />
+    <ClCompile Include="TextureShaderClass.cpp" />
     <ClCompile Include="TimerClass.cpp" />
     <ClCompile Include="viewPointClass.cpp" />
   </ItemGroup>

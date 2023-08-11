@@ -8,8 +8,11 @@ I:\DXStudy\RasterTek\Glow\InputClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\InputCl
 I:\DXStudy\RasterTek\Glow\LightClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\LightClass.obj
 I:\DXStudy\RasterTek\Glow\main.cpp;I:\DXStudy\RasterTek\Glow\Debug\main.obj
 I:\DXStudy\RasterTek\Glow\ModelClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\ModelClass.obj
+I:\DXStudy\RasterTek\Glow\OrthowindowClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\OrthowindowClass.obj
 I:\DXStudy\RasterTek\Glow\ProjectionShaderClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\ProjectionShaderClass.obj
+I:\DXStudy\RasterTek\Glow\RenderToTextureClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\RenderToTextureClass.obj
 I:\DXStudy\RasterTek\Glow\SystemClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\SystemClass.obj
 I:\DXStudy\RasterTek\Glow\TextureClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\TextureClass.obj
+I:\DXStudy\RasterTek\Glow\TextureShaderClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\TextureShaderClass.obj
 I:\DXStudy\RasterTek\Glow\TimerClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\TimerClass.obj
 I:\DXStudy\RasterTek\Glow\viewPointClass.cpp;I:\DXStudy\RasterTek\Glow\Debug\viewPointClass.obj
