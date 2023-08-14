@@ -132,6 +132,9 @@ bool RenderToTextureClass::Initialize(ID3D11Device* device, int textureWidth, in
 	// Create an orthographic projection matrix for 2D rendering.
 	m_orthoMatrix = XMMatrixOrthographicLH((float)textureWidth, (float)textureHeight, screenNear, screenDepth);
 	
+	m_textureWidth = textureWidth;
+	m_textureHeight = textureHeight;
+
 	return true;
 
 
@@ -222,4 +225,14 @@ void RenderToTextureClass::GetOrthoMatrix(XMMATRIX& orthoMatrix)
 {
 	orthoMatrix = m_orthoMatrix;
 	return;
+}
+
+float RenderToTextureClass::GetTextureWidth()
+{
+	return m_textureWidth;
+}
+
+float RenderToTextureClass::GetTextureHeight()
+{
+	return m_textureHeight;
 }

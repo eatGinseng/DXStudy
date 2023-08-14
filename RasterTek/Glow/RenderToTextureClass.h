@@ -28,6 +28,9 @@ public:
 	void GetProjectionMatrix(XMMATRIX&);
 	void GetOrthoMatrix(XMMATRIX&);
 
+	float GetTextureWidth();
+	float GetTextureHeight();
+
 private:
 	ID3D11Texture2D* m_renderTargetTexture;
 	ID3D11RenderTargetView* m_renderTargetView;
@@ -37,6 +40,8 @@ private:
 	D3D11_VIEWPORT m_viewport;
 	XMMATRIX m_projectionMatrix;
 	XMMATRIX m_orthoMatrix;
+
+	float m_textureWidth, m_textureHeight;
 
 };
 

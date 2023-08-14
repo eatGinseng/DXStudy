@@ -13,6 +13,9 @@
 #include "ProjectionShaderClass.h"
 #include "RenderToTextureClass.h"
 #include "TextureShaderClass.h"
+#include "VerticalBlurShaderClass.h"
+#include "HorizontalBlurShaderClass.h"
+#include "GlowShaderClass.h"
 #include "OrthowindowClass.h"
 #include "viewPointClass.h"
 
@@ -59,6 +62,8 @@ private:
 
 	ProjectionShaderClass* m_ProjectionShader;
 	TextureShaderClass* m_TextureShader;
+	VerticalBlurShaderClass* m_VerticalBlurShader;
+	HorizontalBlurShaderClass* m_HorizontalBlurShader;
 	TextureClass* m_ProjectionTexture;
 	ViewPointClass* m_ViewPoint;
 

@@ -22,6 +22,9 @@ GraphicsClass::GraphicsClass()
 	m_SmallWindow = 0;
 	m_FullScreenWindow = 0;
 
+	m_HorizontalBlurShader = 0;
+	m_VerticalBlurShader = 0;
+
 	m_GlowTexture = 0;
 	m_DownSampleTexture = 0;
 
@@ -127,6 +130,43 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_HorizontalBlurTexture = new RenderToTextureClass;
+	if (!m_HorizontalBlurTexture)
+	{
+		return false;
+	}
+
+	result = m_HorizontalBlurTexture->Initialize(m_D3D->GetDevice(), downSampleWidth, downSampleHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the Horizontal Blur Texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+	m_VerticalBlurTexture = new RenderToTextureClass;
+	if (!m_VerticalBlurTexture)
+	{
+		return false;
+	}
+
+	result = m_VerticalBlurTexture->Initialize(m_D3D->GetDevice(), downSampleWidth, downSampleHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the vertical Blur Texture object.", L"Error", MB_OK);
+		return false;
+	}
+
+	m_UpsampleTexture = new RenderToTextureClass;
+	if (!m_UpsampleTexture)
+	{
+		return false;
+	}
+
+	result = m_UpsampleTexture->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		return false;
+	}
 
 	char textureFilename1[128];
 	strcpy_s(textureFilename1, "wall01.tga");
@@ -236,6 +276,30 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_HorizontalBlurShader = new HorizontalBlurShaderClass;
+	if (!m_HorizontalBlurShader)
+	{
+		return false;
+	}
+
+	result = m_HorizontalBlurShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
+	m_VerticalBlurShader = new VerticalBlurShaderClass;
+	if (!m_VerticalBlurShader)
+	{
+		return false;
+	}
+
+	result = m_VerticalBlurShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
 	// Create the projection texture object.
 	m_ProjectionTexture = new TextureClass;
 	if (!m_ProjectionTexture)
@@ -297,6 +361,27 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 			m_GlowTexture = 0;
 		}
 
+		if (m_UpsampleTexture)
+		{
+			m_UpsampleTexture->Shutdown();
+			delete m_UpsampleTexture;
+			m_UpsampleTexture = 0;
+		}
+
+		if (m_HorizontalBlurTexture)
+		{
+			m_HorizontalBlurTexture->Shutdown();
+			delete m_HorizontalBlurTexture;
+			m_HorizontalBlurTexture = 0;
+		}
+
+		if (m_VerticalBlurTexture)
+		{
+			m_VerticalBlurTexture->Shutdown();
+			delete m_VerticalBlurTexture;
+			m_VerticalBlurTexture = 0;
+		}
+
 		if (m_DownSampleTexture)
 		{
 			m_DownSampleTexture->Shutdown();
@@ -317,6 +402,20 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 			m_ProjectionShader->Shutdown();
 			delete m_ProjectionShader;
 			m_ProjectionShader = 0;
+		}
+
+		if (m_VerticalBlurShader)
+		{
+			m_VerticalBlurShader->Shutdown();
+			delete m_VerticalBlurShader;
+			m_VerticalBlurShader = 0;
+		}
+
+		if (m_HorizontalBlurShader)
+		{
+			m_HorizontalBlurShader->Shutdown();
+			delete m_HorizontalBlurShader;
+			m_HorizontalBlurShader = 0;
 		}
 
 		// Release the light object.
@@ -488,10 +587,11 @@ bool GraphicsClass::RenderGlowMapToTexture()
 
 bool GraphicsClass::DownSampleTexture()
 {
-	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, translationMat, viewMatrix2, projectionMatrix2;
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
 	bool result;
 
 	m_DownSampleTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	m_DownSampleTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
@@ -511,17 +611,113 @@ bool GraphicsClass::DownSampleTexture()
 		return false;
 	}
 
+	m_D3D->SetBackBufferRenderTarget();
+
+	m_D3D->ResetViewport();
+
 	return true;
 }
 
 bool GraphicsClass::RenderHorizontalBlurTexture()
 {
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	float screenSizeX;
+	bool result;
+
+	m_HorizontalBlurTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	m_HorizontalBlurTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	screenSizeX = m_HorizontalBlurTexture->GetTextureWidth();
+
+	m_Camera->Render();
+
+	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrix);
+	
+	m_HorizontalBlurTexture->GetOrthoMatrix(orthoMatrix);
+
+	m_SmallWindow->Render(m_D3D->GetDeviceContext());
+	result = m_HorizontalBlurShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_DownSampleTexture->GetShaderResourceView(), screenSizeX);
+
+	m_D3D->SetBackBufferRenderTarget();
+
+	m_D3D->ResetViewport();
+
+	return true;
+}
+
+bool GraphicsClass::RenderVerticalBlurTexture()
+{
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	float screenSizeY;
+	bool result;
+
+	m_VerticalBlurTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	m_VerticalBlurTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	screenSizeY = m_VerticalBlurTexture->GetTextureHeight();
+
+	m_Camera->Render();
+
+	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	m_VerticalBlurTexture->GetOrthoMatrix(orthoMatrix);
+
+	m_SmallWindow->Render(m_D3D->GetDeviceContext());
+	result = m_VerticalBlurShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_HorizontalBlurTexture->GetShaderResourceView(), screenSizeY);
+
+	m_D3D->SetBackBufferRenderTarget();
+
+	m_D3D->ResetViewport();
+
 	return true;
 }
 
 bool GraphicsClass::UpsampleTexture()
 {
-	
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	bool result;
+
+	m_UpsampleTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	m_UpsampleTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	m_Camera->Render();
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	m_VerticalBlurTexture->GetOrthoMatrix(orthoMatrix);
+
+	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_VerticalBlurTexture->GetShaderResourceView());
+
+	m_D3D->SetBackBufferRenderTarget();
+
+	m_D3D->ResetViewport();
+
+	return true;
+}
+
+bool GraphicsClass::RenderGlowMapToTexture()
+{
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
+	bool result;
+
+	m_GlowTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	m_GlowTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	m_Camera->Render();
+
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+
+	m_GlowTexture->GetOrthoMatrix(orthoMatrix);
+
+	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
+	result = 
+
 	return true;
 }
 
@@ -534,6 +730,12 @@ bool GraphicsClass::Render()
 	RenderGlowMapToTexture();
 
 	DownSampleTexture();
+
+	RenderHorizontalBlurTexture();
+
+	RenderVerticalBlurTexture();
+
+	UpsampleTexture();
 
 	// Clear the buffers to begin the scene. clear with fog color.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
