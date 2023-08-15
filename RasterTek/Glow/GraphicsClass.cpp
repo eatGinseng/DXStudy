@@ -18,6 +18,7 @@ GraphicsClass::GraphicsClass()
 	m_ProjectionShader = 0;
 	m_ProjectionTexture = 0;
 
+
 	m_TextureShader = 0;
 	m_SmallWindow = 0;
 	m_FullScreenWindow = 0;
@@ -27,6 +28,8 @@ GraphicsClass::GraphicsClass()
 
 	m_GlowTexture = 0;
 	m_DownSampleTexture = 0;
+	m_UpsampleTexture = 0;
+	m_SceneTexture = 0;
 
 }
 
@@ -168,6 +171,30 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_SceneTexture = new RenderToTextureClass;
+	if (!m_SceneTexture)
+	{
+		return false;
+	}
+
+	result = m_SceneTexture->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		return false;
+	}
+
+	m_FinalTexture = new RenderToTextureClass;
+	if (!m_FinalTexture)
+	{
+		return false;
+	}
+
+	result = m_FinalTexture->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR);
+	if (!result)
+	{
+		return false;
+	}
+
 	char textureFilename1[128];
 	strcpy_s(textureFilename1, "wall01.tga");
 
@@ -300,6 +327,30 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_GlowShader = new GlowShaderClass;
+	if (!m_GlowShader)
+	{
+		return false;
+	}
+
+	result = m_GlowShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
+	m_LightShader = new LightShaderClass;
+	if (!m_LightShader)
+	{
+		return false;
+	}
+
+	result = m_LightShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
 	// Create the projection texture object.
 	m_ProjectionTexture = new TextureClass;
 	if (!m_ProjectionTexture)
@@ -354,6 +405,13 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 			m_ProjectionTexture = 0;
 		}
 
+		if (m_SceneTexture)
+		{
+			m_SceneTexture->Shutdown();
+			delete m_SceneTexture;
+			m_SceneTexture = 0;
+		}
+
 		if (m_GlowTexture)
 		{
 			m_GlowTexture->Shutdown();
@@ -387,6 +445,27 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 			m_DownSampleTexture->Shutdown();
 			delete m_DownSampleTexture;
 			m_DownSampleTexture = 0;
+		}
+
+		if (m_FinalTexture)
+		{
+			m_FinalTexture->Shutdown();
+			delete m_FinalTexture;
+			m_FinalTexture = 0;
+		}
+
+		if (m_LightShader)
+		{
+			m_LightShader->Shutdown();
+			delete m_LightShader;
+			m_LightShader = 0;
+		}
+
+		if (m_GlowShader)
+		{
+			m_GlowShader->Shutdown();
+			delete m_GlowShader;
+			m_GlowShader = 0;
 		}
 
 		if (m_TextureShader)
@@ -500,7 +579,7 @@ bool GraphicsClass::Frame()
 	return true;
 }
 
-bool GraphicsClass::RenderGlowMapToTexture()
+bool GraphicsClass::RenderGlowTexture()
 {
 
 	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, translationMat, viewMatrix2, projectionMatrix2;
@@ -584,7 +663,6 @@ bool GraphicsClass::RenderGlowMapToTexture()
 
 }
 
-
 bool GraphicsClass::DownSampleTexture()
 {
 	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
@@ -605,7 +683,7 @@ bool GraphicsClass::DownSampleTexture()
 	m_DownSampleTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	m_SmallWindow->Render(m_D3D->GetDeviceContext());
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_GlowTexture->GetShaderResourceView() );
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_GlowTexture->GetShaderResourceView() );
 	if (!result)
 	{
 		return false;
@@ -688,7 +766,7 @@ bool GraphicsClass::UpsampleTexture()
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
 
-	m_VerticalBlurTexture->GetOrthoMatrix(orthoMatrix);
+	m_UpsampleTexture->GetOrthoMatrix(orthoMatrix);
 
 	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
 	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_VerticalBlurTexture->GetShaderResourceView());
@@ -700,34 +778,112 @@ bool GraphicsClass::UpsampleTexture()
 	return true;
 }
 
+bool GraphicsClass::RenderSceneToTexture()
+{
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, translationMat;
+	float posX, posY, posZ;
+	bool result;
+
+	m_SceneTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	m_SceneTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	m_Camera->Render();
+
+	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetProjectionMatrix(projectionMatrix);
+
+	// Setup the translation matrix for the cube model.
+	m_CubeModel->GetPosition(posX, posY, posZ);
+	translationMat = XMMatrixTranslation(posX, posY, posZ);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
+
+	// Put the cube model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_CubeModel->Render(m_D3D->GetDeviceContext());
+
+	// Render the model using the shadow shader.
+	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetDirection(),
+		m_Light->GetDiffuseColor(), m_Light->GetAmbientColor());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	// Setup the translation matrix for the sphere model.
+	m_SphereModel->GetPosition(posX, posY, posZ);
+	translationMat = XMMatrixTranslation(posX, posY, posZ);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
+
+	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_SphereModel->Render(m_D3D->GetDeviceContext());
+	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetDirection(),
+		m_Light->GetDiffuseColor(), m_Light->GetAmbientColor());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	// Setup the translation matrix for the ground model.
+	m_GroundModel->GetPosition(posX, posY, posZ);
+	translationMat = XMMatrixTranslation(posX, posY, posZ);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
+
+	// Render the ground model using the shadow shader.
+	m_GroundModel->Render(m_D3D->GetDeviceContext());
+	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetDirection(),
+		m_Light->GetDiffuseColor(), m_Light->GetAmbientColor());
+	if (!result)
+	{
+		return false;
+	}
+
+	m_D3D->SetBackBufferRenderTarget();
+
+	m_D3D->ResetViewport();
+
+}
+
 bool GraphicsClass::RenderGlowMapToTexture()
 {
 	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
 	bool result;
 
-	m_GlowTexture->SetRenderTarget(m_D3D->GetDeviceContext());
-	m_GlowTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+	m_FinalTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	m_FinalTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	m_Camera->Render();
 
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_Camera->GetViewMatrix(viewMatrix);
 
-	m_GlowTexture->GetOrthoMatrix(orthoMatrix);
+	m_FinalTexture->GetOrthoMatrix(orthoMatrix);
 
 	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
-	result = 
+	result = m_GlowShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_SceneTexture->GetShaderResourceView(), m_UpsampleTexture->GetShaderResourceView(), 5.0f);
+
+	m_D3D->SetBackBufferRenderTarget();
+
+	m_D3D->ResetViewport();
 
 	return true;
 }
 
 bool GraphicsClass::Render()
 {
-	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, translationMat, viewMatrix2, projectionMatrix2;
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix;
 	bool result;
 	float posX, posY, posZ;
 
-	RenderGlowMapToTexture();
+	RenderGlowTexture();
+
+	RenderSceneToTexture();
 
 	DownSampleTexture();
 
@@ -737,6 +893,8 @@ bool GraphicsClass::Render()
 
 	UpsampleTexture();
 
+	RenderGlowMapToTexture();
+
 	// Clear the buffers to begin the scene. clear with fog color.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -745,12 +903,10 @@ bool GraphicsClass::Render()
 	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
-	m_D3D->GetProjectionMatrix(projectionMatrix);
-
-	m_GlowTexture->GetOrthoMatrix(orthoMatrix);
+	m_FinalTexture->GetOrthoMatrix(orthoMatrix);
 
 	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_GlowTexture->GetShaderResourceView());
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_FinalTexture->GetShaderResourceView());
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();

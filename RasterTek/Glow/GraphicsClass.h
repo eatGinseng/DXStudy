@@ -16,6 +16,8 @@
 #include "VerticalBlurShaderClass.h"
 #include "HorizontalBlurShaderClass.h"
 #include "GlowShaderClass.h"
+#include "LightShaderClass.h"
+
 #include "OrthowindowClass.h"
 #include "viewPointClass.h"
 
@@ -41,12 +43,13 @@ public:
 	void Shutdown();
 	bool Frame();
 
-	bool RenderGlowMapToTexture();
-
 	bool DownSampleTexture();
 	bool RenderVerticalBlurTexture();
 	bool RenderHorizontalBlurTexture();
 	bool UpsampleTexture();
+	bool RenderSceneToTexture();
+	bool RenderGlowMapToTexture();
+	bool RenderGlowTexture();
 
 	bool Render();
 
@@ -64,12 +67,14 @@ private:
 	TextureShaderClass* m_TextureShader;
 	VerticalBlurShaderClass* m_VerticalBlurShader;
 	HorizontalBlurShaderClass* m_HorizontalBlurShader;
+	GlowShaderClass* m_GlowShader;
+	LightShaderClass* m_LightShader;
 	TextureClass* m_ProjectionTexture;
 	ViewPointClass* m_ViewPoint;
 
 	OrthoWindowClass* m_SmallWindow, *m_FullScreenWindow;
 
-	RenderToTextureClass* m_GlowTexture, *m_DownSampleTexture, *m_HorizontalBlurTexture, *m_VerticalBlurTexture, *m_UpsampleTexture;
+	RenderToTextureClass* m_GlowTexture, *m_DownSampleTexture, *m_HorizontalBlurTexture, *m_VerticalBlurTexture, *m_UpsampleTexture, *m_SceneTexture, *m_FinalTexture;
 
 
 };

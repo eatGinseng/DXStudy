@@ -137,7 +137,6 @@ bool RenderToTextureClass::Initialize(ID3D11Device* device, int textureWidth, in
 
 	return true;
 
-
 }
 
 void RenderToTextureClass::Shutdown()
