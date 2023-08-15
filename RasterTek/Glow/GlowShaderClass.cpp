@@ -44,14 +44,14 @@ void GlowShaderClass::Shutdown()
 
 
 bool GlowShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* glowTexture,
+	XMMATRIX projectionMatrix, ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* glowBaseTexture, ID3D11ShaderResourceView* glowTexture,
 	float glowStrength)
 {
 	bool result;
 
 
 	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, colorTexture, glowTexture, glowStrength);
+	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, colorTexture, glowBaseTexture, glowTexture, glowStrength);
 	if (!result)
 	{
 		return false;
@@ -307,7 +307,7 @@ void GlowShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hw
 }
 
 bool GlowShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView* colorTexture,
+	XMMATRIX projectionMatrix, ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* glowBaseTexture,
 	ID3D11ShaderResourceView* glowTexture, float glowStrength)
 {
 	HRESULT result;
@@ -370,7 +370,8 @@ bool GlowShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XM
 
 	// Set shader texture resources in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &colorTexture);
-	deviceContext->PSSetShaderResources(1, 1, &glowTexture);
+	deviceContext->PSSetShaderResources(1, 1, &glowBaseTexture);
+	deviceContext->PSSetShaderResources(2, 1, &glowTexture);
 
 	return true;
 }

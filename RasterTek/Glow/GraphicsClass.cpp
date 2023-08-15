@@ -683,7 +683,7 @@ bool GraphicsClass::DownSampleTexture()
 	m_DownSampleTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	m_SmallWindow->Render(m_D3D->GetDeviceContext());
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_GlowTexture->GetShaderResourceView() );
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_GlowTexture->GetShaderResourceView() );
 	if (!result)
 	{
 		return false;
@@ -716,7 +716,7 @@ bool GraphicsClass::RenderHorizontalBlurTexture()
 	m_HorizontalBlurTexture->GetOrthoMatrix(orthoMatrix);
 
 	m_SmallWindow->Render(m_D3D->GetDeviceContext());
-	result = m_HorizontalBlurShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_DownSampleTexture->GetShaderResourceView(), screenSizeX);
+	result = m_HorizontalBlurShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_DownSampleTexture->GetShaderResourceView(), screenSizeX);
 
 	m_D3D->SetBackBufferRenderTarget();
 
@@ -745,7 +745,7 @@ bool GraphicsClass::RenderVerticalBlurTexture()
 	m_VerticalBlurTexture->GetOrthoMatrix(orthoMatrix);
 
 	m_SmallWindow->Render(m_D3D->GetDeviceContext());
-	result = m_VerticalBlurShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_HorizontalBlurTexture->GetShaderResourceView(), screenSizeY);
+	result = m_VerticalBlurShader->Render(m_D3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_HorizontalBlurTexture->GetShaderResourceView(), screenSizeY);
 
 	m_D3D->SetBackBufferRenderTarget();
 
@@ -769,7 +769,7 @@ bool GraphicsClass::UpsampleTexture()
 	m_UpsampleTexture->GetOrthoMatrix(orthoMatrix);
 
 	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_VerticalBlurTexture->GetShaderResourceView());
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_VerticalBlurTexture->GetShaderResourceView());
 
 	m_D3D->SetBackBufferRenderTarget();
 
@@ -866,7 +866,7 @@ bool GraphicsClass::RenderGlowMapToTexture()
 	m_FinalTexture->GetOrthoMatrix(orthoMatrix);
 
 	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
-	result = m_GlowShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_SceneTexture->GetShaderResourceView(), m_UpsampleTexture->GetShaderResourceView(), 5.0f);
+	result = m_GlowShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_SceneTexture->GetShaderResourceView(), m_GlowTexture->GetShaderResourceView(), m_UpsampleTexture->GetShaderResourceView(), 5.0f);
 
 	m_D3D->SetBackBufferRenderTarget();
 
@@ -906,7 +906,7 @@ bool GraphicsClass::Render()
 	m_FinalTexture->GetOrthoMatrix(orthoMatrix);
 
 	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
-	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_FinalTexture->GetShaderResourceView());
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_FinalTexture->GetShaderResourceView());
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();

@@ -1,0 +1,4 @@
+I:\DXStudy\RasterTek\ShadowMapping\Debug\ShadowMapping.exe
+I:\DXStudy\RasterTek\ProjectiveTexturing\Debug\ProjectiveTexturing.exe
+I:\DXStudy\RasterTek\Glow\Debug\Glow.exe
+I:\DXStudy\RasterTek\Picking\Debug\Picking.exe

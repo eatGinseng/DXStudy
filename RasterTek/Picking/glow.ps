@@ -1,0 +1,38 @@
+Texture2D SceneTexture;
+Texture2D GlowBaseTexture;
+Texture2D GlowBlurTexture;
+
+
+SamplerState SamplerType;
+
+cbuffer glowBuffer
+{
+    float glowStrength;
+    float3 padding;
+}
+
+struct PixelInputType
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+
+};
+
+float4 GlowPixelShader (PixelInputType input) : SV_TARGET
+{
+    float4 color;
+    float glow;
+    float glowBase;
+    float4 sceneColor;
+    float4 glowColor;
+
+    glowColor = float4(0.0f, 0.0f, 1.0f, 1.0f);
+
+    sceneColor = SceneTexture.Sample(SamplerType, input.tex);
+    glow = GlowBlurTexture.Sample(SamplerType, input.tex).x;
+    glowBase = GlowBaseTexture.Sample(SamplerType, input.tex).x;
+
+    color = sceneColor + (glowBase + glow * glowColor);
+
+    return color;
+}
