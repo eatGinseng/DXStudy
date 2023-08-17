@@ -8,6 +8,8 @@ GraphicsClass::GraphicsClass()
 {
 	m_D3D = 0;
 	m_Camera = 0;
+	m_Input = 0;
+
 	m_CubeModel = 0;
 	m_GroundModel = 0;
 	m_SphereModel = 0;
@@ -18,20 +20,20 @@ GraphicsClass::GraphicsClass()
 
 }
 
-
 GraphicsClass::GraphicsClass(const GraphicsClass& other)
 {
 }
-
 
 GraphicsClass::~GraphicsClass()
 {
 }
 
-
-bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
+bool GraphicsClass::Initialize(HINSTANCE hinstance, int screenWidth, int screenHeight, HWND hwnd)
 {
 	bool result;
+
+	m_screenWidth = screenWidth;
+	m_screenHeight = screenHeight;
 
 	// Create the Direct3D object.
 	m_D3D = new D3DClass;
@@ -61,6 +63,19 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->Render();
 
 	m_Camera->GetViewMatrix(baseViewMatrix);
+
+	m_Input = new InputClass;
+	if (!m_Input)
+	{
+		return false;
+	}
+
+	result = m_Input->Initialize(hinstance, hwnd, screenWidth, screenHeight);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the Input object.", L"Error", MB_OK);
+		return false;
+	}
 
 	char textureFilename1[128];
 	strcpy_s(textureFilename1, "wall01.tga");
@@ -141,7 +156,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Light->SetPosition(5.0f, 8.0f, -5.0f);
 	m_Light->SetLookAt(0.0f, 0.0f, 0.0f);
 
-
 	m_LightShader = new LightShaderClass;
 	if (!m_LightShader)
 	{
@@ -154,14 +168,12 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-
 	return true;
 }
 
 
 void GraphicsClass::Shutdown()
 {
-	
 
 	if (m_LightShader)
 	{
@@ -208,6 +220,13 @@ void GraphicsClass::Shutdown()
 		m_CubeModel = 0;
 	}
 
+	if (m_Input)
+	{
+		m_Input->Shutdown();
+		delete m_Input;
+		m_Input = 0;
+	}
+
 	// Release the camera object.
 	if (m_Camera)
 	{
@@ -226,10 +245,16 @@ void GraphicsClass::Shutdown()
 	return;
 }
 
-
 bool GraphicsClass::Frame()
 {
 	bool result;
+
+	// Handle the input processing
+	result = HandleInput();
+	if (!result)
+	{
+		return false;
+	}
 
 	// Update the position of the light.
 	m_Light->SetPosition(0.0f, 8.0f, -5.0f);
@@ -244,11 +269,122 @@ bool GraphicsClass::Frame()
 	return true;
 }
 
+bool GraphicsClass::HandleInput()
+{
+	bool result;
+	int mouseX, mouseY;
+
+	// Do the input frame processing
+	result = m_Input->Frame();
+	if (!result)
+	{
+		return false;
+	}
+
+	// 유저가 esc를 눌렀는지? application을 종료
+	if (m_Input->IsEscapePressed() == true)
+	{
+		return false;
+	}
+
+	// 왼쪽 마우스 버튼이 눌렸는지 테스트
+	if (m_Input->IsLeftMouseButtonDown() == false)
+	{
+		if (m_beginCheck = true)
+		{
+			m_beginCheck = true;
+			m_Input->GetMouseLocation(mouseX, mouseY);
+			TestIntersection(mouseX, mouseY);
+
+		}
+	}
+
+	// left mouse button이 해제되었는지?
+	if (m_Input->IsLeftMouseButtonDown() == false)
+	{
+		m_beginCheck = false;
+	}
+
+	return true;
+
+}
+
+void GraphicsClass::TestIntersection(int mouseX, int mouseY)
+{
+	float pointX, pointY;
+	XMMATRIX projectionMatrix, viewMatrix, inverseViewMatrix, worldMatrix, translateMatrix, inverseWorldMatrix;
+	XMFLOAT3 direction, rayDirection;
+	XMVECTOR origin, rayOrigin;
+	bool intersect, result;
+
+	// 마우스 커서 좌표를 -1 ~ +! 범위로 옮긴다.
+	pointX = ((2.0f * (float)mouseX) / (float)m_screenWidth) - 1.0f;
+	pointY = (((2.0f * (float)mouseY) / (float)m_screenHeight) - 1.0f) * -1.0f;
+
+	m_D3D->GetProjectionMatrix(projectionMatrix);
+	XMFLOAT4X4 tempProj;
+	XMStoreFloat4x4(&tempProj, projectionMatrix);
+
+	// 포인트들을 projection matrix를 사용해 조정한다. 이는 화면 종횡비를 계산해 넣기 위함이다.
+	pointX = pointX / tempProj._11;
+	pointY = pointY / tempProj._22;
+
+	// view matrix의 inverse를 구한다.
+	m_Camera->GetViewMatrix(viewMatrix);
+	inverseViewMatrix = XMMatrixInverse(NULL, viewMatrix);
+	XMFLOAT4X4 tempInverseView;
+	XMStoreFloat4x4(&tempInverseView, inverseViewMatrix);
+
+	// view space에서 picking ray의 방향을 계산
+	direction.x = (pointX * tempInverseView._11) + (pointY * tempInverseView._21) + tempInverseView._31;
+	direction.y = (pointX * tempInverseView._12) + (pointY * tempInverseView._22) + tempInverseView._32;
+	direction.z = (pointX * tempInverseView._13) + (pointY * tempInverseView._23) + tempInverseView._33;
+
+	XMVECTOR directionVec = XMLoadFloat3(&direction);
+
+	// picking ray origin = 카메라 위치
+	origin = XMLoadFloat3(&(m_Camera->GetPosition()));
+
+	// sphere 위치로 world matrix translate
+	m_D3D->GetWorldMatrix(worldMatrix);
+	translateMatrix = XMMatrixTranslation(-5.0f, 1.0f, 5.0f);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translateMatrix);
+
+	// translate 된 matrix의 inverse 구하기
+	worldMatrix = XMMatrixInverse(NULL, worldMatrix);
+
+	// ray origin과 direction을 view space에서 world space로 변환
+	// 그리고 나서 rayDireciton을 normalize
+	rayOrigin = XMVector3TransformCoord(origin, inverseWorldMatrix);
+	XMStoreFloat3(&rayDirection, XMVector3Normalize(XMVector3TransformNormal(directionVec, inverseWorldMatrix)));
+
+	intersect = RaySphereIntersect(rayOrigin, rayDirection, 1.0f);
+
+	if (intersect == true)
+	{
+		// 만약 intersection 되었다면, 
+		result = m_Text->SetIntersection(true, m_D3D->GetDeviceContext());
+	}
+	else
+	{
+		result = m_Text->SetIntersection(false, m_D3D->GetDeviceContext());
+	}
+
+	return;
+}
+
+bool GraphicsClass::RaySphereIntersect(XMVECTOR origin, XMFLOAT3 rayDirection, float radius)
+{
+	
+}
+
 bool GraphicsClass::Render()
 {
 	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, translationMat;
 	bool result;
 	float posX, posY, posZ;
+
+	int mouseX, mouseY;
 
 	// Clear the buffers to begin the scene. clear with fog color.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -309,6 +445,27 @@ bool GraphicsClass::Render()
 	{
 		return false;
 	}
+
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	// Get the location of the mouse from the input object,
+	m_Input->GetMouseLocation(mouseX, mouseY);
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_D3D->TurnZBufferOff();
+
+	// Turn on alpha blending.
+	m_D3D->TurnOnAlphaBlending();
+
+	// Bitmap rendering for mouse cursor
+
+
+	// Turn of alpha blending.
+	m_D3D->TurnOffAlphaBlending();
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_D3D->TurnZBufferOn();
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();

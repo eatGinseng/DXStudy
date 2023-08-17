@@ -33,16 +33,21 @@ public:
 	GraphicsClass(const GraphicsClass&);
 	~GraphicsClass();
 
-	bool Initialize(int, int, HWND);
+	bool Initialize(HINSTANCE, int, int, HWND);
 	void Shutdown();
 	bool Frame();
 
 	bool Render();
 
+	bool HandleInput();
+	void TestIntersection(int, int);
+
 private:
 
 	D3DClass* m_D3D;
 	CameraClass* m_Camera;
+
+	InputClass* m_Input;
 
 	ModelClass* m_CubeModel, * m_GroundModel, * m_SphereModel;
 	LightClass* m_Light;
@@ -52,6 +57,8 @@ private:
 	TextureShaderClass* m_TextureShader;
 
 	LightShaderClass* m_LightShader;
+
+	int m_screenWidth, m_screenHeight;
 
 
 };
