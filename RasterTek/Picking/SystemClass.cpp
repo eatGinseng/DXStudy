@@ -61,7 +61,7 @@ bool SystemClass::Initialize()
 	}
 
 	// Graphics object를 초기화
-	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd);
+	result = m_Graphics->Initialize(m_hinstance, screenWidth, screenHeight, m_hwnd);
 	if (!result)
 	{
 		return false;

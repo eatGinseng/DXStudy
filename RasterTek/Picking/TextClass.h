@@ -37,9 +37,11 @@ public:
 	bool Render(ID3D11DeviceContext*, XMMATRIX, XMMATRIX);
 
 	bool SetMousePosition(int, int, ID3D11DeviceContext*);
+	bool SetIntersect(bool, ID3D11DeviceContext*);
 
 	bool SetFps(int, ID3D11DeviceContext*);
 	bool SetCpu(int, ID3D11DeviceContext*);
+
 
 private:
 	bool InitializeSentence(SentenceType**, int, ID3D11Device*);
@@ -61,6 +63,9 @@ private:
 	// FPS, CPU usage
 	SentenceType* m_sentence3;
 	SentenceType* m_sentence4;
+	
+	// Intersect
+	SentenceType* m_sentence5;
 
 };
 

@@ -23,6 +23,8 @@
     <ClInclude Include="CameraClass.h" />
     <ClInclude Include="CpuClass.h" />
     <ClInclude Include="D3DClass.h" />
+    <ClInclude Include="FontClass.h" />
+    <ClInclude Include="FontShaderClass.h" />
     <ClInclude Include="FpsClass.h" />
     <ClInclude Include="GlowShaderClass.h" />
     <ClInclude Include="GraphicsClass.h" />
@@ -37,6 +39,7 @@
     <ClInclude Include="RenderToTextureClass.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SystemClass.h" />
+    <ClInclude Include="TextClass.h" />
     <ClInclude Include="TextureClass.h" />
     <ClInclude Include="TextureShaderClass.h" />
     <ClInclude Include="TimerClass.h" />
@@ -48,6 +51,8 @@
     <ClCompile Include="CameraClass.cpp" />
     <ClCompile Include="CpuClass.cpp" />
     <ClCompile Include="D3DClass.cpp" />
+    <ClCompile Include="FontClass.cpp" />
+    <ClCompile Include="FontShaderClass.cpp" />
     <ClCompile Include="FpsClass.cpp" />
     <ClCompile Include="GlowShaderClass.cpp" />
     <ClCompile Include="GraphicsClass.cpp" />
@@ -61,6 +66,7 @@
     <ClCompile Include="ProjectionShaderClass.cpp" />
     <ClCompile Include="RenderToTextureClass.cpp" />
     <ClCompile Include="SystemClass.cpp" />
+    <ClCompile Include="TextClass.cpp" />
     <ClCompile Include="TextureClass.cpp" />
     <ClCompile Include="TextureShaderClass.cpp" />
     <ClCompile Include="TimerClass.cpp" />

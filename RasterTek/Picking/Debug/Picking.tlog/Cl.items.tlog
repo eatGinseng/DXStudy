@@ -2,6 +2,8 @@ I:\DXStudy\RasterTek\Picking\BitmapClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\
 I:\DXStudy\RasterTek\Picking\CameraClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\CameraClass.obj
 I:\DXStudy\RasterTek\Picking\CpuClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\CpuClass.obj
 I:\DXStudy\RasterTek\Picking\D3DClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\D3DClass.obj
+I:\DXStudy\RasterTek\Picking\FontClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\FontClass.obj
+I:\DXStudy\RasterTek\Picking\FontShaderClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\FontShaderClass.obj
 I:\DXStudy\RasterTek\Picking\FpsClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\FpsClass.obj
 I:\DXStudy\RasterTek\Picking\GlowShaderClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\GlowShaderClass.obj
 I:\DXStudy\RasterTek\Picking\GraphicsClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\GraphicsClass.obj
@@ -15,6 +17,7 @@ I:\DXStudy\RasterTek\Picking\OrthowindowClass.cpp;I:\DXStudy\RasterTek\Picking\D
 I:\DXStudy\RasterTek\Picking\ProjectionShaderClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\ProjectionShaderClass.obj
 I:\DXStudy\RasterTek\Picking\RenderToTextureClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\RenderToTextureClass.obj
 I:\DXStudy\RasterTek\Picking\SystemClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\SystemClass.obj
+I:\DXStudy\RasterTek\Picking\TextClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\TextClass.obj
 I:\DXStudy\RasterTek\Picking\TextureClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\TextureClass.obj
 I:\DXStudy\RasterTek\Picking\TextureShaderClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\TextureShaderClass.obj
 I:\DXStudy\RasterTek\Picking\TimerClass.cpp;I:\DXStudy\RasterTek\Picking\Debug\TimerClass.obj

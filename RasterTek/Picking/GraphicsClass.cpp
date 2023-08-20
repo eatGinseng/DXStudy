@@ -17,7 +17,9 @@ GraphicsClass::GraphicsClass()
 	m_Light = 0;
 
 	m_TextureShader = 0;
+	m_Text = 0;
 
+	m_Cursor = 0;
 }
 
 GraphicsClass::GraphicsClass(const GraphicsClass& other)
@@ -58,11 +60,12 @@ bool GraphicsClass::Initialize(HINSTANCE hinstance, int screenWidth, int screenH
 	}
 
 	// Set the initial position of the camera.
-	m_Camera->SetPosition(0.0f, 4.0f, -10.0f);
-	m_Camera->SetRotation(8.0f, 0.0f, 0.0f);
+	m_Camera->SetPosition(0.0f, 0.0f, -4.0f);
+	m_Camera->SetRotation(0.0f, 0.0f, 0.0f);
 	m_Camera->Render();
 
 	m_Camera->GetViewMatrix(baseViewMatrix);
+	m_D3D->GetOrthoMatrix(orthoMatrix);
 
 	m_Input = new InputClass;
 	if (!m_Input)
@@ -76,6 +79,17 @@ bool GraphicsClass::Initialize(HINSTANCE hinstance, int screenWidth, int screenH
 		MessageBox(hwnd, L"Could not initialize the Input object.", L"Error", MB_OK);
 		return false;
 	}
+
+	m_Hwnd = hwnd;
+
+	m_Text = new TextClass;
+	if (!m_Text)
+	{
+		MessageBox(hwnd, L"Could not initialize the text object.", L"Error", MB_OK);
+		return false;
+	}
+	result = m_Text->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), hwnd, screenWidth, screenHeight, baseViewMatrix);
+
 
 	char textureFilename1[128];
 	strcpy_s(textureFilename1, "wall01.tga");
@@ -92,21 +106,17 @@ bool GraphicsClass::Initialize(HINSTANCE hinstance, int screenWidth, int screenH
 	ZeroMemory(modelFilename3, sizeof(char) * 128);
 	strcpy_s(modelFilename3, "plane01.txt");
 
-	m_CubeModel = new ModelClass;
-	if (!m_CubeModel)
+	char cursorFilename[128];
+	ZeroMemory(cursorFilename, sizeof(char) * 128);
+	strcpy_s(cursorFilename, "Cursor.tga");
+
+	m_Cursor = new BitmapClass;
+	if (!m_Cursor)
 	{
 		return false;
 	}
 
-	result = m_CubeModel->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(),textureFilename1, hwnd, modelFilename1);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the cube model object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Set the position for the cube model.
-	m_CubeModel->SetPosition(-2.0f, 2.0f, 0.0f);
+	result = m_Cursor->Initialize(m_D3D->GetDevice(), m_D3D->GetDeviceContext(), screenWidth, screenHeight, 64, 64, cursorFilename, hwnd);
 
 	m_SphereModel = new ModelClass;
 	if (!m_SphereModel)
@@ -122,7 +132,7 @@ bool GraphicsClass::Initialize(HINSTANCE hinstance, int screenWidth, int screenH
 	}
 
 	// Set the position for the sphere model.
-	m_SphereModel->SetPosition(2.0f, 2.0f, 0.0f);
+	m_SphereModel->SetPosition(0.0f, 0.0f, 0.0f);
 
 	// Create the ground model object.
 	m_GroundModel = new ModelClass;
@@ -168,12 +178,32 @@ bool GraphicsClass::Initialize(HINSTANCE hinstance, int screenWidth, int screenH
 		return false;
 	}
 
+	m_TextureShader = new TextureShaderClass;
+	if (!m_TextureShader)
+	{
+		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
+		return false;
+	}
+
+	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		return false;
+	}
+
 	return true;
 }
 
 
 void GraphicsClass::Shutdown()
 {
+
+	if (m_Cursor)
+	{
+		m_Cursor->Shutdown();
+		delete m_Cursor;
+		m_Cursor = 0;
+	}
 
 	if (m_LightShader)
 	{
@@ -218,6 +248,13 @@ void GraphicsClass::Shutdown()
 		m_CubeModel->Shutdown();
 		delete m_CubeModel;
 		m_CubeModel = 0;
+	}
+
+	if (m_Text)
+	{
+		m_Text->Shutdown();
+		delete m_Text;
+		m_Text = 0;
 	}
 
 	if (m_Input)
@@ -288,14 +325,14 @@ bool GraphicsClass::HandleInput()
 	}
 
 	// 왼쪽 마우스 버튼이 눌렸는지 테스트
-	if (m_Input->IsLeftMouseButtonDown() == false)
+	if (m_Input->IsLeftMouseButtonDown() == true)
 	{
 		if (m_beginCheck = true)
 		{
 			m_beginCheck = true;
 			m_Input->GetMouseLocation(mouseX, mouseY);
 			TestIntersection(mouseX, mouseY);
-
+			std::cout << "";
 		}
 	}
 
@@ -303,6 +340,7 @@ bool GraphicsClass::HandleInput()
 	if (m_Input->IsLeftMouseButtonDown() == false)
 	{
 		m_beginCheck = false;
+
 	}
 
 	return true;
@@ -313,78 +351,85 @@ void GraphicsClass::TestIntersection(int mouseX, int mouseY)
 {
 	float pointX, pointY;
 	XMMATRIX projectionMatrix, viewMatrix, inverseViewMatrix, worldMatrix, translateMatrix, inverseWorldMatrix;
-	XMFLOAT3 direction, rayDirection;
-	XMVECTOR origin, rayOrigin;
-	bool intersect, result;
 
-	// 마우스 커서 좌표를 -1 ~ +! 범위로 옮긴다.
-	pointX = ((2.0f * (float)mouseX) / (float)m_screenWidth) - 1.0f;
-	pointY = (((2.0f * (float)mouseY) / (float)m_screenHeight) - 1.0f) * -1.0f;
+	bool intersect, result;
 
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 	XMFLOAT4X4 tempProj;
 	XMStoreFloat4x4(&tempProj, projectionMatrix);
 
-	// 포인트들을 projection matrix를 사용해 조정한다. 이는 화면 종횡비를 계산해 넣기 위함이다.
-	pointX = pointX / tempProj._11;
-	pointY = pointY / tempProj._22;
+	// Compute picking ray in view space.
+	float vx = (+2.0f * mouseX / m_screenWidth - 1.0f) / tempProj._11;
+	float vy = (-2.0f * mouseY / m_screenHeight + 1.0f) / tempProj._22;
 
-	// view matrix의 inverse를 구한다.
+	// Ray definition in view space.
+	// picking ray origin = 카메라 위치
+	XMVECTOR rayOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+	XMVECTOR rayDir = XMVectorSet(vx, vy, 1.0f, 0.0f);
+
 	m_Camera->GetViewMatrix(viewMatrix);
 	inverseViewMatrix = XMMatrixInverse(NULL, viewMatrix);
-	XMFLOAT4X4 tempInverseView;
-	XMStoreFloat4x4(&tempInverseView, inverseViewMatrix);
-
-	// view space에서 picking ray의 방향을 계산
-	direction.x = (pointX * tempInverseView._11) + (pointY * tempInverseView._21) + tempInverseView._31;
-	direction.y = (pointX * tempInverseView._12) + (pointY * tempInverseView._22) + tempInverseView._32;
-	direction.z = (pointX * tempInverseView._13) + (pointY * tempInverseView._23) + tempInverseView._33;
-
-	XMVECTOR directionVec = XMLoadFloat3(&direction);
-
-	// picking ray origin = 카메라 위치
-	origin = XMLoadFloat3(&(m_Camera->GetPosition()));
+	rayOrigin = XMVector3TransformCoord(rayOrigin, inverseViewMatrix);
+	rayDir = XMVector3TransformNormal(rayDir, inverseViewMatrix);
 
 	// sphere 위치로 world matrix translate
 	m_D3D->GetWorldMatrix(worldMatrix);
-	translateMatrix = XMMatrixTranslation(-5.0f, 1.0f, 5.0f);
-	worldMatrix = XMMatrixMultiply(worldMatrix, translateMatrix);
 
-	// translate 된 matrix의 inverse 구하기
-	worldMatrix = XMMatrixInverse(NULL, worldMatrix);
-
-	// ray origin과 direction을 view space에서 world space로 변환
-	// 그리고 나서 rayDireciton을 normalize
-	rayOrigin = XMVector3TransformCoord(origin, inverseWorldMatrix);
-	XMStoreFloat3(&rayDirection, XMVector3Normalize(XMVector3TransformNormal(directionVec, inverseWorldMatrix)));
-
-	intersect = RaySphereIntersect(rayOrigin, rayDirection, 1.0f);
+	intersect = RaySphereIntersect(rayOrigin, rayDir, 1.0f);
 
 	if (intersect == true)
 	{
 		// 만약 intersection 되었다면, 
-		result = m_Text->SetIntersection(true, m_D3D->GetDeviceContext());
+		result = m_Text->SetIntersect(true, m_D3D->GetDeviceContext());
+		MessageBox(m_Hwnd, L"Hit", L"Error", MB_OK);
+		
 	}
 	else
 	{
-		result = m_Text->SetIntersection(false, m_D3D->GetDeviceContext());
+		result = m_Text->SetIntersect(false, m_D3D->GetDeviceContext());
+
 	}
+
+	// Reset the world matrix.
+	m_D3D->GetWorldMatrix(worldMatrix);
 
 	return;
 }
 
-bool GraphicsClass::RaySphereIntersect(XMVECTOR origin, XMFLOAT3 rayDirection, float radius)
+bool GraphicsClass::RaySphereIntersect(XMVECTOR rayOriginVec, XMVECTOR rayDirectionVec, float radius)
 {
-	
+	float a, b, c, discriminant;
+
+	XMFLOAT3 rayOrigin;
+	XMFLOAT3 rayDirection;
+	XMStoreFloat3(&rayOrigin, rayOriginVec);
+	XMStoreFloat3(&rayDirection, rayDirectionVec);
+
+	// a, b, c coefficient(계수)들을 계산
+	a = (rayDirection.x * rayDirection.x) + (rayDirection.y * rayDirection.y) + (rayDirection.z * rayDirection.z);
+	b = ((rayDirection.x * rayOrigin.x) + (rayDirection.y * rayOrigin.y) + (rayDirection.z * rayOrigin.z)) * 2.0f;
+	c = ((rayOrigin.x * rayOrigin.x) + (rayOrigin.y * rayOrigin.y) + (rayOrigin.z * rayOrigin.z)) - (radius * radius);
+
+	// Find the discriminant.
+	discriminant = (b * b) - (4 * a * c);
+
+	// 계수가 음수일 경우, ray가 sphere를 빗겨간 것이다. 그렇지 않다면, sphere와 교차한 것이다.
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool GraphicsClass::Render()
 {
-	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, translationMat;
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, translationMat;
 	bool result;
 	float posX, posY, posZ;
 
 	int mouseX, mouseY;
+
+	m_Input->GetMouseLocation(mouseX, mouseY);
 
 	// Clear the buffers to begin the scene. clear with fog color.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -396,25 +441,6 @@ bool GraphicsClass::Render()
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 
-	// Setup the translation matrix for the cube model.
-	m_CubeModel->GetPosition(posX, posY, posZ);
-	translationMat = XMMatrixTranslation(posX, posY, posZ);
-	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
-
-	// Put the cube model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_CubeModel->Render(m_D3D->GetDeviceContext());
-
-	// Render the model using the shadow shader.
-	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetDirection(),
-		m_Light->GetDiffuseColor(), m_Light->GetAmbientColor());
-	if (!result)
-	{
-		return false;
-	}
-
-	// Reset the world matrix.
-	m_D3D->GetWorldMatrix(worldMatrix);
-
 	// Setup the translation matrix for the sphere model.
 	m_SphereModel->GetPosition(posX, posY, posZ);
 	translationMat = XMMatrixTranslation(posX, posY, posZ);
@@ -422,24 +448,7 @@ bool GraphicsClass::Render()
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_SphereModel->Render(m_D3D->GetDeviceContext());
-	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetDirection(),
-		m_Light->GetDiffuseColor(), m_Light->GetAmbientColor());
-	if (!result)
-	{
-		return false;
-	}
-
-	// Reset the world matrix.
-	m_D3D->GetWorldMatrix(worldMatrix);
-
-	// Setup the translation matrix for the ground model.
-	m_GroundModel->GetPosition(posX, posY, posZ);
-	translationMat = XMMatrixTranslation(posX, posY, posZ);
-	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
-
-	// Render the ground model using the shadow shader.
-	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_Light->GetDirection(),
+	result = m_LightShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_SphereModel->GetTexture(), m_Light->GetDirection(),
 		m_Light->GetDiffuseColor(), m_Light->GetAmbientColor());
 	if (!result)
 	{
@@ -458,8 +467,11 @@ bool GraphicsClass::Render()
 	// Turn on alpha blending.
 	m_D3D->TurnOnAlphaBlending();
 
-	// Bitmap rendering for mouse cursor
+	m_Cursor->Render(m_D3D->GetDeviceContext(), mouseX, mouseY);
+	m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Cursor->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_Cursor->GetTexture());
 
+	m_Text->SetMousePosition(mouseX, mouseY, m_D3D->GetDeviceContext());
+	m_Text->Render(m_D3D->GetDeviceContext(), worldMatrix, orthoMatrix);
 
 	// Turn of alpha blending.
 	m_D3D->TurnOffAlphaBlending();

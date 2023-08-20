@@ -227,6 +227,16 @@ bool InputClass::IsEscapePressed()
 	return false;
 }
 
+bool InputClass::IsLeftMouseButtonDown()
+{
+	if (m_mouseState.rgbButtons[0] & 0x80)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 
 // 이후 GraphicClass에서 이 정보를 사용함.
 void InputClass::GetMouseLocation(int& mouseX, int& mouseY)

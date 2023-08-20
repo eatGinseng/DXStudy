@@ -10,6 +10,7 @@ TextClass::TextClass()
 	m_sentence2 = 0;
 	m_sentence3 = 0;
 	m_sentence4 = 0;
+	m_sentence5 = 0;
 
 }
 
@@ -57,6 +58,33 @@ bool TextClass::SetMousePosition(int mouseX, int mouseY, ID3D11DeviceContext* de
 
 	return true;
 
+}
+
+bool TextClass::SetIntersect(bool bIntersect, ID3D11DeviceContext* deviceContext)
+{
+	bool result;
+
+	char YesString[128];
+	strcpy_s(YesString, "Yes");
+
+	char NoString[1024];
+	strcpy_s(NoString, "No");
+
+	if (bIntersect)
+	{
+		result = UpdateSentence(m_sentence5, YesString, 20, 100, 0.0f, 1.0f, 1.0f, deviceContext);
+	}
+	else
+	{
+		result = UpdateSentence(m_sentence5, NoString, 20, 100, 1.0f, 0.0f, 0.0f, deviceContext);
+	}
+
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool TextClass::SetFps(int fps, ID3D11DeviceContext* deviceContext)
@@ -216,6 +244,12 @@ bool TextClass::Initialize(ID3D11Device* device, ID3D11DeviceContext* deviceCont
 		return false;
 	}
 
+	result = InitializeSentence(&m_sentence5, 16, device);
+	if (!result)
+	{
+		return false;
+	}
+
 	return true;
 
 }
@@ -231,6 +265,8 @@ void TextClass::Shutdown()
 	ReleaseSentence(&m_sentence3);
 
 	ReleaseSentence(&m_sentence4);
+
+	ReleaseSentence(&m_sentence5);
 
 	// Release the font shader object.
 	if (m_FontShader)
@@ -280,6 +316,13 @@ bool TextClass::Render(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix,
 
 	// 네 번째 문장 그리기
 	result = RenderSentence(deviceContext, m_sentence4, worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// 다섯 번째 문장 그리기
+	result = RenderSentence(deviceContext, m_sentence5, worldMatrix, orthoMatrix);
 	if (!result)
 	{
 		return false;
