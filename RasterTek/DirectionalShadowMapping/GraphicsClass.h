@@ -16,11 +16,7 @@
 #include "depthshaderclass.h"
 #include "shadowshaderclass.h"
 
-#include "orthowindowclass.h"
 #include "textureshaderclass.h"
-#include "horizontalblurshaderclass.h"
-#include "verticalblurshaderclass.h"
-#include "softshadowshaderclass.h"
 
 /////////////
 // GLOBALS //
@@ -32,6 +28,9 @@ const float SCREEN_NEAR = 1.0f;
 
 const int SHADOWMAP_WIDTH = 1024;
 const int SHADOWMAP_HEIGHT = 1024;
+
+const float SHADOWMAP_DEPTH = 50.0f;
+const float SHADOWMAP_NEAR = 1.0f;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: GraphicsClass
@@ -47,12 +46,6 @@ public:
 	void Shutdown();
 	bool Frame();
 
-	bool RenderSceneToTexture();
-	bool RenderBlackAndWhiteShadows();
-	bool DownSampleTexture();
-	bool RenderHorizontalBlurToTexture();
-	bool RenderVerticalBlurToTexture();
-	bool UpSampleTexture();
 	bool RenderDepthTexture();
 
 	bool Render();
@@ -67,16 +60,9 @@ private:
 
 	XMMATRIX baseViewMatrix;
 
-	RenderToTextureClass* m_RenderTexture, * m_BlackWhiteRenderTexture, * m_DownSampleTexure;
-	RenderToTextureClass* m_HorizontalBlurTexture, * m_VerticalBlurTexture, * m_UpSampleTexure;
+	RenderToTextureClass* m_RenderTexture;
 	DepthShaderClass* m_DepthShader;
 	ShadowShaderClass* m_ShadowShader;
-	OrthoWindowClass* m_SmallWindow, * m_FullScreenWindow;
-
-	HorizontalBlurShaderClass* m_HorizontalBlurShader;
-	VerticalBlurShaderClass* m_VerticalBlurShader;
-	SoftShadowShaderClass* m_SoftShadowShader;
-
 
 };
 

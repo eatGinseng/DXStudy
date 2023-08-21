@@ -17,20 +17,12 @@ GraphicsClass::GraphicsClass()
 	m_RenderTexture = 0;
 
 	m_DepthShader = 0;
-	m_BlackWhiteRenderTexture = 0;
 
 	m_ShadowShader = 0;
 
-	m_DownSampleTexure = 0;
-	m_SmallWindow = 0;
+
 	m_TextureShader = 0;
-	m_HorizontalBlurTexture = 0;
-	m_HorizontalBlurShader = 0;
-	m_VerticalBlurTexture = 0;
-	m_VerticalBlurShader = 0;
-	m_UpSampleTexure = 0;
-	m_FullScreenWindow = 0;
-	m_SoftShadowShader = 0;
+
 
 }
 
@@ -154,9 +146,11 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
 
 	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light->SetPosition(5.0f, 8.0f, -5.0f);
+	m_Light->SetPosition(3.0f, 8.0f, -3.0f);
 	m_Light->SetLookAt(0.0f, 0.0f, 0.0f);
 	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
+
+	m_Light->GenerateOrthoMatrix(20.0f, SHADOWMAP_DEPTH, SHADOWMAP_NEAR);
 
 	// Create the render to texture object.
 	m_RenderTexture = new RenderToTextureClass;
@@ -203,55 +197,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Create the render to texture object.
-	m_BlackWhiteRenderTexture = new RenderToTextureClass;
-	if (!m_BlackWhiteRenderTexture)
-	{
-		return false;
-	}
-
-	// Initialize the black and white render to texture object.
-	result = m_BlackWhiteRenderTexture->Initialize(m_D3D->GetDevice(), SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, SCREEN_DEPTH, SCREEN_NEAR);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the black and white render to texture object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Set the size to sample down to.
-	downSampleWidth = SHADOWMAP_WIDTH / 2;
-	downSampleHeight = SHADOWMAP_HEIGHT / 2;
-
-	// Create the down sample render to texture object.
-	m_DownSampleTexure = new RenderToTextureClass;
-	if (!m_DownSampleTexure)
-	{
-		return false;
-	}
-
-	// Initialize the down sample render to texture object.
-	result = m_DownSampleTexure->Initialize(m_D3D->GetDevice(), downSampleWidth, downSampleHeight, 100.0f, 1.0f);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the down sample render to texture object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the small ortho window object.
-	m_SmallWindow = new OrthoWindowClass;
-	if (!m_SmallWindow)
-	{
-		return false;
-	}
-
-	// Initialize the small ortho window object.
-	result = m_SmallWindow->Initialize(m_D3D->GetDevice(), downSampleWidth, downSampleHeight);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the small ortho window object.", L"Error", MB_OK);
-		return false;
-	}
-
 	// Create the texture shader object.
 	m_TextureShader = new TextureShaderClass;
 	if (!m_TextureShader)
@@ -267,110 +212,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
-	// Create the horizontal blur render to texture object.
-	m_HorizontalBlurTexture = new RenderToTextureClass;
-	if (!m_HorizontalBlurTexture)
-	{
-		return false;
-	}
-
-	// Initialize the horizontal blur render to texture object.
-	result = m_HorizontalBlurTexture->Initialize(m_D3D->GetDevice(), downSampleWidth, downSampleHeight, SCREEN_DEPTH, 0.1f);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the horizontal blur render to texture object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the horizontal blur shader object.
-	m_HorizontalBlurShader = new HorizontalBlurShaderClass;
-	if (!m_HorizontalBlurShader)
-	{
-		return false;
-	}
-
-	// Initialize the horizontal blur shader object.
-	result = m_HorizontalBlurShader->Initialize(m_D3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the horizontal blur shader object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the vertical blur render to texture object.
-	m_VerticalBlurTexture = new RenderToTextureClass;
-	if (!m_VerticalBlurTexture)
-	{
-		return false;
-	}
-
-	// Initialize the vertical blur render to texture object.
-	result = m_VerticalBlurTexture->Initialize(m_D3D->GetDevice(), downSampleWidth, downSampleHeight, SCREEN_DEPTH, 0.1f);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the vertical blur render to texture object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the vertical blur shader object.
-	m_VerticalBlurShader = new VerticalBlurShaderClass;
-	if (!m_VerticalBlurShader)
-	{
-		return false;
-	}
-
-	// Initialize the vertical blur shader object.
-	result = m_VerticalBlurShader->Initialize(m_D3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the vertical blur shader object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the up sample render to texture object.
-	m_UpSampleTexure = new RenderToTextureClass;
-	if (!m_UpSampleTexure)
-	{
-		return false;
-	}
-
-	// Initialize the up sample render to texture object.
-	result = m_UpSampleTexure->Initialize(m_D3D->GetDevice(), SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, SCREEN_DEPTH, 0.1f);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the up sample render to texture object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the full screen ortho window object.
-	m_FullScreenWindow = new OrthoWindowClass;
-	if (!m_FullScreenWindow)
-	{
-		return false;
-	}
-
-	// Initialize the full screen ortho window object.
-	result = m_FullScreenWindow->Initialize(m_D3D->GetDevice(), SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the full screen ortho window object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the soft shadow shader object.
-	m_SoftShadowShader = new SoftShadowShaderClass;
-	if (!m_SoftShadowShader)
-	{
-		return false;
-	}
-
-	// Initialize the soft shadow shader object.
-	result = m_SoftShadowShader->Initialize(m_D3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the soft shadow shader object.", L"Error", MB_OK);
-		return false;
-	}
 
 	return true;
 }
@@ -378,61 +219,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	void GraphicsClass::Shutdown()
 	{
-		// Release the soft shadow shader object.
-		if (m_SoftShadowShader)
-		{
-			m_SoftShadowShader->Shutdown();
-			delete m_SoftShadowShader;
-			m_SoftShadowShader = 0;
-		}
-
-		// Release the full screen ortho window object.
-		if (m_FullScreenWindow)
-		{
-			m_FullScreenWindow->Shutdown();
-			delete m_FullScreenWindow;
-			m_FullScreenWindow = 0;
-		}
-
-		// Release the up sample render to texture object.
-		if (m_UpSampleTexure)
-		{
-			m_UpSampleTexure->Shutdown();
-			delete m_UpSampleTexure;
-			m_UpSampleTexure = 0;
-		}
-
-		// Release the vertical blur shader object.
-		if (m_VerticalBlurShader)
-		{
-			m_VerticalBlurShader->Shutdown();
-			delete m_VerticalBlurShader;
-			m_VerticalBlurShader = 0;
-		}
-
-		// Release the vertical blur render to texture object.
-		if (m_VerticalBlurTexture)
-		{
-			m_VerticalBlurTexture->Shutdown();
-			delete m_VerticalBlurTexture;
-			m_VerticalBlurTexture = 0;
-		}
-
-		// Release the horizontal blur shader object.
-		if (m_HorizontalBlurShader)
-		{
-			m_HorizontalBlurShader->Shutdown();
-			delete m_HorizontalBlurShader;
-			m_HorizontalBlurShader = 0;
-		}
-
-		// Release the horizontal blur render to texture object.
-		if (m_HorizontalBlurTexture)
-		{
-			m_HorizontalBlurTexture->Shutdown();
-			delete m_HorizontalBlurTexture;
-			m_HorizontalBlurTexture = 0;
-		}
 
 		// Release the texture shader object.
 		if (m_TextureShader)
@@ -442,36 +228,12 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 			m_TextureShader = 0;
 		}
 
-		// Release the small ortho window object.
-		if (m_SmallWindow)
-		{
-			m_SmallWindow->Shutdown();
-			delete m_SmallWindow;
-			m_SmallWindow = 0;
-		}
-
-		// Release the down sample render to texture object.
-		if (m_DownSampleTexure)
-		{
-			m_DownSampleTexure->Shutdown();
-			delete m_DownSampleTexure;
-			m_DownSampleTexure = 0;
-		}
-
 		// Release the shadow shader object.
 		if (m_ShadowShader)
 		{
 			m_ShadowShader->Shutdown();
 			delete m_ShadowShader;
 			m_ShadowShader = 0;
-		}
-
-		// Release the black and white render to texture.
-		if (m_BlackWhiteRenderTexture)
-		{
-			m_BlackWhiteRenderTexture->Shutdown();
-			delete m_BlackWhiteRenderTexture;
-			m_BlackWhiteRenderTexture = 0;
 		}
 
 		// Release the depth shader object.
@@ -547,13 +309,13 @@ bool GraphicsClass::Frame()
 
 	// Update the position of the light each frame.
 	lightPositionX += 0.005f;
-	if (lightPositionX > 5.0f)
+	if (lightPositionX > 3.0f)
 	{
-		lightPositionX = -5.0f;
+		lightPositionX = -3.0f;
 	}
 
 	// Update the position of the light.
-	m_Light->SetPosition(lightPositionX, 8.0f, -5.0f);
+	m_Light->SetPosition(3.0f, 10.0f, -3.0f);
 
 	// Render the graphics scene.
 	result = Render();
@@ -567,9 +329,11 @@ bool GraphicsClass::Frame()
 
 bool GraphicsClass::RenderDepthTexture()
 {
-	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, lightViewMatrix, lightProjectionMatrix, translationMat;
+	XMMATRIX worldMatrix, orthoMatrix, lightViewMatrix, lightProjectionMatrix, lightOrthoMatrix, translationMat;
 	bool result;
 	float posX, posY, posZ;
+
+	m_D3D->GetWorldMatrix(worldMatrix);
 
 	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext());
 	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
@@ -582,6 +346,7 @@ bool GraphicsClass::RenderDepthTexture()
 	// Get the view and orthographic matrices from the light object.
 	m_Light->GetViewMatrix(lightViewMatrix);
 	m_Light->GetProjectionMatrix(lightProjectionMatrix);
+	m_Light->GetOrthoMatrix(lightOrthoMatrix);
 
 	// 이제 각 모델을 Shadow map shader와 light 매트릭스들, 그리고 shadow map 텍스처로 렌더한다.
 	// Setup the translation matrix for the cube model.
@@ -593,7 +358,7 @@ bool GraphicsClass::RenderDepthTexture()
 	m_CubeModel->Render(m_D3D->GetDeviceContext());
 
 	// Render the model using the shadow shader.
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -609,7 +374,7 @@ bool GraphicsClass::RenderDepthTexture()
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_SphereModel->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -625,7 +390,7 @@ bool GraphicsClass::RenderDepthTexture()
 
 	// Render the ground model using the shadow shader.
 	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightProjectionMatrix);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -638,7 +403,7 @@ bool GraphicsClass::RenderDepthTexture()
 
 bool GraphicsClass::Render()
 {
-	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, lightViewMatrix, lightProjectionMatrix, translationMat;
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, lightViewMatrix, lightProjectionMatrix, lightOrthoMatrix, translationMat;
 	bool result;
 	float posX, posY, posZ;
 
@@ -658,10 +423,12 @@ bool GraphicsClass::Render()
 	// Generate the light view matrix based on the light's position.
 	m_Light->GenerateViewMatrix();
 	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
+	m_Light->GenerateOrthoMatrix(20.0f, SHADOWMAP_DEPTH, SHADOWMAP_NEAR);
 
 	// Get the view and orthographic matrices from the light object.
 	m_Light->GetViewMatrix(lightViewMatrix);
 	m_Light->GetProjectionMatrix(lightProjectionMatrix);
+	m_Light->GetOrthoMatrix(lightOrthoMatrix);
 
 	// 이제 각 모델을 Shadow map shader와 light 매트릭스들, 그리고 shadow map 텍스처로 렌더한다.
 	// Setup the translation matrix for the cube model.
@@ -673,8 +440,7 @@ bool GraphicsClass::Render()
 	m_CubeModel->Render(m_D3D->GetDeviceContext());
 
 	// Render the model using the shadow shader.
-	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetPosition(),
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_CubeModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
 	if (!result)
 	{
 		return false;
@@ -690,8 +456,7 @@ bool GraphicsClass::Render()
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_SphereModel->Render(m_D3D->GetDeviceContext());
-	result = m_SoftShadowShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_SphereModel->GetTexture(), m_UpSampleTexure->GetShaderResourceView(), m_Light->GetPosition(),
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_SphereModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
 	if (!result)
 	{
 		return false;
@@ -707,8 +472,7 @@ bool GraphicsClass::Render()
 
 	// Render the ground model using the shadow shader.
 	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_SoftShadowShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_GroundModel->GetTexture(), m_UpSampleTexure->GetShaderResourceView(), m_Light->GetPosition(),
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor());
+	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_GroundModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
 	if (!result)
 	{
 		return false;

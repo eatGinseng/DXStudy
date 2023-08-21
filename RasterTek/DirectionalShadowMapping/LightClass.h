@@ -21,20 +21,26 @@ public:
 	XMVECTOR GetAmbientColor();
 	XMVECTOR GetDiffuseColor();
 	XMFLOAT3 GetPosition();
+	XMFLOAT3 GetDirection();
 
 	void GenerateViewMatrix();
 	void GenerateProjectionMatrix(float, float);
+	void GenerateOrthoMatrix(float, float, float);
 
 	void GetViewMatrix(XMMATRIX&);
 	void GetProjectionMatrix(XMMATRIX&);
+	void GetOrthoMatrix(XMMATRIX&);
 
 private:
 	XMVECTOR m_ambientColor;
 	XMVECTOR m_diffuseColor;
 	XMFLOAT3 m_position;
 	XMFLOAT3 m_lookAt;
+
+	XMFLOAT3 m_direction;
 	XMMATRIX m_viewMatrix;
 	XMMATRIX m_projectionMatrix;
+	XMMATRIX m_orthoMatrix;
 
 };
 

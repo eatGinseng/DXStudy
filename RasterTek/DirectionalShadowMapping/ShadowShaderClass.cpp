@@ -48,14 +48,14 @@ void ShadowShaderClass::Shutdown()
 // setshaderparameters 함수에서 렌더링 하기 전에 셰이더에 셋 해 줄 것이다.
 
 bool ShadowShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, XMMATRIX lightViewMatrix, XMMATRIX lightProjectionMatrix,
-	ID3D11ShaderResourceView* depthMapTexture, XMFLOAT3 lightPosition )
+	XMMATRIX projectionMatrix, XMMATRIX lightViewMatrix, XMMATRIX lightProjectionMatrix, ID3D11ShaderResourceView* diffuseTexture,
+	ID3D11ShaderResourceView* depthMapTexture, XMFLOAT3 lightDirection )
 {	
 	bool result;
 
 	// Set the shader parameters that it will use for rendering.
 	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightProjectionMatrix,
-		depthMapTexture, lightPosition);
+		diffuseTexture, depthMapTexture, lightDirection);
 	if (!result)
 	{
 		return false;
@@ -359,8 +359,8 @@ void ShadowShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND 
 
 
 bool ShadowShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, XMMATRIX lightViewMatrix, XMMATRIX lightProjectionMatrix,
-	ID3D11ShaderResourceView* depthMapTexture, XMFLOAT3 lightPosition)
+	XMMATRIX projectionMatrix, XMMATRIX lightViewMatrix, XMMATRIX lightProjectionMatrix, ID3D11ShaderResourceView* diffuseTexture, 
+	ID3D11ShaderResourceView* depthMapTexture, XMFLOAT3 lightDirection)
 {
 	HRESULT result;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
@@ -424,6 +424,9 @@ bool ShadowShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, 
 	// Now set the constant buffer in the vertex shader with the updated values.
 	deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_lightMatrixBuffer);
 
+	// Diffuse map texture
+	deviceContext->PSSetShaderResources(0, 1, &diffuseTexture);
+
 	// shadow map texture
 	deviceContext->PSSetShaderResources(1, 1, &depthMapTexture);
 
@@ -435,7 +438,7 @@ bool ShadowShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, 
 	}
 
 	dataPtr3 = (LightBufferType2*)mappedResource.pData;
-	dataPtr3->lightPosition = lightPosition;
+	dataPtr3->lightDirection = lightDirection;
 
 	// Unlock the constant buffer.
 	deviceContext->Unmap(m_lightBuffer2, 0);

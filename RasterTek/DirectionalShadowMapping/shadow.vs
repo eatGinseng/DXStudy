@@ -26,7 +26,7 @@ cbuffer LightMatrixBuffer
 //////////////////////
 cbuffer LightBuffer2
 {
-    float3 lightPosition;
+    float3 lightDirection;
 	float padding1;
 };
 
@@ -47,7 +47,7 @@ struct PixelInputType
     float2 tex : TEXCOORD0;
 	float3 normal : NORMAL;
     float4 lightViewPosition : TEXCOORD1;
-	float3 lightPos : TEXCOORD2;
+	float3 lightDir : TEXCOORD2;
 
 };
 
@@ -87,10 +87,7 @@ PixelInputType ShadowVertexShader(VertexInputType input)
     worldPosition = mul(input.position, worldMatrix);
 
     // Determine the light position based on the position of the light and the position of the vertex in the world.
-    output.lightPos = lightPosition.xyz - worldPosition.xyz;
-
-    // Normalize the light position vector.
-    output.lightPos = normalize(output.lightPos);
+    output.lightDir = normalize(lightDirection);
 
 	return output;
 }
