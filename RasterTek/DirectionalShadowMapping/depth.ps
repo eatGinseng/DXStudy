@@ -25,18 +25,16 @@ float4 DepthPixelShader(PixelInputType input) : SV_TARGET
 	
 	float4 textureColor;
 	textureColor = shaderTexture.Sample(SampleType, input.tex);
-	if (textureColor.a > 0.0f)
+	if(textureColor.a > 0.1f)
 	{
 		// Get the depth value of the pixel by dividing the Z pixel depth by the homogeneous W coordinate.
 		depthValue = input.depthPosition.z / input.depthPosition.w;
-
-
 	}
-
 	else
-	[
+	{
+		// Otherwise discard this pixel entirely.
 		discard;
-	]
+	}
 	
 		color = float4(depthValue, depthValue, depthValue, 1.0f);	
 
