@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Filename: depth.ps
 ////////////////////////////////////////////////////////////////////////////////
-
+Texture2D shaderTexture;
+SamplerState SampleType : register(s0);
 
 //////////////
 // TYPEDEFS //
@@ -10,6 +11,7 @@ struct PixelInputType
 {
     float4 position : SV_POSITION;
     float4 depthPosition : TEXTURE0;
+	float2 tex : TEXTURE1;
 };
 
 
@@ -21,11 +23,22 @@ float4 DepthPixelShader(PixelInputType input) : SV_TARGET
 	float depthValue;
 	float4 color;
 	
-	
-	// Get the depth value of the pixel by dividing the Z pixel depth by the homogeneous W coordinate.
-	depthValue = input.depthPosition.z / input.depthPosition.w;
+	float4 textureColor;
+	textureColor = shaderTexture.Sample(SampleType, input.tex);
+	if (textureColor.a > 0.0f)
+	{
+		// Get the depth value of the pixel by dividing the Z pixel depth by the homogeneous W coordinate.
+		depthValue = input.depthPosition.z / input.depthPosition.w;
 
-	color = float4(depthValue, depthValue, depthValue, 1.0f);
+
+	}
+
+	else
+	[
+		discard;
+	]
+	
+		color = float4(depthValue, depthValue, depthValue, 1.0f);	
 
 	return color;
 }

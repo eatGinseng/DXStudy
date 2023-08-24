@@ -71,7 +71,10 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Camera->GetViewMatrix(baseViewMatrix);
 
 	char textureFilename1[128];
-	strcpy_s(textureFilename1, "wall01.tga");
+	strcpy_s(textureFilename1, "wall01_alpha.tga");
+
+	char textureFilename2[128];
+	strcpy_s(textureFilename2, "wall01.tga");
 
 	char modelFilename1[128];
 	ZeroMemory(modelFilename1, sizeof(char) * 128);
@@ -125,7 +128,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	}
 
 	// Initialize the ground model object.
-	result = m_GroundModel->Initialize(m_D3D->GetDevice(),m_D3D->GetDeviceContext(), textureFilename1, hwnd, modelFilename3);
+	result = m_GroundModel->Initialize(m_D3D->GetDevice(),m_D3D->GetDeviceContext(), textureFilename2, hwnd, modelFilename3);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the ground model object.", L"Error", MB_OK);
@@ -358,7 +361,7 @@ bool GraphicsClass::RenderDepthTexture()
 	m_CubeModel->Render(m_D3D->GetDeviceContext());
 
 	// Render the model using the shadow shader.
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_CubeModel->GetTexture());
 	if (!result)
 	{
 		return false;
@@ -374,7 +377,7 @@ bool GraphicsClass::RenderDepthTexture()
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_SphereModel->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_SphereModel->GetTexture());
 	if (!result)
 	{
 		return false;
@@ -390,7 +393,7 @@ bool GraphicsClass::RenderDepthTexture()
 
 	// Render the ground model using the shadow shader.
 	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_GroundModel->GetTexture());
 	if (!result)
 	{
 		return false;
@@ -406,6 +409,9 @@ bool GraphicsClass::Render()
 	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, lightViewMatrix, lightProjectionMatrix, lightOrthoMatrix, translationMat;
 	bool result;
 	float posX, posY, posZ;
+
+	m_D3D->TurnOnAlphaBlending();
+	m_D3D->TurnZBufferOn();
 
 	RenderDepthTexture();
 
@@ -430,17 +436,14 @@ bool GraphicsClass::Render()
 	m_Light->GetProjectionMatrix(lightProjectionMatrix);
 	m_Light->GetOrthoMatrix(lightOrthoMatrix);
 
-	// 이제 각 모델을 Shadow map shader와 light 매트릭스들, 그리고 shadow map 텍스처로 렌더한다.
-	// Setup the translation matrix for the cube model.
-	m_CubeModel->GetPosition(posX, posY, posZ);
+	// Setup the translation matrix for the ground model.
+	m_GroundModel->GetPosition(posX, posY, posZ);
 	translationMat = XMMatrixTranslation(posX, posY, posZ);
 	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
 
-	// Put the cube model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_CubeModel->Render(m_D3D->GetDeviceContext());
-
-	// Render the model using the shadow shader.
-	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_CubeModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
+	// Render the ground model using the shadow shader.
+	m_GroundModel->Render(m_D3D->GetDeviceContext());
+	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_GroundModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
 	if (!result)
 	{
 		return false;
@@ -465,18 +468,23 @@ bool GraphicsClass::Render()
 	// Reset the world matrix.
 	m_D3D->GetWorldMatrix(worldMatrix);
 
-	// Setup the translation matrix for the ground model.
-	m_GroundModel->GetPosition(posX, posY, posZ);
+	// 이제 각 모델을 Shadow map shader와 light 매트릭스들, 그리고 shadow map 텍스처로 렌더한다.
+// Setup the translation matrix for the cube model.
+	m_CubeModel->GetPosition(posX, posY, posZ);
 	translationMat = XMMatrixTranslation(posX, posY, posZ);
 	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
 
-	// Render the ground model using the shadow shader.
-	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_GroundModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
+	// Put the cube model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_CubeModel->Render(m_D3D->GetDeviceContext());
+
+	// Render the model using the shadow shader.
+	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_CubeModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
 	if (!result)
 	{
 		return false;
 	}
+
+	m_D3D->TurnOffAlphaBlending();
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();

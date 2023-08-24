@@ -461,14 +461,14 @@ C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\d3d10.h(609,1):
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\winerror.h(58554,1): message : 'D3D10_ERROR_FILE_NOT_FOUND'의 이전 정의를 참조하십시오.
 I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(46,22): warning C4316: 'D3DClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
 I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(61,28): warning C4316: 'CameraClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
-I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(139,26): warning C4316: 'LightClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
-I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(156,44): warning C4316: 'RenderToTextureClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
-I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(163,108): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(163,94): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(142,26): warning C4316: 'LightClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
+I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(159,44): warning C4316: 'RenderToTextureClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
+I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(166,108): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(166,94): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(43,6): warning C4101: 'downSampleWidth' :참조되지 않은 지역 변수입니다.
 I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(43,23): warning C4101: 'downSampleHeight' :참조되지 않은 지역 변수입니다.
-I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(332,24): warning C4101: 'orthoMatrix' :참조되지 않은 지역 변수입니다.
-I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(406,36): warning C4101: 'orthoMatrix' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(335,24): warning C4101: 'orthoMatrix' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(409,36): warning C4101: 'orthoMatrix' :참조되지 않은 지역 변수입니다.
   InputClass.cpp
 I:\DXStudy\RasterTek\DirectionalShadowMapping\InputClass.cpp(57,9): warning C4552: '-': 식의 결과가 사용되지 않습니다.
   LightClass.cpp
@@ -879,7 +879,7 @@ C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\d3d10.h(609,1):
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\winerror.h(58554,1): message : 'D3D10_ERROR_FILE_NOT_FOUND'의 이전 정의를 참조하십시오.
   코드를 생성하고 있습니다...
 I:\DXStudy\RasterTek\DirectionalShadowMapping\ModelClass.cpp(102): warning C4715: 'ModelClass::GetNormalMap': 모든 제어 경로에서 값을 반환하지는 않습니다.
-I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(402): warning C4715: 'GraphicsClass::RenderDepthTexture': 모든 제어 경로에서 값을 반환하지는 않습니다.
+I:\DXStudy\RasterTek\DirectionalShadowMapping\GraphicsClass.cpp(405): warning C4715: 'GraphicsClass::RenderDepthTexture': 모든 제어 경로에서 값을 반환하지는 않습니다.
   컴파일하고 있습니다...
   TextureShaderClass.cpp
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\dxgitype.h(12,1): warning C4005: 'DXGI_STATUS_OCCLUDED': 매크로 재정의

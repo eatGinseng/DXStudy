@@ -26,6 +26,7 @@ struct PixelInputType
 {
     float4 position : SV_POSITION;
     float4 depthPosition : TEXTURE0;
+    float2 tex : TEXTURE1;
 };
 
 
