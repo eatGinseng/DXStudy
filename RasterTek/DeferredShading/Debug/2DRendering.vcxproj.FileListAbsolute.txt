@@ -1,0 +1,2 @@
+I:\DXStudy\RasterTek\ShadowMapping\Debug\ShadowMapping.exe
+I:\DXStudy\RasterTek\DirectionalShadowMapping\Debug\DirectionalShadowMapping.exe
