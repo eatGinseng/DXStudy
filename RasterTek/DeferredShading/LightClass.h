@@ -21,7 +21,7 @@ public:
 	XMVECTOR GetAmbientColor();
 	XMVECTOR GetDiffuseColor();
 	XMFLOAT3 GetPosition();
-	XMFLOAT3 GetDirection();
+	XMVECTOR GetDirection();
 
 	void GenerateViewMatrix();
 	void GenerateProjectionMatrix(float, float);

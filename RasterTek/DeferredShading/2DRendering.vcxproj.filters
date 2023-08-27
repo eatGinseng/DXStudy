@@ -69,16 +69,7 @@
     <ClInclude Include="ShadowShaderClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SoftShadowshaderClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Blur\OrthowindowClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Blur\VerticalBlurShaderClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Blur\HorizontalBlurShaderClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TextureShaderClass.h">
@@ -144,15 +135,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DepthShaderClass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Softshadowshaderclass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Blur\VerticalBlurShaderClass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Blur\HorizontalBlurShaderClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\Blur\OrthowindowClass.cpp">

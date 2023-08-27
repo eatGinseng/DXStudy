@@ -19,9 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Blur\HorizontalBlurShaderClass.h" />
     <ClInclude Include="..\Blur\OrthowindowClass.h" />
-    <ClInclude Include="..\Blur\VerticalBlurShaderClass.h" />
     <ClInclude Include="BitmapClass.h" />
     <ClInclude Include="CameraClass.h" />
     <ClInclude Include="ColorShaderClass.h" />
@@ -39,7 +37,6 @@
     <ClInclude Include="ModelClass.h" />
     <ClInclude Include="RenderToTextureClass.h" />
     <ClInclude Include="ShadowShaderClass.h" />
-    <ClInclude Include="SoftShadowshaderClass.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="SystemClass.h" />
     <ClInclude Include="TextureClass.h" />
@@ -47,9 +44,7 @@
     <ClInclude Include="TimerClass.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Blur\HorizontalBlurShaderClass.cpp" />
     <ClCompile Include="..\Blur\OrthowindowClass.cpp" />
-    <ClCompile Include="..\Blur\VerticalBlurShaderClass.cpp" />
     <ClCompile Include="BitmapClass.cpp" />
     <ClCompile Include="CameraClass.cpp" />
     <ClCompile Include="ColorShaderClass.cpp" />
@@ -67,7 +62,6 @@
     <ClCompile Include="ModelClass.cpp" />
     <ClCompile Include="RenderToTextureClass.cpp" />
     <ClCompile Include="ShadowShaderClass.cpp" />
-    <ClCompile Include="Softshadowshaderclass.cpp" />
     <ClCompile Include="SystemClass.cpp" />
     <ClCompile Include="TextureClass.cpp" />
     <ClCompile Include="TextureShaderClass.cpp" />

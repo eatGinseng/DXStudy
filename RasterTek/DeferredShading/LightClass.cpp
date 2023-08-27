@@ -58,7 +58,7 @@ XMFLOAT3 LightClass::GetPosition()
 	return m_position;
 }
 
-XMFLOAT3 LightClass::GetDirection()
+XMVECTOR LightClass::GetDirection()
 {
 	XMVECTOR lookAtVec, positionVec, directionVec;
 	lookAtVec = XMLoadFloat3(&m_lookAt);
@@ -69,7 +69,7 @@ XMFLOAT3 LightClass::GetDirection()
 
 	XMStoreFloat3(&m_direction, directionVec);
 
-	return m_direction;
+	return directionVec;
 }
 
 // light¿« view matrix setup
