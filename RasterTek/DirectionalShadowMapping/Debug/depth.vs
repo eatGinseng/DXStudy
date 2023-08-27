@@ -20,12 +20,14 @@ cbuffer MatrixBuffer
 struct VertexInputType
 {
     float4 position : POSITION;
+    float2 tex      : TEXCOORD0;
 };
 
 struct PixelInputType
 {
     float4 position : SV_POSITION;
-    float4 depthPosition : TEXTURE0;
+    float4 depthPosition : TEXCOORD0;
+    float2 tex : TEXCOORD1;
 };
 
 
@@ -47,6 +49,9 @@ PixelInputType DepthVertexShader(VertexInputType input)
 
 	// Store the position value in a second input value for depth value calculations.
 	output.depthPosition = output.position;
+
+    // texture coordinate
+    output.tex = input.tex;
 	
 	return output;
 }

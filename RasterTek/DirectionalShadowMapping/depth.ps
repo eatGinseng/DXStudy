@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Filename: depth.ps
 ////////////////////////////////////////////////////////////////////////////////
-Texture2D shaderTexture;
+Texture2D shaderTexture : register(t0);
 SamplerState SampleType : register(s0);
 
 //////////////
@@ -10,8 +10,8 @@ SamplerState SampleType : register(s0);
 struct PixelInputType
 {
     float4 position : SV_POSITION;
-    float4 depthPosition : TEXTURE0;
-	float2 tex : TEXTURE1;
+    float4 depthPosition : TEXCOORD0;
+	float2 tex : TEXCOORD1;
 };
 
 
