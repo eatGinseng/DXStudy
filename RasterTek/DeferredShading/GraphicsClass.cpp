@@ -14,15 +14,10 @@ GraphicsClass::GraphicsClass()
 
 	m_Light = 0;
 
-	m_RenderTexture = 0;
-
-	m_DepthShader = 0;
-
-	m_ShadowShader = 0;
-
-
-	m_TextureShader = 0;
-
+	m_DeferredBuffers = 0;
+	m_DeferredShader = 0;
+	m_LightShader = 0;
+	m_FullScreenWindow = 0;
 
 }
 
@@ -155,63 +150,63 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	m_Light->GenerateOrthoMatrix(20.0f, SHADOWMAP_DEPTH, SHADOWMAP_NEAR);
 
-	// Create the render to texture object.
-	m_RenderTexture = new RenderToTextureClass;
-	if (!m_RenderTexture)
+	// Create the full screen ortho window object.
+	m_FullScreenWindow = new OrthoWindowClass;
+	if (!m_FullScreenWindow)
 	{
 		return false;
 	}
 
-	// Initialize the render to texture object.
-	result = m_RenderTexture->Initialize(m_D3D->GetDevice(), SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, SCREEN_DEPTH, SCREEN_NEAR);
+	// Initialize the full screen ortho window object.
+	result = m_FullScreenWindow->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the render to texture object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the full screen ortho window object.", L"Error", MB_OK);
 		return false;
 	}
 
-	// Create the depth shader object.
-	m_DepthShader = new DepthShaderClass;
-	if (!m_DepthShader)
+	// Create the deferred buffers object.
+	m_DeferredBuffers = new DeferredBuffersClass;
+	if (!m_DeferredBuffers)
 	{
 		return false;
 	}
 
-	// Initialize the depth shader object.
-	result = m_DepthShader->Initialize(m_D3D->GetDevice(), hwnd);
+	// Initialize the deferred buffers object.
+	result = m_DeferredBuffers->Initialize(m_D3D->GetDevice(), screenWidth, screenHeight, SCREEN_DEPTH, SCREEN_NEAR);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the depth shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the deferred buffers object.", L"Error", MB_OK);
 		return false;
 	}
 
-	// Create the shadow shader object.
-	m_ShadowShader = new ShadowShaderClass;
-	if (!m_ShadowShader)
+	// Create the deferred shader object.
+	m_DeferredShader = new DeferredShaderClass;
+	if (!m_DeferredShader)
 	{
 		return false;
 	}
 
-	// Initialize the shadow shader object.
-	result = m_ShadowShader->Initialize(m_D3D->GetDevice(), hwnd);
+	// Initialize the deferred shader object.
+	result = m_DeferredShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the shadow shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the deferred shader object.", L"Error", MB_OK);
 		return false;
 	}
 
-	// Create the texture shader object.
-	m_TextureShader = new TextureShaderClass;
-	if (!m_TextureShader)
+	// Create the light shader object.
+	m_LightShader = new LightShaderClass;
+	if (!m_LightShader)
 	{
 		return false;
 	}
 
-	// Initialize the texture shader object.
-	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
+	// Initialize the light shader object.
+	result = m_LightShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if (!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the light shader object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -223,36 +218,36 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	void GraphicsClass::Shutdown()
 	{
 
-		// Release the texture shader object.
-		if (m_TextureShader)
+		// Release the light shader object.
+		if (m_LightShader)
 		{
-			m_TextureShader->Shutdown();
-			delete m_TextureShader;
-			m_TextureShader = 0;
+			m_LightShader->Shutdown();
+			delete m_LightShader;
+			m_LightShader = 0;
 		}
 
-		// Release the shadow shader object.
-		if (m_ShadowShader)
+		// Release the deferred shader object.
+		if (m_DeferredShader)
 		{
-			m_ShadowShader->Shutdown();
-			delete m_ShadowShader;
-			m_ShadowShader = 0;
+			m_DeferredShader->Shutdown();
+			delete m_DeferredShader;
+			m_DeferredShader = 0;
 		}
 
-		// Release the depth shader object.
-		if (m_DepthShader)
+		// Release the deferred buffers object.
+		if (m_DeferredBuffers)
 		{
-			m_DepthShader->Shutdown();
-			delete m_DepthShader;
-			m_DepthShader = 0;
+			m_DeferredBuffers->Shutdown();
+			delete m_DeferredBuffers;
+			m_DeferredBuffers = 0;
 		}
 
-		// Release the render to texture object.
-		if (m_RenderTexture)
+		// Release the full screen ortho window object.
+		if (m_FullScreenWindow)
 		{
-			m_RenderTexture->Shutdown();
-			delete m_RenderTexture;
-			m_RenderTexture = 0;
+			m_FullScreenWindow->Shutdown();
+			delete m_FullScreenWindow;
+			m_FullScreenWindow = 0;
 		}
 
 		// Release the light object.
@@ -330,26 +325,22 @@ bool GraphicsClass::Frame()
 	return true;
 }
 
-bool GraphicsClass::RenderDepthTexture()
+bool GraphicsClass::RenderSceneToTexture()
 {
-	XMMATRIX worldMatrix, orthoMatrix, lightViewMatrix, lightProjectionMatrix, lightOrthoMatrix, translationMat;
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, translationMat;
 	bool result;
 	float posX, posY, posZ;
 
+	// Set the render buffers to be the render target.
+	m_DeferredBuffers->SetRenderTargets(m_D3D->GetDeviceContext());
+
+	// Clear the render buffers.
+	m_DeferredBuffers->ClearRenderTargets(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
-
-	m_RenderTexture->SetRenderTarget(m_D3D->GetDeviceContext());
-	m_RenderTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
-
-	// Render scene depth
-	// Generate the light view matrix based on the light's position.
-	m_Light->GenerateViewMatrix();
-	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
-
-	// Get the view and orthographic matrices from the light object.
-	m_Light->GetViewMatrix(lightViewMatrix);
-	m_Light->GetProjectionMatrix(lightProjectionMatrix);
-	m_Light->GetOrthoMatrix(lightOrthoMatrix);
+	m_D3D->GetProjectionMatrix(projectionMatrix);
 
 	// 이제 각 모델을 Shadow map shader와 light 매트릭스들, 그리고 shadow map 텍스처로 렌더한다.
 	// Setup the translation matrix for the cube model.
@@ -361,7 +352,7 @@ bool GraphicsClass::RenderDepthTexture()
 	m_CubeModel->Render(m_D3D->GetDeviceContext());
 
 	// Render the model using the shadow shader.
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_CubeModel->GetTexture());
+	result = m_DeferredShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture());
 	if (!result)
 	{
 		return false;
@@ -377,7 +368,7 @@ bool GraphicsClass::RenderDepthTexture()
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_SphereModel->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_SphereModel->GetTexture());
+	result = m_DeferredShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_SphereModel->GetTexture());
 	if (!result)
 	{
 		return false;
@@ -393,27 +384,31 @@ bool GraphicsClass::RenderDepthTexture()
 
 	// Render the ground model using the shadow shader.
 	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_GroundModel->GetTexture());
+	result = m_DeferredShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_GroundModel->GetTexture());
 	if (!result)
 	{
 		return false;
 	}
 
 	m_D3D->SetBackBufferRenderTarget();
+
 	m_D3D->ResetViewport();
+
+	return true;
 
 }
 
 bool GraphicsClass::Render()
 {
-	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, lightViewMatrix, lightProjectionMatrix, lightOrthoMatrix, translationMat;
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, translationMat;
 	bool result;
 	float posX, posY, posZ;
 
-	m_D3D->TurnOnAlphaBlending();
-	m_D3D->TurnZBufferOn();
-
-	RenderDepthTexture();
+	result = RenderSceneToTexture();
+	if (!result)
+	{
+		return false;
+	}
 
 	// Clear the buffers to begin the scene. clear with fog color.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -424,67 +419,24 @@ bool GraphicsClass::Render()
 	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
-	m_D3D->GetProjectionMatrix(projectionMatrix);
+	m_D3D->GetOrthoMatrix(orthoMatrix);
+	
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_D3D->TurnZBufferOff();
 
-	// Generate the light view matrix based on the light's position.
-	m_Light->GenerateViewMatrix();
-	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
-	m_Light->GenerateOrthoMatrix(20.0f, SHADOWMAP_DEPTH, SHADOWMAP_NEAR);
+	// Put the full screen ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
 
-	// Get the view and orthographic matrices from the light object.
-	m_Light->GetViewMatrix(lightViewMatrix);
-	m_Light->GetProjectionMatrix(lightProjectionMatrix);
-	m_Light->GetOrthoMatrix(lightOrthoMatrix);
 
-	// Setup the translation matrix for the ground model.
-	m_GroundModel->GetPosition(posX, posY, posZ);
-	translationMat = XMMatrixTranslation(posX, posY, posZ);
-	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
 
-	// Render the ground model using the shadow shader.
-	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_GroundModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
-	if (!result)
-	{
-		return false;
-	}
+	// Render the full screen ortho window using the deferred light shader and the render buffers.
+	m_LightShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix,
+		m_DeferredBuffers->GetShaderResourceView(0), m_DeferredBuffers->GetShaderResourceView(1),
+		m_Light->GetDirection());
 
-	// Reset the world matrix.
-	m_D3D->GetWorldMatrix(worldMatrix);
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_D3D->TurnZBufferOn();
 
-	// Setup the translation matrix for the sphere model.
-	m_SphereModel->GetPosition(posX, posY, posZ);
-	translationMat = XMMatrixTranslation(posX, posY, posZ);
-	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
-
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_SphereModel->Render(m_D3D->GetDeviceContext());
-	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_SphereModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
-	if (!result)
-	{
-		return false;
-	}
-
-	// Reset the world matrix.
-	m_D3D->GetWorldMatrix(worldMatrix);
-
-	// 이제 각 모델을 Shadow map shader와 light 매트릭스들, 그리고 shadow map 텍스처로 렌더한다.
-// Setup the translation matrix for the cube model.
-	m_CubeModel->GetPosition(posX, posY, posZ);
-	translationMat = XMMatrixTranslation(posX, posY, posZ);
-	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
-
-	// Put the cube model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_CubeModel->Render(m_D3D->GetDeviceContext());
-
-	// Render the model using the shadow shader.
-	result = m_ShadowShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, m_CubeModel->GetTexture(), m_RenderTexture->GetShaderResourceView(), m_Light->GetDirection());
-	if (!result)
-	{
-		return false;
-	}
-
-	m_D3D->TurnOffAlphaBlending();
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();

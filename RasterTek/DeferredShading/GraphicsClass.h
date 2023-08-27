@@ -14,9 +14,13 @@
 #include "lightclass.h"
 #include "rendertotextureclass.h"
 #include "depthshaderclass.h"
-#include "shadowshaderclass.h"
 
-#include "textureshaderclass.h"
+#include "shadowshaderclass.h"
+#include "DeferredBuffersClass.h"
+#include "OrthowindowClass.h"
+#include "DeferredShaderClass.h"
+#include "LightShaderClass.h"
+
 
 /////////////
 // GLOBALS //
@@ -46,23 +50,23 @@ public:
 	void Shutdown();
 	bool Frame();
 
-	bool RenderDepthTexture();
-
+	bool RenderSceneToTexture();
 	bool Render();
 
 private:
 	D3DClass* m_D3D;
 	CameraClass* m_Camera;
-	TextureShaderClass* m_TextureShader;
 
 	ModelClass* m_CubeModel, * m_GroundModel, * m_SphereModel;
 	LightClass* m_Light;
 
 	XMMATRIX baseViewMatrix;
 
-	RenderToTextureClass* m_RenderTexture;
-	DepthShaderClass* m_DepthShader;
-	ShadowShaderClass* m_ShadowShader;
+	OrthoWindowClass* m_FullScreenWindow;
+	DeferredBuffersClass* m_DeferredBuffers;
+
+	DeferredShaderClass* m_DeferredShader;
+	LightShaderClass* m_LightShader;
 
 };
 
