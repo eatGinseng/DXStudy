@@ -1,0 +1,4 @@
+I:\DXStudy\RasterTek\ShadowMapping\Debug\ShadowMapping.exe
+I:\DXStudy\RasterTek\DirectionalShadowMapping\Debug\DirectionalShadowMapping.exe
+I:\DXStudy\RasterTek\DeferredShading\Debug\DeferredShading.exe
+I:\DXStudy\DeferredRenerer_DX11\Debug\DeferredShading.exe

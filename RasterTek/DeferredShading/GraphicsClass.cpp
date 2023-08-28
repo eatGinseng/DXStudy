@@ -427,7 +427,6 @@ bool GraphicsClass::Render()
 	// Put the full screen ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_FullScreenWindow->Render(m_D3D->GetDeviceContext());
 
-
 	// Render the full screen ortho window using the deferred light shader and the render buffers.
 	m_LightShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix,
 		m_DeferredBuffers->GetShaderResourceView(0), m_DeferredBuffers->GetShaderResourceView(1),
