@@ -29,12 +29,9 @@ struct PixelInputType
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
+    float4 worldPos : TEXCOORD1;
 };
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Vertex Shader
-////////////////////////////////////////////////////////////////////////////////
 PixelInputType DeferredVertexShader(VertexInputType input)
 {
     PixelInputType output;
@@ -55,6 +52,8 @@ PixelInputType DeferredVertexShader(VertexInputType input)
 	
     // Normalize the normal vector.
     output.normal = normalize(output.normal);
-    
-    return output;
+
+    output.worldPos = mul(input.position, worldMatrix);
+
+   return output;
 }

@@ -24,6 +24,13 @@ private:
 		XMMATRIX projection;
 	};
 
+	struct LightMatrixBufferType
+	{
+		XMMATRIX lightViewMatrix;
+		XMMATRIX lightProjectionMatrix;
+		float padding;
+	};
+
 public:
 	DeferredShaderClass();
 	DeferredShaderClass(const DeferredShaderClass&);
@@ -46,6 +53,7 @@ private:
 	ID3D11PixelShader* m_pixelShader;
 	ID3D11InputLayout* m_layout;
 	ID3D11Buffer* m_matrixBuffer;
+	ID3D11Buffer* m_lightMatrixBuffer;
 	ID3D11SamplerState* m_sampleState;
 };
 

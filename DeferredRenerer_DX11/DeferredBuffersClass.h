@@ -5,7 +5,7 @@
 #include <DirectXMath.h>
 using namespace DirectX;
 
-const int BUFFER_COUNT = 2;
+const int BUFFER_COUNT = 3;
 
 class DeferredBuffersClass
 {

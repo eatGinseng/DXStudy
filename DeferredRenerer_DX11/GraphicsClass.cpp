@@ -144,10 +144,11 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
 
 	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light->SetPosition(3.0f, 8.0f, -3.0f);
+	// Update the position of the light.
+	m_Light->SetPosition(3.0f, 10.0f, -3.0f);
 	m_Light->SetLookAt(0.0f, 0.0f, 0.0f);
-	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
 
+	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
 	m_Light->GenerateOrthoMatrix(20.0f, SHADOWMAP_DEPTH, SHADOWMAP_NEAR);
 
 	// Create the full screen ortho window object.
@@ -303,17 +304,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 bool GraphicsClass::Frame()
 {
 	bool result;
-	static float lightPositionX = -5.0f;
-
-	// Update the position of the light each frame.
-	lightPositionX += 0.005f;
-	if (lightPositionX > 3.0f)
-	{
-		lightPositionX = -3.0f;
-	}
-
-	// Update the position of the light.
-	m_Light->SetPosition(3.0f, 10.0f, -3.0f);
 
 	// Render the graphics scene.
 	result = Render();
@@ -327,7 +317,7 @@ bool GraphicsClass::Frame()
 
 bool GraphicsClass::RenderSceneToTexture()
 {
-	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, translationMat;
+	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, translationMat;
 	bool result;
 	float posX, posY, posZ;
 
@@ -341,6 +331,9 @@ bool GraphicsClass::RenderSceneToTexture()
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
+
+	m_Light->GetViewMatrix(lightViewMatrix);
+	m_Light->GetOrthoMatrix(lightOrthoMatrix);
 
 	// 이제 각 모델을 Shadow map shader와 light 매트릭스들, 그리고 shadow map 텍스처로 렌더한다.
 	// Setup the translation matrix for the cube model.

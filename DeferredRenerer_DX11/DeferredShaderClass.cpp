@@ -10,6 +10,7 @@ DeferredShaderClass::DeferredShaderClass()
 	m_pixelShader = 0;
 	m_layout = 0;
 	m_matrixBuffer = 0;
+	m_lightMatrixBuffer = 0;
 	m_sampleState = 0;
 }
 
@@ -232,6 +233,13 @@ void DeferredShaderClass::ShutdownShader()
 		m_sampleState = 0;
 	}
 
+	// Release the light matrix buffer
+	if (m_lightMatrixBuffer)
+	{
+		m_lightMatrixBuffer->Release();
+		m_lightMatrixBuffer = 0;
+	}
+
 	// Release the matrix constant buffer.
 	if(m_matrixBuffer)
 	{
@@ -306,8 +314,8 @@ bool DeferredShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	HRESULT result;
     D3D11_MAPPED_SUBRESOURCE mappedResource;
 	MatrixBufferType* dataPtr;
+	LightMatrixBufferType* dataPtr2;
 	unsigned int bufferNumber;
-
 
 	// Transpose the matrices to prepare them for the shader.
 	worldMatrix = XMMatrixTranspose(worldMatrix);
