@@ -19,6 +19,9 @@ GraphicsClass::GraphicsClass()
 	m_LightShader = 0;
 	m_FullScreenWindow = 0;
 
+	m_ShadowDepthTexture = 0;
+	m_DepthShader = 0;
+
 }
 
 
@@ -148,6 +151,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 	m_Light->SetPosition(3.0f, 10.0f, -3.0f);
 	m_Light->SetLookAt(0.0f, 0.0f, 0.0f);
 
+	m_Light->GenerateViewMatrix();
 	m_Light->GenerateProjectionMatrix(SCREEN_DEPTH, SCREEN_NEAR);
 	m_Light->GenerateOrthoMatrix(20.0f, SHADOWMAP_DEPTH, SHADOWMAP_NEAR);
 
@@ -211,6 +215,29 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 		return false;
 	}
 
+	m_ShadowDepthTexture = new RenderToTextureClass;
+	if (!m_ShadowDepthTexture)
+	{
+		return false;
+	}
+
+	result = m_ShadowDepthTexture->Initialize(m_D3D->GetDevice(), SHADOWMAP_WIDTH, SHADOWMAP_HEIGHT, SHADOWMAP_DEPTH, SHADOWMAP_NEAR);
+	if (!result)
+	{
+		return false;
+	}
+
+	m_DepthShader = new DepthShaderClass();
+	if (!m_DepthShader)
+	{
+		return false;
+	}
+
+	m_DepthShader->Initialize(m_D3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -218,6 +245,21 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 
 	void GraphicsClass::Shutdown()
 	{
+
+		if (m_DepthShader)
+		{
+			m_DepthShader->Shutdown();
+			delete m_DepthShader;
+			m_DepthShader = 0;
+		}
+
+		// release the shadow depth texture
+		if (m_ShadowDepthTexture)
+		{
+			m_ShadowDepthTexture->Shutdown();
+			delete m_ShadowDepthTexture;
+			m_ShadowDepthTexture = 0;
+		}
 
 		// Release the light shader object.
 		if (m_LightShader)
@@ -315,6 +357,65 @@ bool GraphicsClass::Frame()
 	return true;
 }
 
+bool GraphicsClass::RenderShadowDepth()
+{
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, translationMat;
+	bool result;
+	float posX, posY, posZ;
+
+	m_ShadowDepthTexture->SetRenderTarget(m_D3D->GetDeviceContext());
+	m_ShadowDepthTexture->ClearRenderTarget(m_D3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
+
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	m_Camera->Render();
+
+	m_Light->GetViewMatrix(lightViewMatrix);
+	m_Light->GetOrthoMatrix(lightOrthoMatrix);
+
+	// Setup the translation matrix for the cube model.
+	m_CubeModel->GetPosition(posX, posY, posZ);
+	translationMat = XMMatrixTranslation(posX, posY, posZ);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
+	m_CubeModel->Render(m_D3D->GetDeviceContext());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_CubeModel->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	m_SphereModel->GetPosition(posX, posY, posZ);
+	translationMat = XMMatrixTranslation(posX, posY, posZ);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
+	m_SphereModel->Render(m_D3D->GetDeviceContext());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_SphereModel->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	m_GroundModel->GetPosition(posX, posY, posZ);
+	translationMat = XMMatrixTranslation(posX, posY, posZ);
+	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
+	m_GroundModel->Render(m_D3D->GetDeviceContext());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_GroundModel->GetTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	m_D3D->GetWorldMatrix(worldMatrix);
+
+	m_D3D->SetBackBufferRenderTarget();
+	m_D3D->ResetViewport();
+
+	return true;
+}
+
 bool GraphicsClass::RenderSceneToTexture()
 {
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, translationMat;
@@ -345,7 +446,9 @@ bool GraphicsClass::RenderSceneToTexture()
 	m_CubeModel->Render(m_D3D->GetDeviceContext());
 
 	// Render the model using the shadow shader.
-	result = m_DeferredShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_CubeModel->GetTexture());
+	result = m_DeferredShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 
+			lightViewMatrix, lightOrthoMatrix, 
+			m_CubeModel->GetTexture(), m_ShadowDepthTexture->GetShaderResourceView());
 	if (!result)
 	{
 		return false;
@@ -361,7 +464,9 @@ bool GraphicsClass::RenderSceneToTexture()
 
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_SphereModel->Render(m_D3D->GetDeviceContext());
-	result = m_DeferredShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_SphereModel->GetTexture());
+	result = m_DeferredShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		lightViewMatrix, lightOrthoMatrix, 
+		m_SphereModel->GetTexture(), m_ShadowDepthTexture->GetShaderResourceView());
 	if (!result)
 	{
 		return false;
@@ -377,7 +482,9 @@ bool GraphicsClass::RenderSceneToTexture()
 
 	// Render the ground model using the shadow shader.
 	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_DeferredShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, m_GroundModel->GetTexture());
+	result = m_DeferredShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		lightViewMatrix, lightOrthoMatrix,
+		m_GroundModel->GetTexture(), m_ShadowDepthTexture->GetShaderResourceView());
 	if (!result)
 	{
 		return false;
@@ -391,11 +498,18 @@ bool GraphicsClass::RenderSceneToTexture()
 
 }
 
+
 bool GraphicsClass::Render()
 {
-	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, translationMat;
+	XMMATRIX worldMatrix, viewMatrix, orthoMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, translationMat;
 	bool result;
 	float posX, posY, posZ;
+
+	result = RenderShadowDepth();
+	if (!result)
+	{
+		return false;
+	}
 
 	result = RenderSceneToTexture();
 	if (!result)
@@ -413,6 +527,9 @@ bool GraphicsClass::Render()
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetWorldMatrix(worldMatrix);
 	m_D3D->GetOrthoMatrix(orthoMatrix);
+
+	m_Light->GetViewMatrix(lightViewMatrix);
+	m_Light->GetOrthoMatrix(lightOrthoMatrix);
 	
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_D3D->TurnZBufferOff();
@@ -424,10 +541,9 @@ bool GraphicsClass::Render()
 	m_LightShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix,
 		m_DeferredBuffers->GetShaderResourceView(0), m_DeferredBuffers->GetShaderResourceView(1),
 		m_Light->GetDirection());
-
+	
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_D3D->TurnZBufferOn();
-
 
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();

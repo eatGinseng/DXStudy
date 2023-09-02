@@ -2,6 +2,8 @@
 // GLOBALS //
 /////////////
 Texture2D shaderTexture;
+Texture2D shadowDepthTexture;
+
 SamplerState SampleType;
 
 
@@ -14,6 +16,7 @@ struct PixelInputType
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float4 worldPos : TEXCOORD1;
+    float4 lightPosition : TEXCOORD2;
 
 };
 
@@ -22,6 +25,7 @@ struct PixelOutputType
     float4 color : SV_Target0;
     float4 normal : SV_Target1;
     float4 position : SV_Target2;
+    float4 shadow : SV_Target3;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,6 +34,26 @@ struct PixelOutputType
 PixelOutputType DeferredPixelShader(PixelInputType input) : SV_TARGET
 {
     PixelOutputType output;
+    float shadowDepthValue;
+    float bias = 0.01f;
+    float lightDepthValue;
+    float shadowColor = 0.0f;
+
+    float2 lightProjectionCoord;
+    lightProjectionCoord.x = (input.lightPosition.x / input.lightPosition.w) / 2.0f + 0.5f; 
+    lightProjectionCoord.y = -input.lightPosition.y / input.lightPosition.w / 2.0f + 0.5f;
+
+    shadowDepthValue = shadowDepthTexture.Sample(SampleType, lightProjectionCoord.xy);
+    if ((saturate(lightProjectionCoord.x) == lightProjectionCoord.x) && (saturate(lightProjectionCoord.y) == lightProjectionCoord.y))
+    {
+        lightDepthValue  = input.lightPosition.z / input.lightPosition.w;
+        lightDepthValue = lightDepthValue - 0.0f;
+        if (lightDepthValue < shadowDepthValue)
+        {
+            shadowColor = 1.0f;
+        }
+
+    }
 
 	float4 textureColor;
 
@@ -40,6 +64,8 @@ PixelOutputType DeferredPixelShader(PixelInputType input) : SV_TARGET
     output.normal = float4(input.normal, 1.0f);
 
     output.position = input.worldPos;
+
+    output.shadow = float4(shadowColor.xxx, 1.0f); 
 
     return output;
 }

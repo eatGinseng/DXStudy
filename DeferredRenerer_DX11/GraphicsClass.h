@@ -44,6 +44,7 @@ public:
 	bool Frame();
 
 	bool RenderSceneToTexture();
+	bool RenderShadowDepth();
 	bool Render();
 
 private:
@@ -58,7 +59,9 @@ private:
 	OrthoWindowClass* m_FullScreenWindow;
 	DeferredBuffersClass* m_DeferredBuffers;
 
+	RenderToTextureClass* m_ShadowDepthTexture;
 	DeferredShaderClass* m_DeferredShader;
 	LightShaderClass* m_LightShader;
+	DepthShaderClass* m_DepthShader;
 
 };

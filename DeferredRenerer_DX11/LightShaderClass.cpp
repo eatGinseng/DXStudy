@@ -9,6 +9,7 @@ LightShaderClass::LightShaderClass()
 
 	m_matrixBuffer = 0;
 	m_lightBuffer = 0;
+	m_lightMatrixBuffer = 0;
 	
 }
 
@@ -44,7 +45,8 @@ void LightShaderClass::Shutdown()
 }
 
 bool LightShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMVECTOR lightDirection)
+	XMMATRIX projectionMatrix,
+	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMVECTOR lightDirection)
 {
 	bool result;
 
@@ -226,6 +228,7 @@ bool LightShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCWSTR
 
 void LightShaderClass::ShutdownShader()
 {
+
 	// Release the light constant buffer.
 	if (m_lightBuffer)
 	{
@@ -307,8 +310,8 @@ void LightShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND h
 	return;
 }
 
-bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX projectionMatrix, ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMVECTOR lightDirection)
+bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
+	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMVECTOR lightDirection)
 	
 {
 	HRESULT result;
@@ -316,6 +319,7 @@ bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	unsigned int bufferNumber;
 	MatrixBufferType* dataPtr;
 	LightBufferType* dataPtr2;
+
 	CameraBufferType* dataPtr3;
 
 	// Transpose the matrices to prepare them for the shader.

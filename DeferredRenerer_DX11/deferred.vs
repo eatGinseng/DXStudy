@@ -13,6 +13,11 @@ cbuffer MatrixBuffer
 	matrix projectionMatrix;
 };
 
+cbuffer LightMatrixBuffer
+{
+    matrix lightViewMatrix;
+    matrix lightOrthoMatrix;
+};
 
 //////////////
 // TYPEDEFS //
@@ -30,6 +35,7 @@ struct PixelInputType
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float4 worldPos : TEXCOORD1;
+    float4 lightPosition : TEXCOORD2;
 };
 
 PixelInputType DeferredVertexShader(VertexInputType input)
@@ -54,6 +60,10 @@ PixelInputType DeferredVertexShader(VertexInputType input)
     output.normal = normalize(output.normal);
 
     output.worldPos = mul(input.position, worldMatrix);
+
+    output.lightPosition = mul(input.position, worldMatrix);
+    output.lightPosition = mul(output.lightPosition, lightViewMatrix);
+    output.lightPosition = mul(output.lightPosition, lightOrthoMatrix);
 
    return output;
 }

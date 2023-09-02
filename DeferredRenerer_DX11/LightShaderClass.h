@@ -36,6 +36,12 @@ private:
 		float padding;
 	};
 
+	struct LightMatrixBufferType
+	{
+		XMMATRIX lightViewMatrix;
+		XMMATRIX lightOrthoMatrix;
+	};
+
 public:
 	LightShaderClass();
 	LightShaderClass(const LightShaderClass&);
@@ -60,6 +66,8 @@ private:
 
 	ID3D11Buffer* m_matrixBuffer;
 	ID3D11Buffer* m_lightBuffer;
+	ID3D11Buffer* m_lightMatrixBuffer;
+
 	ID3D11SamplerState* m_sampleState;
 };
 
