@@ -1,5 +1,5 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: 중간 디렉터리(Debug\)에 다른 프로젝트(DirectionalShadowMapping.vcxproj, ShadowMapping.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
-  DeferredShaderClass.cpp
+  GraphicsClass.cpp
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\dxgitype.h(12,1): warning C4005: 'DXGI_STATUS_OCCLUDED': 매크로 재정의
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\winerror.h(58064,1): message : 'DXGI_STATUS_OCCLUDED'의 이전 정의를 참조하십시오.
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\dxgitype.h(13,1): warning C4005: 'DXGI_STATUS_CLIPPED': 매크로 재정의
@@ -56,4 +56,21 @@ C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\d3d10.h(608,1):
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\winerror.h(58545,1): message : 'D3D10_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS'의 이전 정의를 참조하십시오.
 C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\d3d10.h(609,1): warning C4005: 'D3D10_ERROR_FILE_NOT_FOUND': 매크로 재정의
 C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\winerror.h(58554,1): message : 'D3D10_ERROR_FILE_NOT_FOUND'의 이전 정의를 참조하십시오.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(44,22): warning C4316: 'D3DClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(59,28): warning C4316: 'CameraClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(140,26): warning C4316: 'LightClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(174,46): warning C4316: 'DeferredBuffersClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(218,49): warning C4316: 'RenderToTextureClass': 힙에 할당된 개체가 16에 맞추어져 있지 않을 수도 있습니다
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(224,116): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(224,99): warning C4244: '인수': 'const float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(41,6): warning C4101: 'downSampleWidth' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(41,23): warning C4101: 'downSampleHeight' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(362,49): warning C4101: 'projectionMatrix' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(362,36): warning C4101: 'orthoMatrix' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(362,24): warning C4101: 'viewMatrix' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(506,102): warning C4101: 'translationMat' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(506,49): warning C4101: 'projectionMatrix' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(508,20): warning C4101: 'posZ' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(508,14): warning C4101: 'posY' :참조되지 않은 지역 변수입니다.
+I:\DXStudy\DeferredRenerer_DX11\GraphicsClass.cpp(508,8): warning C4101: 'posX' :참조되지 않은 지역 변수입니다.
   2DRendering.vcxproj -> I:\DXStudy\DeferredRenerer_DX11\Debug\DeferredShading.exe

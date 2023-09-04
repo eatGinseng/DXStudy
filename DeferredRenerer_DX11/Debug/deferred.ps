@@ -35,27 +35,24 @@ PixelOutputType DeferredPixelShader(PixelInputType input) : SV_TARGET
 {
     PixelOutputType output;
     float shadowDepthValue;
-    float bias = 0.01f;
+    float bias = 0.001f;
     float lightDepthValue;
     float shadowColor = 0.0f;
 
     float2 lightProjectionCoord;
-    lightProjectionCoord.x = (input.lightPosition.x / input.lightPosition.w) / 2.0f + 0.5f; 
+    lightProjectionCoord.x = input.lightPosition.x / input.lightPosition.w / 2.0f + 0.5f; 
     lightProjectionCoord.y = -input.lightPosition.y / input.lightPosition.w / 2.0f + 0.5f;
+ 
+        shadowDepthValue = shadowDepthTexture.Sample(SampleType, lightProjectionCoord).r;
 
-    shadowDepthValue = shadowDepthTexture.Sample(SampleType, lightProjectionCoord.xy);
-    if ((saturate(lightProjectionCoord.x) == lightProjectionCoord.x) && (saturate(lightProjectionCoord.y) == lightProjectionCoord.y))
-    {
-        lightDepthValue  = input.lightPosition.z / input.lightPosition.w;
-        lightDepthValue = lightDepthValue - 0.0f;
+        lightDepthValue = input.lightPosition.z / input.lightPosition.w;
+        lightDepthValue = lightDepthValue - bias;
+
         if (lightDepthValue < shadowDepthValue)
         {
-            shadowColor = 1.0f;
+            shadowColor = 0.0f;
         }
 
-    }
-
-	float4 textureColor;
 
     // Sample the color from the texture and store it for output to the render target.
     output.color = shaderTexture.Sample(SampleType, input.tex);

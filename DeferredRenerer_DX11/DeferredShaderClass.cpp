@@ -51,7 +51,7 @@ void DeferredShaderClass::Shutdown()
 
 
 bool DeferredShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
-	XMMATRIX lightViewMatrix, XMMATRIX lightOrthoMatrix, XMMATRIX projectionMatrix, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* shadowTexture)
+	XMMATRIX projectionMatrix, XMMATRIX lightViewMatrix, XMMATRIX lightOrthoMatrix, ID3D11ShaderResourceView* texture, ID3D11ShaderResourceView* shadowTexture)
 {
 	bool result;
 
@@ -202,14 +202,14 @@ bool DeferredShaderClass::InitializeShader(ID3D11Device* device, HWND hwnd, LPCW
 
 	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
 	lightMatrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	lightMatrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
+	lightMatrixBufferDesc.ByteWidth = sizeof(LightMatrixBufferType);
 	lightMatrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	lightMatrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	lightMatrixBufferDesc.MiscFlags = 0;
 	lightMatrixBufferDesc.StructureByteStride = 0;
 
 	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	result = device->CreateBuffer(&matrixBufferDesc, NULL, &m_lightMatrixBuffer);
+	result = device->CreateBuffer(&lightMatrixBufferDesc, NULL, &m_lightMatrixBuffer);
 	if (FAILED(result))
 	{
 		return false;
@@ -383,7 +383,7 @@ bool DeferredShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext
 
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
-	// deviceContext->PSSetShaderResources(0, 2, &shadowTexture);
+	deviceContext->PSSetShaderResources(1, 1, &shadowTexture);
 
 	return true;
 }

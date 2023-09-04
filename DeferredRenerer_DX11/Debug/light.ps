@@ -1,5 +1,6 @@
 Texture2D colorTexture;
 Texture2D normalTexture;
+Texture2D shadowDepthTexture;
 
 SamplerState SampleTypePoint : register(s0);
 
@@ -27,6 +28,14 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
     float4 normals;
     float3 lightDir;
     float lightIntensity;
+
+    float2 shadowProjectionCoord;
+    float lightDepth;
+    float shadowDepth;
+
+    float shadowColor = 0.0f;
+    float shadowBias = 0.001f;
+
     float4 outputColor;
 
     // Sample the colors from the color render texture using the point sampler at this texture coordinate location.
@@ -41,8 +50,21 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
     // Calculate the amount of light on this pixel.
     lightIntensity = saturate(dot(normals.xyz, lightDir));
 
+    shadowProjectionCoord.x = input.lightViewPosition.x / input.lightViewPosition.w / 2.0f + 0.5f;
+    shadowProjectionCoord.y = -input.lightViewPosition.y / input.lightViewPosition.w / 2.0f + 0.5f;
+
+    shadowDepth = shadowDepthTexture.Sample(SampleTypePoint, shadowProjectionCoord).r;
+
+    lightDepth = lightViewPosition.z / lightViewPosition.w;
+    lightDepth = lightDepth - shadowBias;
+
+    if (lightDepth > shadowDepth)
+    {
+        shadowColor = 1.0f;
+    }
+
     // Determine the final amount of diffuse color based on the color of the pixel combined with the light intensity.
-    outputColor = saturate(colors * lightIntensity);
+    outputColor = saturate(colors * lightIntensity * shadowColor);
 
     return outputColor;
 }

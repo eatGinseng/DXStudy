@@ -23,6 +23,7 @@ public:
 	ID3D11ShaderResourceView* GetShaderResourceView(int);
 	void GetProjectionMatrix(XMMATRIX&);
 	void GetOrthoMatrix(XMMATRIX&);
+	
 
 private:
 	int m_textureWidth, m_textureHeight;

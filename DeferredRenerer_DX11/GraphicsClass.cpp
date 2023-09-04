@@ -378,7 +378,7 @@ bool GraphicsClass::RenderShadowDepth()
 	translationMat = XMMatrixTranslation(posX, posY, posZ);
 	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
 	m_CubeModel->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_CubeModel->GetTexture());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_CubeModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -390,7 +390,7 @@ bool GraphicsClass::RenderShadowDepth()
 	translationMat = XMMatrixTranslation(posX, posY, posZ);
 	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
 	m_SphereModel->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_SphereModel->GetTexture());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_SphereModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -402,7 +402,7 @@ bool GraphicsClass::RenderShadowDepth()
 	translationMat = XMMatrixTranslation(posX, posY, posZ);
 	worldMatrix = XMMatrixMultiply(worldMatrix, translationMat);
 	m_GroundModel->Render(m_D3D->GetDeviceContext());
-	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix, m_GroundModel->GetTexture());
+	result = m_DepthShader->Render(m_D3D->GetDeviceContext(), m_GroundModel->GetIndexCount(), worldMatrix, lightViewMatrix, lightOrthoMatrix);
 	if (!result)
 	{
 		return false;
@@ -490,6 +490,8 @@ bool GraphicsClass::RenderSceneToTexture()
 		return false;
 	}
 
+	m_D3D->GetWorldMatrix(worldMatrix);
+
 	m_D3D->SetBackBufferRenderTarget();
 
 	m_D3D->ResetViewport();
@@ -539,8 +541,9 @@ bool GraphicsClass::Render()
 
 	// Render the full screen ortho window using the deferred light shader and the render buffers.
 	m_LightShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix,
+		lightViewMatrix, lightOrthoMatrix,
 		m_DeferredBuffers->GetShaderResourceView(0), m_DeferredBuffers->GetShaderResourceView(1),
-		m_Light->GetDirection());
+		m_Light->GetDirection(), m_ShadowDepthTexture->GetShaderResourceView());
 	
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_D3D->TurnZBufferOn();
