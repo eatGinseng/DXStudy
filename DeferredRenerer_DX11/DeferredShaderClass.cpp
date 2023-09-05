@@ -341,6 +341,9 @@ bool DeferredShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	viewMatrix = XMMatrixTranspose(viewMatrix);
 	projectionMatrix = XMMatrixTranspose(projectionMatrix);
 
+	lightViewMatrix = XMMatrixTranspose(lightViewMatrix);
+	lightOrthoMatrix = XMMatrixTranspose(lightOrthoMatrix);
+
 	// Lock the constant buffer so it can be written to.
 	result = deviceContext->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if(FAILED(result))
@@ -384,6 +387,7 @@ bool DeferredShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext
 	// Set shader texture resource in the pixel shader.
 	deviceContext->PSSetShaderResources(0, 1, &texture);
 	deviceContext->PSSetShaderResources(1, 1, &shadowTexture);
+
 
 	return true;
 }

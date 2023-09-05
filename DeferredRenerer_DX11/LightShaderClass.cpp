@@ -47,12 +47,12 @@ void LightShaderClass::Shutdown()
 bool LightShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, XMMATRIX worldMatrix, XMMATRIX viewMatrix,
 	XMMATRIX projectionMatrix,
 	XMMATRIX lightViewMatrix, XMMATRIX lightOrthoMatrix,
-	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMVECTOR lightDirection, ID3D11ShaderResourceView* shadowDepthTexture)
+	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView* depthTexture, XMVECTOR lightDirection, ID3D11ShaderResourceView* shadowDepthTexture)
 {
 	bool result;
 
 	// Set the shader parameters that it will use for rendering.
-	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, colorTexture, normalTexture, lightDirection, shadowDepthTexture);
+	result = SetShaderParameters(deviceContext, worldMatrix, viewMatrix, projectionMatrix, lightViewMatrix, lightOrthoMatrix, colorTexture, normalTexture, depthTexture, lightDirection, shadowDepthTexture);
 	if (!result)
 	{
 		return false;
@@ -334,7 +334,7 @@ void LightShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND h
 
 bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, XMMATRIX worldMatrix, XMMATRIX viewMatrix, XMMATRIX projectionMatrix,
 	XMMATRIX lightViewMatrix, XMMATRIX lightOrthoMatrix,
-	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, XMVECTOR lightDirection, ID3D11ShaderResourceView* shadowDepthTexture)
+	ID3D11ShaderResourceView* colorTexture, ID3D11ShaderResourceView* normalTexture, ID3D11ShaderResourceView* depthTexture, XMVECTOR lightDirection, ID3D11ShaderResourceView* shadowDepthTexture)
 	
 {
 	HRESULT result;
@@ -348,6 +348,9 @@ bool LightShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	worldMatrix = XMMatrixTranspose(worldMatrix);
 	viewMatrix = XMMatrixTranspose(viewMatrix);
 	projectionMatrix = XMMatrixTranspose(projectionMatrix);
+
+	lightViewMatrix = XMMatrixTranspose(lightViewMatrix);
+	lightOrthoMatrix = XMMatrixTranspose(lightOrthoMatrix);
 
 	// Lock the constant buffer so it can be written to.
 	result = deviceContext->Map(m_matrixBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);

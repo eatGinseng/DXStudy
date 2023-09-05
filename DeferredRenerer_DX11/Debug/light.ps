@@ -17,6 +17,7 @@ struct PixelInputType
 {
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
+    float4 lightViewPosition : TEXCOORD1;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +34,7 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
     float lightDepth;
     float shadowDepth;
 
-    float shadowColor = 0.0f;
+    float shadowColor = 0.2f;
     float shadowBias = 0.001f;
 
     float4 outputColor;
@@ -50,13 +51,13 @@ float4 LightPixelShader(PixelInputType input) : SV_TARGET
     // Calculate the amount of light on this pixel.
     lightIntensity = saturate(dot(normals.xyz, lightDir));
 
-    shadowProjectionCoord.x = input.lightViewPosition.x / input.lightViewPosition.w / 2.0f + 0.5f;
-    shadowProjectionCoord.y = -input.lightViewPosition.y / input.lightViewPosition.w / 2.0f + 0.5f;
+    float4 lightViewPos = shadowDepthTexture.Sample(SampleTypePoint, input.tex);
+
+    shadowProjectionCoord.x = lightViewPos.x / lightViewPos.w / 2.0f + 0.5f;
+    shadowProjectionCoord.y = -lightViewPos.y / lightViewPos.w / 2.0f + 0.5f;
 
     shadowDepth = shadowDepthTexture.Sample(SampleTypePoint, shadowProjectionCoord).r;
-
-    lightDepth = lightViewPosition.z / lightViewPosition.w;
-    lightDepth = lightDepth - shadowBias;
+    lightDepth = lightViewPos.z / lightViewPos.w;
 
     if (lightDepth > shadowDepth)
     {

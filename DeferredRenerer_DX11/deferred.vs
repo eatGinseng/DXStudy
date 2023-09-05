@@ -35,7 +35,7 @@ struct PixelInputType
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float4 worldPos : TEXCOORD1;
-    float4 lightPosition : TEXCOORD2;
+    float4 lightViewPosition : TEXCOORD2;
 };
 
 PixelInputType DeferredVertexShader(VertexInputType input)
@@ -61,9 +61,9 @@ PixelInputType DeferredVertexShader(VertexInputType input)
 
     output.worldPos = mul(input.position, worldMatrix);
 
-    output.lightPosition = mul(input.position, worldMatrix);
-    output.lightPosition = mul(output.lightPosition, lightViewMatrix);
-    output.lightPosition = mul(output.lightPosition, lightOrthoMatrix);
+    output.lightViewPosition = mul(input.position, worldMatrix);
+    output.lightViewPosition = mul(output.lightViewPosition, lightViewMatrix);
+    output.lightViewPosition = mul(output.lightViewPosition, lightOrthoMatrix);
 
    return output;
 }

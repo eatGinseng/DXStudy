@@ -7,10 +7,10 @@ cbuffer MatrixBuffer
 
 };
 
-cbuffer LightBuffer
+cbuffer LightMatrixBuffer
 {
-    float3 lightDirection;
-    float padding;
+    matrix lightViewMatrix;
+    matrix lightOrthoMatrix;
 };
 
 //////////////
@@ -27,6 +27,7 @@ struct PixelInputType
 {
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
+    float4 lightViewPosition : TEXCOORD1;
 
 };
 
@@ -50,6 +51,9 @@ PixelInputType LightVertexShader(VertexInputType input)
 	// Store the texture coordinates for the pixel shader.
     output.tex = input.tex;
     
+    output.lightViewPosition = mul(input.position, worldMatrix);
+    output.lightViewPosition = mul(output.lightViewPosition, lightViewMatrix);
+    output.lightViewPosition = mul(output.lightViewPosition, lightOrthoMatrix);     
 
 	return output;
 }

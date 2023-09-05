@@ -1,22 +1,15 @@
-/////////////
-// GLOBALS //
-/////////////
 Texture2D shaderTexture;
 Texture2D shadowDepthTexture;
 
 SamplerState SampleType;
 
-
-//////////////
-// TYPEDEFS //
-//////////////
 struct PixelInputType
 {
     float4 position : SV_POSITION;
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float4 worldPos : TEXCOORD1;
-    float4 lightPosition : TEXCOORD2;
+    float4 lightViewPosition : TEXCOORD2;
 
 };
 
@@ -25,7 +18,8 @@ struct PixelOutputType
     float4 color : SV_Target0;
     float4 normal : SV_Target1;
     float4 position : SV_Target2;
-    float4 shadow : SV_Target3;
+    float4 depth : SV_Target3;
+    float4 lightViewPos : SV_Target4;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,25 +28,8 @@ struct PixelOutputType
 PixelOutputType DeferredPixelShader(PixelInputType input) : SV_TARGET
 {
     PixelOutputType output;
-    float shadowDepthValue;
-    float bias = 0.001f;
-    float lightDepthValue;
-    float shadowColor = 0.0f;
 
-    float2 lightProjectionCoord;
-    lightProjectionCoord.x = input.lightPosition.x / input.lightPosition.w / 2.0f + 0.5f; 
-    lightProjectionCoord.y = -input.lightPosition.y / input.lightPosition.w / 2.0f + 0.5f;
- 
-        shadowDepthValue = shadowDepthTexture.Sample(SampleType, lightProjectionCoord).r;
-
-        lightDepthValue = input.lightPosition.z / input.lightPosition.w;
-        lightDepthValue = lightDepthValue - bias;
-
-        if (lightDepthValue < shadowDepthValue)
-        {
-            shadowColor = 0.0f;
-        }
-
+    float depth = input.position.z / input.position.w;
 
     // Sample the color from the texture and store it for output to the render target.
     output.color = shaderTexture.Sample(SampleType, input.tex);
@@ -62,7 +39,32 @@ PixelOutputType DeferredPixelShader(PixelInputType input) : SV_TARGET
 
     output.position = input.worldPos;
 
-    output.shadow = float4(shadowColor.xxx, 1.0f); 
+    output.depth = float4(depth.xxx, 1.0f); 
+
+    float shadowColor = 0.0f;
+
+    float2 projectionCoord;
+    projectionCoord.x =  input.lightViewPosition.x / input.lightViewPosition.w / 2.0f + 0.5f;
+    projectionCoord.y = -input.lightViewPosition.y / input.lightViewPosition.w / 2.0f + 0.5f;
+
+    float shadowDepth;
+    float lightDepth;
+
+	if((saturate(projectionCoord.x) == projectionCoord.x) && (saturate(projectionCoord.y) == projectionCoord.y))
+	{
+        shadowDepth = shadowDepthTexture.Sample(SampleType, projectionCoord).r;
+        lightDepth = input.lightViewPosition.z / input.lightViewPosition.w;
+        lightDepth = lightDepth - 0.001f;
+
+    if (lightDepth < shadowDepth)
+    {
+        shadowColor = 1.0f;
+    }
+
+    }
+
+    output.lightViewPos = float4(shadowColor.xxx, 1.0f);
+
 
     return output;
 }

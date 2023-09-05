@@ -542,8 +542,8 @@ bool GraphicsClass::Render()
 	// Render the full screen ortho window using the deferred light shader and the render buffers.
 	m_LightShader->Render(m_D3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix,
 		lightViewMatrix, lightOrthoMatrix,
-		m_DeferredBuffers->GetShaderResourceView(0), m_DeferredBuffers->GetShaderResourceView(1),
-		m_Light->GetDirection(), m_ShadowDepthTexture->GetShaderResourceView());
+		m_DeferredBuffers->GetShaderResourceView(0), m_DeferredBuffers->GetShaderResourceView(1), m_DeferredBuffers->GetShaderResourceView(4),
+		m_Light->GetDirection(), m_DeferredBuffers->GetShaderResourceView(4));
 	
 	// Turn the Z buffer back on now that all 2D rendering has completed.
 	m_D3D->TurnZBufferOn();
