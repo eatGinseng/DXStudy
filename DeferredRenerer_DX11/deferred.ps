@@ -54,7 +54,7 @@ PixelOutputType DeferredPixelShader(PixelInputType input) : SV_TARGET
 	{
         shadowDepth = shadowDepthTexture.Sample(SampleType, projectionCoord).r;
         lightDepth = input.lightViewPosition.z / input.lightViewPosition.w;
-        lightDepth = lightDepth - 0.001f;
+        lightDepth = lightDepth - 0.01f;
 
     if (lightDepth < shadowDepth)
     {
