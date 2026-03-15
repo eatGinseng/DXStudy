@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(powershell -Command \"$shell = New-Object -ComObject WScript.Shell; $lnk = $shell.CreateShortcut\\($env:APPDATA + '\\\\Microsoft\\\\Windows\\\\Start Menu\\\\Programs\\\\Claude VulkanProject.lnk'\\); $lnk.TargetPath = 'D:\\\\DXStudy\\\\VulkanProject\\\\claude_here.bat'; $lnk.WorkingDirectory = 'D:\\\\DXStudy\\\\VulkanProject'; $lnk.Description = 'Launch Claude in VulkanProject'; $lnk.Save\\(\\); Write-Output 'Done'\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File \"D:\\\\DXStudy\\\\VulkanProject\\\\create_shortcut.ps1\")",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

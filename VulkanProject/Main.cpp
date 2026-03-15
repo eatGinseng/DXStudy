@@ -44,4 +44,6 @@ int main()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
+	vulkanRenderer.CleanUp();
+
 }
